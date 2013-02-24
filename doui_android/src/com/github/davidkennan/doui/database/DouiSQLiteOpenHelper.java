@@ -61,28 +61,17 @@ public class DouiSQLiteOpenHelper extends SQLiteOpenHelper {
 	/** Table with links between todo_item and context. Reference to context. */
 	public static final String TABLE_TODO_ITEMS_CONTEXTS_FK_TODO_CONTEXTS = "fk_todo_contexts";
 	/** Table with links between todo_item and context. Create statement. */
-	public static final String STR_CREATE_TABLE_TODO_ITEMS_CONTEXTS = "create table "
-			+ TABLE_TODO_ITEMS_CONTEXTS
-			+ "("
-			+ TABLE_TODO_ITEMS_CONTEXTS_ID
-			+ " integer primary key autoincrement, "
-			+ TABLE_TODO_ITEMS_CONTEXTS_FK_TODO_ITEMS
-			+ " INTEGER, "
-			+ "FOREIGN KEY("
-			+ TABLE_TODO_ITEMS_CONTEXTS_FK_TODO_ITEMS
-			+ ") REFERENCES "
-			+ TABLE_TODO_ITEMS
-			+ "("
-			+ TABLE_TODO_ITEMS_ID
-			+ "),"
+	public static final String STR_CREATE_TABLE_TODO_ITEMS_CONTEXTS = 
+			"create table "	+ TABLE_TODO_ITEMS_CONTEXTS	+ "("
+			+ TABLE_TODO_ITEMS_CONTEXTS_ID	+ " integer primary key autoincrement, "
+			+ TABLE_TODO_ITEMS_CONTEXTS_FK_TODO_ITEMS + " INTEGER, "
 			+ TABLE_TODO_ITEMS_CONTEXTS_FK_TODO_CONTEXTS
 			+ " INTEGER, "
-			+ "FOREIGN KEY("
-			+ TABLE_TODO_ITEMS_CONTEXTS_FK_TODO_CONTEXTS
-			+ ") REFERENCES "
-			+ TABLE_TODO_CONTEXTS
-			+ "("
-			+ TABLE_TODO_CONTEXTS_ID + ")," + ");";
+			+ "FOREIGN KEY("+ TABLE_TODO_ITEMS_CONTEXTS_FK_TODO_ITEMS
+			+ ") REFERENCES "+ TABLE_TODO_ITEMS	+ "(" + TABLE_TODO_ITEMS_ID	+ "),"
+			+ "FOREIGN KEY(" + TABLE_TODO_ITEMS_CONTEXTS_FK_TODO_CONTEXTS
+			+ ") REFERENCES " + TABLE_TODO_CONTEXTS
+			+ "("+ TABLE_TODO_CONTEXTS_ID + ")" + ");";
 
 	/** Helper member to access TodoList table. */
 	private TableTodoListAdapter tableTodoListAdapter;
@@ -126,7 +115,10 @@ public class DouiSQLiteOpenHelper extends SQLiteOpenHelper {
 	 */
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-		// We have no version migration procedure now.
+		if(oldVersion == 0 && newVersion == 1)
+		{
+			onCreate(db);
+		}
 	}
 
 }

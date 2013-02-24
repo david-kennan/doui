@@ -4,6 +4,7 @@
 package com.github.davidkennan.doui;
 
 import com.github.davidkennan.doui.database.DouiSQLiteOpenHelper;
+import com.github.davidkennan.doui.database.TableTodoListAdapter;
 
 import android.content.ContentProvider;
 import android.content.ContentValues;
@@ -19,42 +20,42 @@ import android.util.Log;
 public class DouiContentProvider extends ContentProvider {
 
 	/** Root part of the content provider URI. */
-	private static final String AUTHORITY = "com.github.davidkennan.doui.contentprovider";
+	public static final String AUTHORITY = "com.github.davidkennan.doui.contentprovider";
 
 	/** Suffix used to construct URI to acces todo-list's array. */
-	private static final String TODO_LIST_PATH = "todo_list";
+	public static final String TODO_LISTS_PATH = "todo_list";
 	/** Full URI to acces todo-list's array. */
-	public static final Uri TODO_LIST_URI = Uri.parse("content://" + AUTHORITY
-			+ "/" + TODO_LIST_PATH);
+	public static final Uri TODO_LISTS_URI = Uri.parse("content://" + AUTHORITY
+			+ "/" + TODO_LISTS_PATH);
 	/** Id for uri that match set of lists of TODOs. */
-	private static final int TODO_LISTS_URI_ID = 10;
+	public static final int TODO_LISTS_URI_ID = 10;
 	/** Id for uri that match concrete todo list id from list. */
-	private static final int TODO_LIST_URI_ID = 20;
+	public static final int TODO_LIST_URI_ID = 20;
 
 	/** Suffix used to construct URI to access contexts list of todos. */
-	private static final String TODO_CONTEXTS_PATH = "contexts";
+	public static final String TODO_CONTEXTS_PATH = "contexts";
 	/** Full URI to access contexts list of todos. */
 	public static final Uri TODO_CONTEXTS_URI = Uri.parse("content://"
 			+ AUTHORITY + "/" + TODO_CONTEXTS_PATH);
 	/** Id for URI match context list. */
-	private static final int TODO_CONTEXTS_URI_ID = 30;
+	public static final int TODO_CONTEXTS_URI_ID = 30;
 	/** Id for URI that match concrete context. */
-	private static final int TODO_CONTEXT_URI_ID = 40;
+	public static final int TODO_CONTEXT_URI_ID = 40;
 
 	/** Suffix used to construct URI to access concrete todo item. */
-	private static final String TODO_PATH = "todo";
+	public static final String TODO_PATH = "todo";
 	/** Full URI to access concrete todo item. */
 	public static final Uri TODO_URI = Uri.parse("content://" + AUTHORITY + "/"
 			+ TODO_PATH);
 	/** Id for todo URI. */
-	private static final int TODO_URI_ID = 50;
+	public static final int TODO_URI_ID = 50;
 
 	/** Member responsible to determinate what kind of the URI passed. */
 	private static final UriMatcher sURIMatcher = new UriMatcher(
 			UriMatcher.NO_MATCH);
 	static {
-		sURIMatcher.addURI(AUTHORITY, TODO_LIST_PATH, TODO_LISTS_URI_ID);
-		sURIMatcher.addURI(AUTHORITY, TODO_LIST_PATH + "/#", TODO_LIST_URI_ID);
+		sURIMatcher.addURI(AUTHORITY, TODO_LISTS_PATH, TODO_LISTS_URI_ID);
+		sURIMatcher.addURI(AUTHORITY, TODO_LISTS_PATH + "/#", TODO_LIST_URI_ID);
 		sURIMatcher.addURI(AUTHORITY, TODO_CONTEXTS_PATH, TODO_CONTEXTS_URI_ID);
 		sURIMatcher.addURI(AUTHORITY, TODO_CONTEXTS_PATH + "/#",
 				TODO_CONTEXT_URI_ID);
@@ -126,9 +127,18 @@ public class DouiContentProvider extends ContentProvider {
 			result = douiSQLiteOpenHelper.getTableTodoListAdapter().query(
 					projection, selection, selectionArgs, sortOrder);
 			break;
+		case TODO_LIST_URI_ID:
+			String selectConditions = TableTodoListAdapter.TABLE_TODO_LISTS_ID
+					+ "= ?";
+			String selectConditionsArgs[] = { uri.getLastPathSegment()};
+			result = douiSQLiteOpenHelper.getTableTodoListAdapter().query(
+					projection, selectConditions, selectConditionsArgs, sortOrder);
+			break;
 
 		default:
 			Log.e(this.getClass().getName(),
+					"Unknown URI type passed to query(...): " + uriType);
+			throw new IllegalArgumentException(
 					"Unknown URI type passed to query(...): " + uriType);
 		}
 		return result;

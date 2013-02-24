@@ -46,7 +46,7 @@ public class TableTodoListAdapter {
 		for (int i = 0; i < STR_ARRAY_LISTS.length; i++) {
 			database.execSQL("insert or replace into " + TABLE_TODO_LISTS + "("
 					+ TABLE_TODO_LISTS_ID + "," + TABLE_TODO_LISTS_NAME
-					+ ") values (" + i + "," + STR_ARRAY_LISTS[i] + ");");
+					+ ") values (" + i + ",'" + STR_ARRAY_LISTS[i] + "');");
 		}
 	}
 	
@@ -59,7 +59,7 @@ public class TableTodoListAdapter {
 	{
 		Cursor result = null;
 		SQLiteDatabase database = this.sqliteOpenHelper.getReadableDatabase();
-		database.query(TABLE_TODO_LISTS, projection, selection, selectionArgs, null, null, sortOrder);
+		result = database.query(TABLE_TODO_LISTS, projection, selection, selectionArgs, null, null, sortOrder);
 		return result;
 	}
 }
