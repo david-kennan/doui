@@ -21,18 +21,6 @@ public class DouiSQLiteOpenHelper extends SQLiteOpenHelper {
 	/** Version for upgrade routines. */
 	public static final int DATABASE_VERSION = 1;
 
-	/** Table with lists of the todo. */
-	public static final String TABLE_TODO_LISTS = "todo_lists";
-	/** Table with lists of the todo. Primary key. */
-	public static final String TABLE_TODO_LISTS_ID = "_id";
-	/** Table with lists of the todo. Name of the list. */
-	public static final String TABLE_TODO_LISTS_NAME = "name";
-	/** Table with lists of the todo. Create statement. */
-	public static final String STR_CREATE_TABLE_TODO_LISTS = "create table "
-			+ TABLE_TODO_LISTS + "(" + TABLE_TODO_LISTS_ID
-			+ " integer primary key autoincrement, " + TABLE_TODO_LISTS_NAME
-			+ " TEXT" + ");";
-
 	/** Table where todo items stored. */
 	public static final String TABLE_TODO_ITEMS = "todo_items";
 	/** Table where todo items stored. Primary key. */
@@ -49,8 +37,8 @@ public class DouiSQLiteOpenHelper extends SQLiteOpenHelper {
 			+ " integer primary key autoincrement, " + TABLE_TODO_ITEMS_TITLE
 			+ " TEXT, " + TABLE_TODO_ITEMS_BODY + " TEXT, "
 			+ TABLE_TODO_ITEMS_FK_LIST + " INTEGER, " + "FOREIGN KEY("
-			+ TABLE_TODO_ITEMS_FK_LIST + ") REFERENCES " + TABLE_TODO_LISTS
-			+ "(" + TABLE_TODO_LISTS_ID + ")" + ");";
+			+ TABLE_TODO_ITEMS_FK_LIST + ") REFERENCES " + TableTodoListAdapter.TABLE_TODO_LISTS
+			+ "(" + TableTodoListAdapter.TABLE_TODO_LISTS_ID + ")" + ");";
 
 	/** Table with contexts (@NAME items). */
 	public static final String TABLE_TODO_CONTEXTS = "todo_contexts";
@@ -74,24 +62,44 @@ public class DouiSQLiteOpenHelper extends SQLiteOpenHelper {
 	public static final String TABLE_TODO_ITEMS_CONTEXTS_FK_TODO_CONTEXTS = "fk_todo_contexts";
 	/** Table with links between todo_item and context. Create statement. */
 	public static final String STR_CREATE_TABLE_TODO_ITEMS_CONTEXTS = "create table "
-			+ TABLE_TODO_ITEMS_CONTEXTS + "(" + TABLE_TODO_ITEMS_CONTEXTS_ID
-			+ " integer primary key autoincrement, " 
-			+ TABLE_TODO_ITEMS_CONTEXTS_FK_TODO_ITEMS + " INTEGER, " +
-			"FOREIGN KEY(" + TABLE_TODO_ITEMS_CONTEXTS_FK_TODO_ITEMS + ") REFERENCES " 
+			+ TABLE_TODO_ITEMS_CONTEXTS
+			+ "("
+			+ TABLE_TODO_ITEMS_CONTEXTS_ID
+			+ " integer primary key autoincrement, "
+			+ TABLE_TODO_ITEMS_CONTEXTS_FK_TODO_ITEMS
+			+ " INTEGER, "
+			+ "FOREIGN KEY("
+			+ TABLE_TODO_ITEMS_CONTEXTS_FK_TODO_ITEMS
+			+ ") REFERENCES "
 			+ TABLE_TODO_ITEMS
-			+ "(" + TABLE_TODO_ITEMS_ID + "),"
-			+ TABLE_TODO_ITEMS_CONTEXTS_FK_TODO_CONTEXTS + " INTEGER, " +
-			"FOREIGN KEY(" + TABLE_TODO_ITEMS_CONTEXTS_FK_TODO_CONTEXTS + ") REFERENCES " 
+			+ "("
+			+ TABLE_TODO_ITEMS_ID
+			+ "),"
+			+ TABLE_TODO_ITEMS_CONTEXTS_FK_TODO_CONTEXTS
+			+ " INTEGER, "
+			+ "FOREIGN KEY("
+			+ TABLE_TODO_ITEMS_CONTEXTS_FK_TODO_CONTEXTS
+			+ ") REFERENCES "
 			+ TABLE_TODO_CONTEXTS
-			+ "(" + TABLE_TODO_CONTEXTS_ID + "),"
-			+ ");";
+			+ "("
+			+ TABLE_TODO_CONTEXTS_ID + ")," + ");";
+
+	/** Helper member to access TodoList table. */
+	private TableTodoListAdapter tableTodoListAdapter;
+
+	/**
+	 * @return the tableTodoListAdapter
+	 */
+	public TableTodoListAdapter getTableTodoListAdapter() {
+		return tableTodoListAdapter;
+	}
 
 	/**
 	 * Constructor.
 	 * */
-	public DouiSQLiteOpenHelper(Context context, String name,
-			CursorFactory factory, int version) {
-		super(context, DATABASE_NAME, factory, DATABASE_VERSION);
+	public DouiSQLiteOpenHelper(Context context) {
+		super(context, DATABASE_NAME, null, DATABASE_VERSION);
+		tableTodoListAdapter = new TableTodoListAdapter(this);  
 	}
 
 	/*
@@ -103,7 +111,7 @@ public class DouiSQLiteOpenHelper extends SQLiteOpenHelper {
 	 */
 	@Override
 	public void onCreate(SQLiteDatabase database) {
-		database.execSQL(STR_CREATE_TABLE_TODO_LISTS);
+		tableTodoListAdapter.onCreate(database);
 		database.execSQL(STR_CREATE_TABLE_TODO_CONTEXTS);
 		database.execSQL(STR_CREATE_TABLE_TODO_ITEMS);
 		database.execSQL(STR_CREATE_TABLE_TODO_ITEMS_CONTEXTS);
