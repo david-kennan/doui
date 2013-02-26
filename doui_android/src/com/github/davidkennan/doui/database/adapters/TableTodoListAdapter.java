@@ -49,8 +49,8 @@ public class TableTodoListAdapter implements ITableAdapter {
 	/* (non-Javadoc)
 	 * @see com.github.davidkennan.doui.database.ITableAdapter#insert(android.content.ContentValues)
 	 */
-	public void insert(ContentValues values) {
-		this.sqliteOpenHelper.getWritableDatabase().insert(TABLE_TODO_LISTS,
+	public long insert(ContentValues values) {
+		return this.sqliteOpenHelper.getWritableDatabase().insert(TABLE_TODO_LISTS,
 				null, values);
 	}
 

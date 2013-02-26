@@ -4,11 +4,13 @@
 package com.github.davidkennan.doui.test;
 
 import android.content.ContentProvider;
+import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
 import android.test.ProviderTestCase2;
 
 import com.github.davidkennan.doui.DouiContentProvider;
+import com.github.davidkennan.doui.database.adapters.TableTodoItemsAdapter;
 import com.github.davidkennan.doui.database.adapters.TableTodoListAdapter;
 
 /**
@@ -46,9 +48,24 @@ public class DouiContentProviderTestCase extends
 	}
 	
 	public void testCreateToDoItem()
-	{
+	{	
+		String todoItemTitle = "todoItemTitle";
+		String todoItemBody = "todoItemBody\n Multiline.";
+		
 		ContentProvider provider = getProvider();
 		Uri uriToDoList = DouiContentProvider.TODO_LISTS_URI;
+		String columnNames[] = { TableTodoListAdapter.TABLE_TODO_LISTS_ID };
+		Cursor cursor = provider.query(uriToDoList, columnNames, null, null, null);
+		assertTrue(cursor.getCount()>0);
+		cursor.moveToFirst();
+		Integer listId = cursor.getInt(0);
+		cursor.close();
 		
+		ContentValues values = new ContentValues();
+		values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_TITLE, todoItemTitle);
+		values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_BODY, todoItemBody);
+		values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_LIST, listId);
+		Uri uriToDoItems = DouiContentProvider.TODO_URI;
+		provider.insert(uriToDoItems, values);
 	}
 }

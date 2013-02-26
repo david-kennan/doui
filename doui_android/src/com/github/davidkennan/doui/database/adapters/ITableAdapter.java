@@ -21,7 +21,7 @@ public interface ITableAdapter {
 	 */
 	public abstract void onCreate(SQLiteDatabase database);
 
-	public abstract void insert(ContentValues values);
+	public abstract long insert(ContentValues values);
 
 	public abstract int delete(String arg1, String[] arg2);
 

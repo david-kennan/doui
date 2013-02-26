@@ -45,16 +45,18 @@ public class TableTodoItemsAdapter implements ITableAdapter {
 		database.execSQL(STR_CREATE_TABLE_TODO_ITEMS);
 	}
 
-	public void insert(ContentValues values) {
+	public long insert(ContentValues values) {
+		long result = -1;
 		Integer todoListId = values.getAsInteger(TABLE_TODO_ITEMS_FK_LIST);
 		if (null == todoListId) {
 			Log.e(this.getClass().getName(),
 					"todoListId is null, unable to create new TodoItem");
 		} else {
-			this.sqliteOpenHelper.getWritableDatabase().insert(
+			result = this.sqliteOpenHelper.getWritableDatabase().insert(
 					TABLE_TODO_ITEMS, null, values);
 			// TODO make update for contexts here
 		}
+		return result;
 	}
 
 	public int delete(String arg1, String[] arg2) {

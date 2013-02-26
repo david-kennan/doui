@@ -50,9 +50,9 @@ public class TableTodoItemsContextsAdapter implements ITableAdapter {
 	/* (non-Javadoc)
 	 * @see com.github.davidkennan.doui.database.adapters.ITableAdapter#insert(android.content.ContentValues)
 	 */
-	public void insert(ContentValues values) {
-		// TODO Auto-generated method stub
-
+	public long insert(ContentValues values) {
+		return this.sqliteOpenHelper.getWritableDatabase().insert(TABLE_TODO_ITEMS_CONTEXTS,
+				null, values);
 	}
 
 	/* (non-Javadoc)

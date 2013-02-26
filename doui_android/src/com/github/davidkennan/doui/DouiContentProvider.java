@@ -45,10 +45,12 @@ public class DouiContentProvider extends ContentProvider {
 	/** Suffix used to construct URI to access concrete todo item. */
 	public static final String TODO_PATH = "todo";
 	/** Full URI to access concrete todo item. */
-	public static final Uri TODO_URI = Uri.parse("content://" + AUTHORITY + "/"
+	public static final Uri TODO_URI = Uri.parse(TODO_LISTS_URI.toString()+"/#/"
 			+ TODO_PATH);
-	/** Id for todo URI. */
+	/** Id for todo items list URI. */
 	public static final int TODO_URI_ID = 50;
+	/** Id for concrete todo item list URI. */
+	public static final int TODO_ITEM_URI_ID = 60;
 
 	/** Member responsible to determinate what kind of the URI passed. */
 	private static final UriMatcher sURIMatcher = new UriMatcher(
@@ -59,7 +61,8 @@ public class DouiContentProvider extends ContentProvider {
 		sURIMatcher.addURI(AUTHORITY, TODO_CONTEXTS_PATH, TODO_CONTEXTS_URI_ID);
 		sURIMatcher.addURI(AUTHORITY, TODO_CONTEXTS_PATH + "/#",
 				TODO_CONTEXT_URI_ID);
-		sURIMatcher.addURI(AUTHORITY, TODO_PATH + "/#", TODO_URI_ID);
+		sURIMatcher.addURI(AUTHORITY, TODO_LISTS_PATH + "/#/"+TODO_PATH, TODO_URI_ID);
+		sURIMatcher.addURI(AUTHORITY, TODO_LISTS_PATH + "/#/"+TODO_PATH + "/#", TODO_ITEM_URI_ID);
 	}
 
 	private DouiSQLiteOpenHelper douiSQLiteOpenHelper;
@@ -95,7 +98,29 @@ public class DouiContentProvider extends ContentProvider {
 	 */
 	@Override
 	public Uri insert(Uri uri, ContentValues values) {
-		// TODO Auto-generated method stub
+		Uri result = null;
+		long newItemId = -1;
+		int uriType = sURIMatcher.match(uri);
+		switch (uriType) {
+		case TODO_LISTS_URI_ID:
+			newItemId = douiSQLiteOpenHelper.getTableTodoListAdapter().insert(
+					values);
+			if(newItemId > -1)
+			{
+				result = Uri.parse(TODO_LISTS_URI.toString()+newItemId);
+			}
+			break;
+		case TODO_LIST_URI_ID:
+			Log.e(this.getClass().getName(),
+					"Attempt to insert new list from list URI:  " + uri);
+			break;
+		default:
+			Log.e(this.getClass().getName(),
+					"Unknown URI type passed to query(...): " + uriType);
+			throw new IllegalArgumentException(
+					"Unknown URI type passed to query(...): " + uriType);
+		}
+		
 		return null;
 	}
 
@@ -130,9 +155,10 @@ public class DouiContentProvider extends ContentProvider {
 		case TODO_LIST_URI_ID:
 			String selectConditions = TableTodoListAdapter.TABLE_TODO_LISTS_ID
 					+ "= ?";
-			String selectConditionsArgs[] = { uri.getLastPathSegment()};
+			String selectConditionsArgs[] = { uri.getLastPathSegment() };
 			result = douiSQLiteOpenHelper.getTableTodoListAdapter().query(
-					projection, selectConditions, selectConditionsArgs, sortOrder);
+					projection, selectConditions, selectConditionsArgs,
+					sortOrder);
 			break;
 
 		default:
