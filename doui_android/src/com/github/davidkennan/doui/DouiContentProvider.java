@@ -4,7 +4,7 @@
 package com.github.davidkennan.doui;
 
 import com.github.davidkennan.doui.database.DouiSQLiteOpenHelper;
-import com.github.davidkennan.doui.database.TableTodoListAdapter;
+import com.github.davidkennan.doui.database.adapters.TableTodoListAdapter;
 
 import android.content.ContentProvider;
 import android.content.ContentValues;

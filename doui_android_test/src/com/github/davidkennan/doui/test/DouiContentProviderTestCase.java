@@ -9,7 +9,7 @@ import android.net.Uri;
 import android.test.ProviderTestCase2;
 
 import com.github.davidkennan.doui.DouiContentProvider;
-import com.github.davidkennan.doui.database.TableTodoListAdapter;
+import com.github.davidkennan.doui.database.adapters.TableTodoListAdapter;
 
 /**
  * @author rsh
@@ -19,26 +19,6 @@ public class DouiContentProviderTestCase extends
 		ProviderTestCase2<DouiContentProvider> {
 	public DouiContentProviderTestCase() {
 		super(DouiContentProvider.class, DouiContentProvider.class.getName());
-	}
-
-	public void testQuery() {
-		ContentProvider provider = getProvider();
-
-		Uri uri = DouiContentProvider.TODO_LISTS_URI;
-
-		Cursor cursor = provider.query(uri, null, null, null, null);
-
-		assertNotNull(cursor);
-
-		cursor = null;
-		try {
-			cursor = provider.query(Uri.parse("definitelywrong"), null, null,
-					null, null);
-			// we're wrong if we get until here!
-			fail();
-		} catch (IllegalArgumentException e) {
-			assertTrue(true);
-		}
 	}
 
 	public void testToDoLists() {
@@ -61,8 +41,14 @@ public class DouiContentProviderTestCase extends
 				assertEquals(TableTodoListAdapter.STR_ARRAY_LISTS[i], listName);
 			}
 		} catch (Exception e) {
-			assertFalse(e.getClass().getName()+": "+e.getMessage(), true);
+			assertFalse(e.getClass().getName() + ": " + e.getMessage(), true);
 		}
-
+	}
+	
+	public void testCreateToDoItem()
+	{
+		ContentProvider provider = getProvider();
+		Uri uriToDoList = DouiContentProvider.TODO_LISTS_URI;
+		
 	}
 }
