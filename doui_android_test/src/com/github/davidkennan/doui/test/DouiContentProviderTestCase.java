@@ -46,26 +46,135 @@ public class DouiContentProviderTestCase extends
 			assertFalse(e.getClass().getName() + ": " + e.getMessage(), true);
 		}
 	}
-	
-	public void testCreateToDoItem()
-	{	
+
+	public void testCreateToDoItem() {
 		String todoItemTitle = "todoItemTitle";
 		String todoItemBody = "todoItemBody\n Multiline.";
-		
+
 		ContentProvider provider = getProvider();
 		Uri uriToDoList = DouiContentProvider.TODO_LISTS_URI;
 		String columnNames[] = { TableTodoListAdapter.TABLE_TODO_LISTS_ID };
-		Cursor cursor = provider.query(uriToDoList, columnNames, null, null, null);
-		assertTrue(cursor.getCount()>0);
+		Cursor cursor = provider.query(uriToDoList, columnNames, null, null,
+				null);
+		assertTrue(cursor.getCount() > 0);
 		cursor.moveToFirst();
 		Integer listId = cursor.getInt(0);
 		cursor.close();
-		
+
 		ContentValues values = new ContentValues();
 		values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_TITLE, todoItemTitle);
 		values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_BODY, todoItemBody);
 		values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_LIST, listId);
-		Uri uriToDoItems = DouiContentProvider.TODO_URI;
-		provider.insert(uriToDoItems, values);
+		Uri uriToDoItems = Uri.parse("content://"
+				+ DouiContentProvider.AUTHORITY + "/"
+				+ DouiContentProvider.TODO_LISTS_PATH + "/" + listId +"/"
+				+ DouiContentProvider.TODO_PATH);
+		Uri newItemUri = provider.insert(uriToDoItems, values);
+		assertNotNull("New item URI is null.", newItemUri);
+		String newItemFields[] = {
+				TableTodoItemsAdapter.TABLE_TODO_ITEMS_TITLE,
+				TableTodoItemsAdapter.TABLE_TODO_ITEMS_BODY,
+				TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_LIST };
+		cursor = provider.query(newItemUri, newItemFields, null, null, null);
+		assertTrue(cursor.getCount() > 0);
+		cursor.moveToFirst();
+		assertEquals(todoItemTitle, cursor.getString(0));
+		assertEquals(todoItemBody, cursor.getString(1));
+		assertEquals(listId.intValue(), cursor.getInt(2));
+		cursor.close();
 	}
+	
+	public void testCreateToDoItemWithContext() {
+		assertTrue("Not implemented yet",false);
+	}
+	
+	public void testDeleteToDoItem()
+	{
+		String todoItemTitle = "todoItemTitle";
+		String todoItemBody = "todoItemBody\n Multiline.";
+
+		ContentProvider provider = getProvider();
+		Uri uriToDoList = DouiContentProvider.TODO_LISTS_URI;
+		String columnNames[] = { TableTodoListAdapter.TABLE_TODO_LISTS_ID };
+		Cursor cursor = provider.query(uriToDoList, columnNames, null, null,
+				null);
+		assertTrue(cursor.getCount() > 0);
+		cursor.moveToFirst();
+		Integer listId = cursor.getInt(0);
+		cursor.close();
+
+		ContentValues values = new ContentValues();
+		values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_TITLE, todoItemTitle);
+		values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_BODY, todoItemBody);
+		values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_LIST, listId);
+		Uri uriToDoItems = Uri.parse("content://"
+				+ DouiContentProvider.AUTHORITY + "/"
+				+ DouiContentProvider.TODO_LISTS_PATH + "/" + listId +"/"
+				+ DouiContentProvider.TODO_PATH);
+		Uri newItemUri = provider.insert(uriToDoItems, values);
+		assertNotNull("New item URI is null.", newItemUri);
+		String newItemFields[] = {
+				TableTodoItemsAdapter.TABLE_TODO_ITEMS_TITLE,
+				TableTodoItemsAdapter.TABLE_TODO_ITEMS_BODY,
+				TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_LIST };
+		cursor = provider.query(newItemUri, newItemFields, null, null, null);
+		assertTrue(cursor.getCount() > 0);
+		cursor.close();
+		provider.delete(newItemUri, null, null);
+		cursor = provider.query(newItemUri, newItemFields, null, null, null);
+		assertTrue(cursor.getCount() == 0);
+		cursor.close();
+	}
+
+	public void testDeleteMultipleToDoItem()
+	{
+		assertTrue("Not implemented yet",false);
+	}
+	
+	public void testUpdateToDoItem()
+	{
+		String todoItemTitle = "todoItemTitle";
+		String todoItemBody = "todoItemBody\n Multiline.";
+		String todoItemTitle2 = "todoItemTitle2";
+		String todoItemBody2 = "todoItemBody2\n Multiline.";
+
+		ContentProvider provider = getProvider();
+		Uri uriToDoList = DouiContentProvider.TODO_LISTS_URI;
+		String columnNames[] = { TableTodoListAdapter.TABLE_TODO_LISTS_ID };
+		Cursor cursor = provider.query(uriToDoList, columnNames, null, null,
+				null);
+		assertTrue(cursor.getCount() > 0);
+		cursor.moveToFirst();
+		Integer listId = cursor.getInt(0);
+		cursor.close();
+
+		ContentValues values = new ContentValues();
+		values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_TITLE, todoItemTitle);
+		values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_BODY, todoItemBody);
+		values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_LIST, listId);
+		Uri uriToDoItems = Uri.parse("content://"
+				+ DouiContentProvider.AUTHORITY + "/"
+				+ DouiContentProvider.TODO_LISTS_PATH + "/" + listId +"/"
+				+ DouiContentProvider.TODO_PATH);
+		Uri newItemUri = provider.insert(uriToDoItems, values);
+		assertNotNull("New item URI is null.", newItemUri);
+		String newItemFields[] = {
+				TableTodoItemsAdapter.TABLE_TODO_ITEMS_TITLE,
+				TableTodoItemsAdapter.TABLE_TODO_ITEMS_BODY,
+				TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_LIST };
+		
+		values.clear();
+		values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_TITLE, todoItemTitle2);
+		values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_BODY, todoItemBody2);
+
+		provider.update(newItemUri, values, null, null);
+		cursor = provider.query(newItemUri, newItemFields, null, null, null);
+		assertTrue(cursor.getCount() > 0);
+		cursor.moveToFirst();
+		assertEquals(todoItemTitle2, cursor.getString(0));
+		assertEquals(todoItemBody2, cursor.getString(1));
+		assertEquals(listId.intValue(), cursor.getInt(2));
+		cursor.close();
+	}
+
 }
