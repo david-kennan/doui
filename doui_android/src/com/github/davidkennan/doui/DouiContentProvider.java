@@ -105,7 +105,7 @@ public class DouiContentProvider extends ContentProvider {
 			throw new IllegalArgumentException(
 					"Unknown URI type passed to query(...): " + uriType);
 		}
-
+		getContext().getContentResolver().notifyChange(uri, null);
 		return result;
 	}
 
@@ -161,7 +161,7 @@ public class DouiContentProvider extends ContentProvider {
 			throw new IllegalArgumentException(
 					"Unknown URI type passed to query(...): " + uriType);
 		}
-
+		getContext().getContentResolver().notifyChange(uri, null);
 		return result;
 	}
 
@@ -231,6 +231,9 @@ public class DouiContentProvider extends ContentProvider {
 			throw new IllegalArgumentException(
 					"Unknown URI type passed to query(...): " + uriType);
 		}
+		if (null != result) {
+			result.setNotificationUri(getContext().getContentResolver(), uri);
+		}
 		return result;
 	}
 
@@ -267,7 +270,7 @@ public class DouiContentProvider extends ContentProvider {
 			throw new IllegalArgumentException(
 					"Unknown URI type passed to query(...): " + uriType);
 		}
-
+		getContext().getContentResolver().notifyChange(uri, null);
 		return result;
 	}
 

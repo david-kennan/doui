@@ -42,7 +42,7 @@ public class TableTodoListAdapter implements ITableAdapter {
 		for (int i = 0; i < STR_ARRAY_LISTS.length; i++) {
 			database.execSQL("insert or replace into " + TABLE_TODO_LISTS + "("
 					+ TABLE_TODO_LISTS_ID + "," + TABLE_TODO_LISTS_NAME
-					+ ") values (" + i + ",'" + STR_ARRAY_LISTS[i] + "');");
+					+ ") values (" + (i+12)  + ",'" + STR_ARRAY_LISTS[i] + "');");
 		}
 	}
 
