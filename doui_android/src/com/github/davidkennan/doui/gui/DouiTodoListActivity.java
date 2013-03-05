@@ -61,7 +61,7 @@ public class DouiTodoListActivity extends ListActivity {
 		Cursor cursor = cr.query(todoUri, null, null, null, null);
 
 		adapter = new SimpleCursorAdapter(getApplicationContext(),
-				R.layout.todo_list_row, cursor, from, to);
+				R.layout.todo_row, cursor, from, to);
 		setListAdapter(adapter);
 	}
 
