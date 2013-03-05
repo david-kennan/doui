@@ -76,9 +76,22 @@ public class DouiTodoItemEditActivity extends Activity {
 			etTodoItemTitle.setText(itemTitle);
 			etTodoItemBody = (EditText) findViewById(R.id.etTodoItemBody);
 			etTodoItemBody.setText(itemBody);
-			tvTodoListName = (TextView) findViewById(R.id.tvTodoListName);
+			tvTodoListName = (TextView) findViewById(R.id.tvListName);
 			tvTodoListName.setText(itemListName);
 
+		}else{
+			List<String> pathSegments = itemUri.getPathSegments();
+			
+			String itemListId = pathSegments.get(pathSegments.size() - 2);
+			Uri uriList = Uri.parse("content://" + DouiContentProvider.AUTHORITY
+					+ "/" + DouiContentProvider.TODO_LISTS_PATH + "/" + itemListId);
+			String listProperties[] = {TableTodoListAdapter.TABLE_TODO_LISTS_NAME};
+			Cursor cursor = getContentResolver().query(uriList, listProperties, null,
+					null, null);
+			cursor.moveToFirst();
+			String itemListName = cursor.getString(0);
+			TextView tvCaption = (TextView)findViewById(R.id.tvListName);
+			tvCaption.setText(itemListName);
 		}
 		
 		btCancel = (Button) findViewById(R.id.btCancel);

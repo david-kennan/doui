@@ -21,10 +21,10 @@ public final class R {
     public static final class id {
         public static final int TextView01=0x7f060010;
         public static final int btCancel=0x7f060005;
-        public static final int btDone=0x7f06000a;
-        public static final int btEdit=0x7f060009;
+        public static final int btDone=0x7f06000b;
+        public static final int btEdit=0x7f06000a;
         public static final int btSave=0x7f060004;
-        public static final int btToList=0x7f06000b;
+        public static final int btToList=0x7f06000c;
         public static final int etTodoItemBody=0x7f060003;
         public static final int etTodoItemTitle=0x7f060002;
         public static final int icon=0x7f06000e;
@@ -32,10 +32,10 @@ public final class R {
         public static final int imbtLike=0x7f060006;
         public static final int imvAppIcon=0x7f060000;
         public static final int label=0x7f06000f;
-        public static final int tvListName=0x7f06000c;
-        public static final int tvTodoBody=0x7f060008;
-        public static final int tvTodoListName=0x7f060001;
-        public static final int tvTodoTitle=0x7f060007;
+        public static final int tvListName=0x7f060001;
+        public static final int tvTodoBody=0x7f060009;
+        public static final int tvTodoListName=0x7f060007;
+        public static final int tvTodoTitle=0x7f060008;
     }
     public static final class layout {
         public static final int main=0x7f030000;
