@@ -68,7 +68,7 @@ public class DouiTodoItemViewActivity extends Activity {
 		tvTodoItemTitle.setText(itemTitle);
 		tvTodoItemBody = (TextView) findViewById(R.id.tvTodoBody);
 		tvTodoItemBody.setText(itemBody);
-		tvTodoListName = (TextView) findViewById(R.id.tvTodoListName);
+		tvTodoListName = (TextView) findViewById(R.id.tvListName);
 		tvTodoListName.setText(itemListName);
 		
 		btEdit = (Button)findViewById(R.id.btEdit);
