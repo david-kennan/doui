@@ -51,28 +51,36 @@
         android:layout_width="match_parent"
         android:layout_height="48sp" >
 
-        <Button
-            android:id="@+id/btEdit"
-            android:layout_width="wrap_content"
+        <ImageButton
+            android:id="@+id/imbtEdit"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/todoItemViewBtEdit" />
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:src="@android:drawable/ic_menu_edit" />
 
-        <Button
-            android:id="@+id/btDone"
-            android:layout_width="wrap_content"
+        <ImageButton
+            android:id="@+id/imbtDone"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/todoItemViewBtSetDone" />
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:src="@drawable/done" />
 
-        <Button
-            android:id="@+id/btToList"
-            android:layout_width="wrap_content"
+        <ImageButton
+            android:id="@+id/imbtSetList"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/todoItemViewBtToList" />
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:src="@android:drawable/ic_menu_more" />
 
         <ImageButton
             android:id="@+id/imbtLike"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
             android:scaleType="fitCenter"
             android:src="@drawable/heart" />
     </LinearLayout>

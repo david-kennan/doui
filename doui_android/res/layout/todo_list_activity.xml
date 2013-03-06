@@ -48,7 +48,7 @@
             android:layout_weight="1"
             android:background="@android:color/transparent"
             android:scaleType="fitCenter"
-            android:src="@drawable/plus" />
+            android:src="@android:drawable/ic_menu_add" />
 
         <ImageButton
             android:id="@+id/imbtLike"

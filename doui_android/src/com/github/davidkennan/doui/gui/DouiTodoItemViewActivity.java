@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.github.davidkennan.doui.DouiContentProvider;
@@ -33,7 +34,7 @@ public class DouiTodoItemViewActivity extends Activity {
 	private TextView tvTodoItemBody;
 	private String itemListName;
 	private TextView tvTodoListName;
-	private Button btEdit;
+	private ImageButton imbtEdit;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -44,6 +45,20 @@ public class DouiTodoItemViewActivity extends Activity {
 		if (extras != null) {
 			itemUri = extras.getParcelable(DouiContentProvider.TODO_LISTS_PATH);
 		}
+		this.refreshTodoItemData();
+		imbtEdit = (ImageButton)findViewById(R.id.imbtEdit);
+		final DouiTodoItemViewActivity self = this;
+		imbtEdit.setOnClickListener(new OnClickListener() {
+			
+			public void onClick(View v) {
+				Intent i = new Intent(self, DouiTodoItemEditActivity.class);
+				i.putExtra(DouiContentProvider.TODO_LISTS_PATH, itemUri);
+				startActivity(i);				
+			}
+		});
+	}
+
+	private void refreshTodoItemData(){
 		String[] projection = { TableTodoItemsAdapter.TABLE_TODO_ITEMS_ID,
 				TableTodoItemsAdapter.TABLE_TODO_ITEMS_TITLE,
 				TableTodoItemsAdapter.TABLE_TODO_ITEMS_BODY,
@@ -70,17 +85,11 @@ public class DouiTodoItemViewActivity extends Activity {
 		tvTodoItemBody.setText(itemBody);
 		tvTodoListName = (TextView) findViewById(R.id.tvListName);
 		tvTodoListName.setText(itemListName);
-		
-		btEdit = (Button)findViewById(R.id.btEdit);
-		final DouiTodoItemViewActivity self = this;
-		btEdit.setOnClickListener(new OnClickListener() {
-			
-			public void onClick(View v) {
-				Intent i = new Intent(self, DouiTodoItemEditActivity.class);
-				i.putExtra(DouiContentProvider.TODO_LISTS_PATH, itemUri);
-				startActivity(i);				
-			}
-		});
+	}
+	@Override
+	protected void onRestart() {
+		this.refreshTodoItemData();
+		super.onRestart();
 	}
 
 }

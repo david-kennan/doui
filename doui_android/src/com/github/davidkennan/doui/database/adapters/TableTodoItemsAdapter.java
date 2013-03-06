@@ -23,6 +23,8 @@ public class TableTodoItemsAdapter implements ITableAdapter {
 	public static final String TABLE_TODO_ITEMS_TITLE = "title";
 	/** Table where todo items stored. Text of the todo. */
 	public static final String TABLE_TODO_ITEMS_BODY = "body";
+	/** Table where todo items stored. Determinate whether item is done. */
+	public static final String TABLE_TODO_ITEMS_IS_DONE = "is_done";
 	/** Table where todo items stored. Reference to the primary list item. */
 	public static final String TABLE_TODO_ITEMS_FK_LIST = "fk_list";
 	/** Table where todo items stored. Create statement. */
@@ -30,6 +32,7 @@ public class TableTodoItemsAdapter implements ITableAdapter {
 			+ TABLE_TODO_ITEMS + "(" + TABLE_TODO_ITEMS_ID
 			+ " integer primary key autoincrement, " + TABLE_TODO_ITEMS_TITLE
 			+ " TEXT, " + TABLE_TODO_ITEMS_BODY + " TEXT, "
+			+ TABLE_TODO_ITEMS_IS_DONE + "INTEGER DEFAULT 0, "
 			+ TABLE_TODO_ITEMS_FK_LIST + " INTEGER, " + "FOREIGN KEY("
 			+ TABLE_TODO_ITEMS_FK_LIST + ") REFERENCES "
 			+ TableTodoListAdapter.TABLE_TODO_LISTS + "("
