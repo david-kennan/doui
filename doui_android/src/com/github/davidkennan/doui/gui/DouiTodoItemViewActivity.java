@@ -8,10 +8,11 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.github.davidkennan.doui.DouiContentProvider;
@@ -35,6 +36,8 @@ public class DouiTodoItemViewActivity extends Activity {
 	private String itemListName;
 	private TextView tvTodoListName;
 	private ImageButton imbtEdit;
+	private ImageButton imbtSetList;
+	private LinearLayout llMain;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -46,19 +49,19 @@ public class DouiTodoItemViewActivity extends Activity {
 			itemUri = extras.getParcelable(DouiContentProvider.TODO_LISTS_PATH);
 		}
 		this.refreshTodoItemData();
-		imbtEdit = (ImageButton)findViewById(R.id.imbtEdit);
+		imbtEdit = (ImageButton) findViewById(R.id.imbtEdit);
 		final DouiTodoItemViewActivity self = this;
 		imbtEdit.setOnClickListener(new OnClickListener() {
-			
+
 			public void onClick(View v) {
 				Intent i = new Intent(self, DouiTodoItemEditActivity.class);
 				i.putExtra(DouiContentProvider.TODO_LISTS_PATH, itemUri);
-				startActivity(i);				
+				startActivity(i);
 			}
 		});
 	}
 
-	private void refreshTodoItemData(){
+	private void refreshTodoItemData() {
 		String[] projection = { TableTodoItemsAdapter.TABLE_TODO_ITEMS_ID,
 				TableTodoItemsAdapter.TABLE_TODO_ITEMS_TITLE,
 				TableTodoItemsAdapter.TABLE_TODO_ITEMS_BODY,
@@ -74,10 +77,11 @@ public class DouiTodoItemViewActivity extends Activity {
 		// TODO not best solution. Think about JOIN.
 		Uri uriList = Uri.parse("content://" + DouiContentProvider.AUTHORITY
 				+ "/" + DouiContentProvider.TODO_LISTS_PATH + "/" + itemListId);
-		String listProperties[] = {TableTodoListAdapter.TABLE_TODO_LISTS_NAME};
+		String listProperties[] = { TableTodoListAdapter.TABLE_TODO_LISTS_NAME };
 		cursor = getContentResolver().query(uriList, listProperties, null,
 				null, null);
 		cursor.moveToFirst();
+		llMain = (LinearLayout)findViewById(R.id.llMain);
 		itemListName = cursor.getString(0);
 		tvTodoItemTitle = (TextView) findViewById(R.id.tvTodoTitle);
 		tvTodoItemTitle.setText(itemTitle);
@@ -85,7 +89,28 @@ public class DouiTodoItemViewActivity extends Activity {
 		tvTodoItemBody.setText(itemBody);
 		tvTodoListName = (TextView) findViewById(R.id.tvListName);
 		tvTodoListName.setText(itemListName);
+		imbtSetList = (ImageButton) findViewById(R.id.imbtSetList);
+		imbtSetList.setOnClickListener(new OnClickListener() {
+			boolean isVisible = false;
+			TodoListsPopupWindow popup = new TodoListsPopupWindow(
+					getApplicationContext(), itemUri);
+
+			public void onClick(View v) {
+				if (!isVisible) {
+					popup.showAtLocation(llMain, Gravity.RIGHT|Gravity.TOP, 0, 0);
+					int location[] = { 0, 0 };
+					imbtSetList.getLocationOnScreen(location);
+					popup.update(0, location[1] - 200, 300, 200);
+					// popup.update();
+					isVisible = true;
+				} else {
+					popup.dismiss();
+					isVisible = false;
+				}
+			}
+		});
 	}
+
 	@Override
 	protected void onRestart() {
 		this.refreshTodoItemData();

@@ -48,4 +48,16 @@ public class DouiMainActivity extends ListActivity {
 
 		startActivity(i);
 	}
+
+	/* (non-Javadoc)
+	 * @see android.app.ListActivity#onDestroy()
+	 */
+	@Override
+	protected void onDestroy() {
+		if(!adapter.getCursor().isClosed())
+		{
+			adapter.getCursor().close();
+		}
+		super.onDestroy();
+	}
 }
