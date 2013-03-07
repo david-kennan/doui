@@ -32,7 +32,7 @@ public class TableTodoItemsAdapter implements ITableAdapter {
 			+ TABLE_TODO_ITEMS + "(" + TABLE_TODO_ITEMS_ID
 			+ " integer primary key autoincrement, " + TABLE_TODO_ITEMS_TITLE
 			+ " TEXT, " + TABLE_TODO_ITEMS_BODY + " TEXT, "
-			+ TABLE_TODO_ITEMS_IS_DONE + "INTEGER DEFAULT 0, "
+			+ TABLE_TODO_ITEMS_IS_DONE + " INTEGER DEFAULT 0, "
 			+ TABLE_TODO_ITEMS_FK_LIST + " INTEGER, " + "FOREIGN KEY("
 			+ TABLE_TODO_ITEMS_FK_LIST + ") REFERENCES "
 			+ TableTodoListAdapter.TABLE_TODO_LISTS + "("

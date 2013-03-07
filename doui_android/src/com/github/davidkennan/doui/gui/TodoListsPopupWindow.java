@@ -66,4 +66,16 @@ public class TodoListsPopupWindow extends PopupWindow {
 
 		this.setContentView(lvTodoLists);
 	}
+
+	/* (non-Javadoc)
+	 * @see android.widget.PopupWindow#dismiss()
+	 */
+	@Override
+	public void dismiss() {
+		if(!adapter.getCursor().isClosed())
+		{
+			adapter.getCursor().close();
+		}
+		super.dismiss();
+	}
 }

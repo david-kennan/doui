@@ -207,7 +207,7 @@ public class DouiContentProvider extends ContentProvider {
 			List<String> uriSegments = uri.getPathSegments();
 			String listId = uriSegments.get((uriSegments.size() - 1) - 1);
 			String selectConditions = TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_LIST
-					+ "= ?";
+					+ "= ? and "+TableTodoItemsAdapter.TABLE_TODO_ITEMS_IS_DONE + " <> 1";
 			String selectConditionsArgs[] = { listId };
 			result = douiSQLiteOpenHelper.getTableTodoItemsAdapter().query(
 					projection, selectConditions, selectConditionsArgs,

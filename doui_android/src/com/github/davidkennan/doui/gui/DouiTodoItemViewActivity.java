@@ -4,6 +4,7 @@
 package com.github.davidkennan.doui.gui;
 
 import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -14,6 +15,7 @@ import android.view.View.OnClickListener;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.github.davidkennan.doui.DouiContentProvider;
 import com.github.davidkennan.doui.R;
@@ -38,6 +40,7 @@ public class DouiTodoItemViewActivity extends Activity {
 	private ImageButton imbtEdit;
 	private ImageButton imbtSetList;
 	private LinearLayout llMain;
+	private ImageButton imbtSetDone;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -108,6 +111,24 @@ public class DouiTodoItemViewActivity extends Activity {
 					isVisible = false;
 				}
 			}
+		});
+		
+		imbtSetDone = (ImageButton) findViewById(R.id.imbtDone);
+		imbtSetDone.setOnClickListener(new OnClickListener() {
+
+			public void onClick(View v) {
+				ContentValues values = new ContentValues();
+				values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_IS_DONE, 1);
+
+				String selection = TableTodoItemsAdapter.TABLE_TODO_ITEMS_ID
+						+ "=?";
+				String selectionArgs[] = { itemUri.getLastPathSegment() };
+				getApplicationContext().getContentResolver().update(itemUri, values, selection,
+						selectionArgs);
+				Toast toast = Toast.makeText(getApplicationContext(), "Done!", Toast.LENGTH_SHORT);
+				toast.show();
+			}
+			
 		});
 	}
 
