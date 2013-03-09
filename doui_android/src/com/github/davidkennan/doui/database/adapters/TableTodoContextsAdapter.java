@@ -10,7 +10,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 /**
  * @author rsh
- *
+ * 
  */
 public class TableTodoContextsAdapter implements ITableAdapter {
 
@@ -31,45 +31,129 @@ public class TableTodoContextsAdapter implements ITableAdapter {
 	public TableTodoContextsAdapter(SQLiteOpenHelper sqliteOpenHelper) {
 		this.sqliteOpenHelper = sqliteOpenHelper;
 	}
-	/* (non-Javadoc)
-	 * @see com.github.davidkennan.doui.database.adapters.ITableAdapter#onCreate(android.database.sqlite.SQLiteDatabase)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.github.davidkennan.doui.database.adapters.ITableAdapter#onCreate(
+	 * android.database.sqlite.SQLiteDatabase)
 	 */
 	public void onCreate(SQLiteDatabase database) {
 		database.execSQL(STR_CREATE_TABLE_TODO_CONTEXTS);
 	}
 
-	/* (non-Javadoc)
-	 * @see com.github.davidkennan.doui.database.adapters.ITableAdapter#insert(android.content.ContentValues)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.github.davidkennan.doui.database.adapters.ITableAdapter#insert(android
+	 * .content.ContentValues)
 	 */
 	public long insert(ContentValues values) {
-		return this.sqliteOpenHelper.getWritableDatabase().insert(TABLE_TODO_CONTEXTS,
-				null, values);
+		return this.sqliteOpenHelper.getWritableDatabase().insert(
+				TABLE_TODO_CONTEXTS, null, values);
 	}
 
-	/* (non-Javadoc)
-	 * @see com.github.davidkennan.doui.database.adapters.ITableAdapter#delete(java.lang.String, java.lang.String[])
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.github.davidkennan.doui.database.adapters.ITableAdapter#delete(java
+	 * .lang.String, java.lang.String[])
 	 */
 	public int delete(String arg1, String[] arg2) {
-		// TODO Auto-generated method stub
-		return 0;
+		SQLiteDatabase database = this.sqliteOpenHelper.getWritableDatabase();
+		int result = database.delete(TABLE_TODO_CONTEXTS, arg1, arg2);
+		return result;
 	}
 
-	/* (non-Javadoc)
-	 * @see com.github.davidkennan.doui.database.adapters.ITableAdapter#update(android.content.ContentValues, java.lang.String, java.lang.String[])
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.github.davidkennan.doui.database.adapters.ITableAdapter#update(android
+	 * .content.ContentValues, java.lang.String, java.lang.String[])
 	 */
 	public int update(ContentValues values, String selection,
 			String[] selectionArgs) {
-		// TODO Auto-generated method stub
-		return 0;
+		SQLiteDatabase database = this.sqliteOpenHelper.getWritableDatabase();
+		int result = database.update(TABLE_TODO_CONTEXTS, values, selection,
+				selectionArgs);
+		return result;
 	}
 
-	/* (non-Javadoc)
-	 * @see com.github.davidkennan.doui.database.adapters.ITableAdapter#query(java.lang.String[], java.lang.String, java.lang.String[], java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.github.davidkennan.doui.database.adapters.ITableAdapter#query(java
+	 * .lang.String[], java.lang.String, java.lang.String[], java.lang.String)
 	 */
 	public Cursor query(String[] projection, String selection,
 			String[] selectionArgs, String sortOrder) {
-		// TODO Auto-generated method stub
-		return null;
+		Cursor result = null;
+		SQLiteDatabase database = this.sqliteOpenHelper.getReadableDatabase();
+		result = database.query(TABLE_TODO_CONTEXTS, projection, selection,
+				selectionArgs, null, null, sortOrder);
+		return result;
 	}
 
+	public ContentValues getContextByName(String contextName) {
+		ContentValues result = null;
+		String columns[] = { TABLE_TODO_CONTEXTS_ID, TABLE_TODO_CONTEXTS_NAME };
+		String selection = TABLE_TODO_CONTEXTS_NAME + " = ?";
+		String selectionArgs[] = { contextName };
+		Cursor cursor = this.sqliteOpenHelper.getWritableDatabase().query(
+				TABLE_TODO_CONTEXTS, columns, selection, selectionArgs, null,
+				null, null);
+		if (cursor.getCount() > 0) {
+			result = new ContentValues();
+			cursor.moveToFirst();
+			for (String columnName : columns) {
+				result.put(columnName,
+						cursor.getString(cursor.getColumnIndex(columnName)));
+			}
+		}
+		cursor.close();
+		return result;
+	}
+
+	/** Query which remove contexts without linked items */
+	public void removeEmptyContexts() {
+		final String delete_query = "delete from "
+				+ TABLE_TODO_CONTEXTS
+				+ " where not exists "
+				+ "(select 1 from "
+				+ TableTodoItemsContextsAdapter.TABLE_TODO_ITEMS_CONTEXTS
+				+ " where "
+				+ TableTodoItemsContextsAdapter.TABLE_TODO_ITEMS_CONTEXTS
+				+ "."
+				+ TableTodoItemsContextsAdapter.TABLE_TODO_ITEMS_CONTEXTS_FK_TODO_CONTEXTS
+				+ "=" + TABLE_TODO_CONTEXTS + "." + TABLE_TODO_CONTEXTS_ID;
+		SQLiteDatabase database = this.sqliteOpenHelper.getWritableDatabase();
+		database.execSQL(delete_query);
+	}
+
+	public Cursor queryContextItems(String contextName) {
+		SQLiteDatabase database = this.sqliteOpenHelper.getWritableDatabase();
+		String sql = "select "
+				+ TableTodoItemsAdapter.TABLE_TODO_ITEMS
+				+ ".* from "
+				+ TABLE_TODO_CONTEXTS
+				+ " join "
+				+ TableTodoItemsContextsAdapter.TABLE_TODO_ITEMS_CONTEXTS
+				+ " on "
+				+ TableTodoItemsContextsAdapter.TABLE_TODO_ITEMS_CONTEXTS_FK_TODO_CONTEXTS
+				+ "="
+				+ TABLE_TODO_CONTEXTS+"."+TABLE_TODO_CONTEXTS_ID
+				+ " join "
+				+ TableTodoItemsAdapter.TABLE_TODO_ITEMS
+				+ " on "
+				+ TableTodoItemsContextsAdapter.TABLE_TODO_ITEMS_CONTEXTS_FK_TODO_ITEMS
+				+ "=" + TableTodoItemsAdapter.TABLE_TODO_ITEMS + "."
+				+ TableTodoItemsAdapter.TABLE_TODO_ITEMS_ID + " where "+TABLE_TODO_CONTEXTS_NAME+"=?";
+		String selectionArgs[] = {contextName};
+		return database.rawQuery(sql, selectionArgs);
+	}
 }

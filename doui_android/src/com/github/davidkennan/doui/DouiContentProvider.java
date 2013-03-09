@@ -62,7 +62,7 @@ public class DouiContentProvider extends ContentProvider {
 		sURIMatcher.addURI(AUTHORITY, TODO_LISTS_PATH, TODO_LISTS_URI_ID);
 		sURIMatcher.addURI(AUTHORITY, TODO_LISTS_PATH + "/#", TODO_LIST_URI_ID);
 		sURIMatcher.addURI(AUTHORITY, TODO_CONTEXTS_PATH, TODO_CONTEXTS_URI_ID);
-		sURIMatcher.addURI(AUTHORITY, TODO_CONTEXTS_PATH + "/#",
+		sURIMatcher.addURI(AUTHORITY, TODO_CONTEXTS_PATH + "/*",
 				TODO_CONTEXT_URI_ID);
 		sURIMatcher.addURI(AUTHORITY, TODO_LISTS_PATH + "/#/" + TODO_PATH,
 				TODO_URI_ID);
@@ -207,7 +207,8 @@ public class DouiContentProvider extends ContentProvider {
 			List<String> uriSegments = uri.getPathSegments();
 			String listId = uriSegments.get((uriSegments.size() - 1) - 1);
 			String selectConditions = TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_LIST
-					+ "= ? and "+TableTodoItemsAdapter.TABLE_TODO_ITEMS_IS_DONE + " <> 1";
+					+ "= ? and "
+					+ TableTodoItemsAdapter.TABLE_TODO_ITEMS_IS_DONE + " <> 1";
 			String selectConditionsArgs[] = { listId };
 			result = douiSQLiteOpenHelper.getTableTodoItemsAdapter().query(
 					projection, selectConditions, selectConditionsArgs,
@@ -225,6 +226,11 @@ public class DouiContentProvider extends ContentProvider {
 		}
 			break;
 
+		case TODO_CONTEXT_URI_ID: {
+			String contextName = uri.getLastPathSegment();
+			result = douiSQLiteOpenHelper.getTableTodoContextsAdapter().queryContextItems(contextName);
+		}
+			break;
 		default:
 			Log.e(this.getClass().getName(),
 					"Unknown URI type passed to query(...): " + uriType);

@@ -59,8 +59,9 @@ public class TableTodoItemsContextsAdapter implements ITableAdapter {
 	 * @see com.github.davidkennan.doui.database.adapters.ITableAdapter#delete(java.lang.String, java.lang.String[])
 	 */
 	public int delete(String arg1, String[] arg2) {
-		// TODO Auto-generated method stub
-		return 0;
+		SQLiteDatabase database = this.sqliteOpenHelper.getWritableDatabase();
+		int result = database.delete(TABLE_TODO_ITEMS_CONTEXTS, arg1, arg2);
+		return result;
 	}
 
 	/* (non-Javadoc)
@@ -68,8 +69,10 @@ public class TableTodoItemsContextsAdapter implements ITableAdapter {
 	 */
 	public int update(ContentValues values, String selection,
 			String[] selectionArgs) {
-		// TODO Auto-generated method stub
-		return 0;
+		SQLiteDatabase database = this.sqliteOpenHelper.getWritableDatabase();
+		int result = database.update(TABLE_TODO_ITEMS_CONTEXTS, values, selection,
+				selectionArgs);
+		return result;
 	}
 
 	/* (non-Javadoc)
@@ -77,8 +80,11 @@ public class TableTodoItemsContextsAdapter implements ITableAdapter {
 	 */
 	public Cursor query(String[] projection, String selection,
 			String[] selectionArgs, String sortOrder) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+		Cursor result = null;
+		SQLiteDatabase database = this.sqliteOpenHelper.getReadableDatabase();
+		result = database.query(TABLE_TODO_ITEMS_CONTEXTS, projection, selection,
+				selectionArgs, null, null, sortOrder);
+		return result;
+		}
 
 }
