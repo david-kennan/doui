@@ -81,6 +81,19 @@ public class TableTodoItemsAdapter implements ITableAdapter {
 		SQLiteDatabase database = this.sqliteOpenHelper.getWritableDatabase();
 		int result = database.update(TABLE_TODO_ITEMS, values, selection,
 				selectionArgs);
+		if(result>0)
+		{
+			String columns[] = {TABLE_TODO_ITEMS_ID, TABLE_TODO_ITEMS_BODY};
+			Cursor cursor = database.query(TABLE_TODO_ITEMS, columns, selection, selectionArgs, null, null, null);
+			while(cursor.moveToNext())
+			{
+				ContentValues todoItemValues = new ContentValues();
+				todoItemValues.put(TABLE_TODO_ITEMS_ID, cursor.getString(0));
+				todoItemValues.put(TABLE_TODO_ITEMS_BODY, cursor.getString(1));
+				updateContexts(todoItemValues);
+			}
+			cursor.close();
+		}
 		return result;
 	}
 
@@ -167,6 +180,7 @@ public class TableTodoItemsAdapter implements ITableAdapter {
 						"Contex Id contains negative value");
 			}
 		}
+		sqliteOpenHelper.getTableTodoContextsAdapter().removeEmptyContexts();
 	}
 
 	/** This method removes any links between current item and contexts. */

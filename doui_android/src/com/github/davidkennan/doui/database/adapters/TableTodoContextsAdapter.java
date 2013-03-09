@@ -130,7 +130,7 @@ public class TableTodoContextsAdapter implements ITableAdapter {
 				+ TableTodoItemsContextsAdapter.TABLE_TODO_ITEMS_CONTEXTS
 				+ "."
 				+ TableTodoItemsContextsAdapter.TABLE_TODO_ITEMS_CONTEXTS_FK_TODO_CONTEXTS
-				+ "=" + TABLE_TODO_CONTEXTS + "." + TABLE_TODO_CONTEXTS_ID;
+				+ "=" + TABLE_TODO_CONTEXTS + "." + TABLE_TODO_CONTEXTS_ID+")";
 		SQLiteDatabase database = this.sqliteOpenHelper.getWritableDatabase();
 		database.execSQL(delete_query);
 	}

@@ -45,6 +45,7 @@ public class DouiTodoListActivity extends ListActivity {
 
 		ImageButton imbtAddTodoItem = (ImageButton) findViewById(R.id.imbtAddTodoItem);
 		final DouiTodoListActivity self = this;
+		// TODO imbtAddTodoItem must be disabled in contexts view
 		imbtAddTodoItem.setOnClickListener(new OnClickListener() {
 
 			public void onClick(View v) {
@@ -55,19 +56,30 @@ public class DouiTodoListActivity extends ListActivity {
 				startActivity(i);
 			}
 		});
-		
+
 		List<String> pathSegments = todoUri.getPathSegments();
-		
+
+		// pathSegments.get(pathSegments.size() - 2) could be context or id of
+		// todo list
 		String itemListId = pathSegments.get(pathSegments.size() - 2);
-		Uri uriList = Uri.parse("content://" + DouiContentProvider.AUTHORITY
-				+ "/" + DouiContentProvider.TODO_LISTS_PATH + "/" + itemListId);
-		String listProperties[] = {TableTodoListAdapter.TABLE_TODO_LISTS_NAME};
-		Cursor cursor = getContentResolver().query(uriList, listProperties, null,
-				null, null);
-		cursor.moveToFirst();
-		String itemListName = cursor.getString(0);
-		TextView tvCaption = (TextView)findViewById(R.id.tvListName);
-		tvCaption.setText(itemListName);
+		if (!itemListId.equals(DouiContentProvider.TODO_CONTEXTS_PATH)) {
+			Uri uriList = Uri.parse("content://"
+					+ DouiContentProvider.AUTHORITY + "/"
+					+ DouiContentProvider.TODO_LISTS_PATH + "/" + itemListId);
+			String listProperties[] = { TableTodoListAdapter.TABLE_TODO_LISTS_NAME };
+			Cursor cursor = getContentResolver().query(uriList, listProperties,
+					null, null, null);
+			cursor.moveToFirst();
+			String itemListName = cursor.getString(0);
+			TextView tvCaption = (TextView) findViewById(R.id.tvListName);
+			tvCaption.setText(itemListName);
+			imbtAddTodoItem.setVisibility(View.VISIBLE);
+		} else {
+			imbtAddTodoItem.setVisibility(View.GONE);
+			TextView tvCaption = (TextView) findViewById(R.id.tvListName);
+			tvCaption.setText(todoUri.getLastPathSegment());
+
+		}
 	}
 
 	private void fillList() {
@@ -84,8 +96,13 @@ public class DouiTodoListActivity extends ListActivity {
 
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		super.onListItemClick(l, v, position, id);
+
+		Cursor todoItemsCursor = (Cursor) l.getItemAtPosition(position);
+		todoItemsCursor.moveToPosition(position);
+		String idFkList = todoItemsCursor.getString(todoItemsCursor.getColumnIndex(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_LIST)); 
 		Intent i = new Intent(this, DouiTodoItemViewActivity.class);
-		Uri todoItemUri = Uri.parse(todoUri.toString() + "/" + id);
+		Uri todoItemUri = Uri.parse(DouiContentProvider.TODO_LISTS_URI.toString()
+				+ "/"+idFkList+"/" + DouiContentProvider.TODO_PATH+ "/" + id);
 		i.putExtra(DouiContentProvider.TODO_LISTS_PATH, todoItemUri);
 		startActivity(i);
 	}

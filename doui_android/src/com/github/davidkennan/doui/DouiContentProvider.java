@@ -9,10 +9,12 @@ import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
+import android.database.MergeCursor;
 import android.net.Uri;
 import android.util.Log;
 
 import com.github.davidkennan.doui.database.DouiSQLiteOpenHelper;
+import com.github.davidkennan.doui.database.adapters.TableTodoContextsAdapter;
 import com.github.davidkennan.doui.database.adapters.TableTodoItemsAdapter;
 import com.github.davidkennan.doui.database.adapters.TableTodoListAdapter;
 
@@ -190,8 +192,15 @@ public class DouiContentProvider extends ContentProvider {
 		int uriType = sURIMatcher.match(uri);
 		switch (uriType) {
 		case TODO_LISTS_URI_ID:
-			result = douiSQLiteOpenHelper.getTableTodoListAdapter().query(
+			Cursor todoLists = douiSQLiteOpenHelper.getTableTodoListAdapter().query(
 					projection, selection, selectionArgs, sortOrder);
+			String contextProjection[]={
+					"-1 "+TableTodoContextsAdapter.TABLE_TODO_CONTEXTS_ID,
+					TableTodoContextsAdapter.TABLE_TODO_CONTEXTS_NAME
+			};
+			Cursor contexts =douiSQLiteOpenHelper.getTableTodoContextsAdapter().query(contextProjection, null, null, null);
+			Cursor cursors[] = {todoLists, contexts};
+			result = new MergeCursor(cursors);
 			break;
 		case TODO_LIST_URI_ID: {
 			String selectConditions = TableTodoListAdapter.TABLE_TODO_LISTS_ID

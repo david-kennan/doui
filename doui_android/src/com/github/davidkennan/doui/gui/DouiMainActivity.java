@@ -26,8 +26,18 @@ public class DouiMainActivity extends ListActivity {
 
 	}
 
+
+	@Override
+	protected void onRestart() {
+		fillList();
+		super.onRestart();
+	}
+
+
 	private void fillList() {
-		String[] from = new String[] { TableTodoListAdapter.TABLE_TODO_LISTS_NAME, TableTodoListAdapter.TABLE_TODO_LISTS_ID};
+		String[] from = new String[] {
+				TableTodoListAdapter.TABLE_TODO_LISTS_NAME,
+				TableTodoListAdapter.TABLE_TODO_LISTS_ID };
 		int[] to = new int[] { R.id.label };
 
 		ContentResolver cr = getContentResolver();
@@ -42,20 +52,32 @@ public class DouiMainActivity extends ListActivity {
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		super.onListItemClick(l, v, position, id);
 		Intent i = new Intent(this, DouiTodoListActivity.class);
-		Uri todoUri = Uri.parse(DouiContentProvider.TODO_LISTS_URI + "/" + id+"/"+DouiContentProvider.TODO_PATH);
-		// TODO check whether it is acceptable to use DouiContentProvider.TODO_LISTS_PATH 
+		Uri todoUri = null;
+		if (id > -1) {
+			todoUri = Uri.parse(DouiContentProvider.TODO_LISTS_URI + "/" + id
+					+ "/" + DouiContentProvider.TODO_PATH);
+		} else {
+			Cursor contextsCursor = (Cursor) l.getItemAtPosition(position);
+			contextsCursor.moveToPosition(position);
+			String contextName = contextsCursor.getString(1);
+			todoUri = Uri.parse(DouiContentProvider.TODO_CONTEXTS_URI
+					.toString() + "/" + contextName);
+		}
+		// TODO check whether it is acceptable to use
+		// DouiContentProvider.TODO_LISTS_PATH
 		i.putExtra(DouiContentProvider.TODO_LISTS_PATH, todoUri);
 
 		startActivity(i);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see android.app.ListActivity#onDestroy()
 	 */
 	@Override
 	protected void onDestroy() {
-		if(!adapter.getCursor().isClosed())
-		{
+		if (!adapter.getCursor().isClosed()) {
 			adapter.getCursor().close();
 		}
 		super.onDestroy();
