@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.github.davidkennan.doui"
+    package="co.usersource.doui"
     android:versionCode="1"
     android:versionName="1.0" >
 
@@ -18,10 +18,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <provider android:name="DouiContentProvider" android:authorities="com.github.davidkennan.doui.contentprovider" android:enabled="true" android:multiprocess="true"/>
+        <provider android:name="DouiContentProvider" android:enabled="true" android:multiprocess="true" android:authorities="co.usersource.doui.contentprovider"/>
         <activity android:name=".gui.DouiTodoListActivity"></activity>
         <activity android:name=".gui.DouiTodoItemEditActivity"></activity>
         <activity android:name=".gui.DouiTodoItemViewActivity"></activity>
-    </application>
-
+</application>
 </manifest>

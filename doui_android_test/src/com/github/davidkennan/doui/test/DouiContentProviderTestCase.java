@@ -9,9 +9,9 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.test.ProviderTestCase2;
 
-import com.github.davidkennan.doui.DouiContentProvider;
-import com.github.davidkennan.doui.database.adapters.TableTodoItemsAdapter;
-import com.github.davidkennan.doui.database.adapters.TableTodoListAdapter;
+import co.usersource.doui.DouiContentProvider;
+import co.usersource.doui.database.adapters.TableTodoItemsAdapter;
+import co.usersource.doui.database.adapters.TableTodoListAdapter;
 
 /**
  * @author rsh
