@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.github.davidkennan.doui.test;
+package co.usersource.doui.test;
 
 import android.content.ContentProvider;
 import android.content.ContentValues;
