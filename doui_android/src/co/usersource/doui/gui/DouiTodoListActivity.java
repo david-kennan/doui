@@ -93,6 +93,12 @@ public class DouiTodoListActivity extends ListActivity {
 		setListAdapter(adapter);
 	}
 
+	@Override
+	protected void onRestart() {
+		fillList();
+		super.onRestart();
+	}
+
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		super.onListItemClick(l, v, position, id);
 

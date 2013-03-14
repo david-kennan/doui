@@ -70,6 +70,7 @@ public class TableTodoItemsAdapter implements ITableAdapter {
 		return result;
 	}
 
+	// TODO Not implemented yet. Update for contexts required.
 	public int delete(String arg1, String[] arg2) {
 		SQLiteDatabase database = this.sqliteOpenHelper.getWritableDatabase();
 		int result = database.delete(TABLE_TODO_ITEMS, arg1, arg2);
@@ -81,15 +82,17 @@ public class TableTodoItemsAdapter implements ITableAdapter {
 		SQLiteDatabase database = this.sqliteOpenHelper.getWritableDatabase();
 		int result = database.update(TABLE_TODO_ITEMS, values, selection,
 				selectionArgs);
-		if(result>0)
-		{
-			String columns[] = {TABLE_TODO_ITEMS_ID, TABLE_TODO_ITEMS_BODY};
-			Cursor cursor = database.query(TABLE_TODO_ITEMS, columns, selection, selectionArgs, null, null, null);
-			while(cursor.moveToNext())
-			{
+		if (result > 0) {
+			String columns[] = { TABLE_TODO_ITEMS_ID, TABLE_TODO_ITEMS_BODY,
+					TABLE_TODO_ITEMS_IS_DONE };
+			Cursor cursor = database.query(TABLE_TODO_ITEMS, columns,
+					selection, selectionArgs, null, null, null);
+			while (cursor.moveToNext()) {
 				ContentValues todoItemValues = new ContentValues();
 				todoItemValues.put(TABLE_TODO_ITEMS_ID, cursor.getString(0));
 				todoItemValues.put(TABLE_TODO_ITEMS_BODY, cursor.getString(1));
+				todoItemValues.put(TABLE_TODO_ITEMS_IS_DONE,
+						cursor.getString(2));
 				updateContexts(todoItemValues);
 			}
 			cursor.close();
@@ -108,7 +111,9 @@ public class TableTodoItemsAdapter implements ITableAdapter {
 
 	/**
 	 * Scan item body for contexts.
-	 * @param values item data.
+	 * 
+	 * @param values
+	 *            item data.
 	 * @return List of parsed contexts.
 	 * */
 	private List<String> getItemContextsFromBody(ContentValues values) {
@@ -126,58 +131,66 @@ public class TableTodoItemsAdapter implements ITableAdapter {
 	private void updateContexts(ContentValues todoItemData) {
 
 		this.clearItemContextLinks(todoItemData);
+		Integer isItemDone = todoItemData
+				.getAsInteger(TABLE_TODO_ITEMS_IS_DONE);
 		
-		List<String> itemContexts = this.getItemContextsFromBody(todoItemData);
-		for (String contextName : itemContexts) {
-			ContentValues contextData = sqliteOpenHelper
-					.getTableTodoContextsAdapter()
-					.getContextByName(contextName);
-			if (contextData == null) {
-				contextData = new ContentValues();
-				contextData.put(
-						TableTodoContextsAdapter.TABLE_TODO_CONTEXTS_NAME,
-						contextName);
-				long id = sqliteOpenHelper.getTableTodoContextsAdapter()
-						.insert(contextData);
-				contextData.put(
-						TableTodoContextsAdapter.TABLE_TODO_CONTEXTS_ID, id);
-			}
-
-			if (contextData
-					.getAsInteger(TableTodoContextsAdapter.TABLE_TODO_CONTEXTS_ID) > -1) {
-				String[] columns = {
-						TableTodoItemsContextsAdapter.TABLE_TODO_ITEMS_CONTEXTS_ID,
-						TableTodoItemsContextsAdapter.TABLE_TODO_ITEMS_CONTEXTS_FK_TODO_CONTEXTS,
-						TableTodoItemsContextsAdapter.TABLE_TODO_ITEMS_CONTEXTS_FK_TODO_ITEMS };
-				String selection = TableTodoItemsContextsAdapter.TABLE_TODO_ITEMS_CONTEXTS_FK_TODO_CONTEXTS
-						+ "=? and "
-						+ TableTodoItemsContextsAdapter.TABLE_TODO_ITEMS_CONTEXTS_FK_TODO_ITEMS
-						+ "=?";
-				String selectionArgs[] = {
-						contextData
-								.getAsString(TableTodoContextsAdapter.TABLE_TODO_CONTEXTS_ID),
-						todoItemData
-								.getAsString(TableTodoItemsAdapter.TABLE_TODO_ITEMS_ID) };
-				Cursor cursor = sqliteOpenHelper
-						.getTableTodoItemsContextsAdapter().query(columns,
-								selection, selectionArgs, null);
-				if (cursor.getCount() == 0) {
-					ContentValues valuesTodoContex = new ContentValues();
-					valuesTodoContex
-							.put(TableTodoItemsContextsAdapter.TABLE_TODO_ITEMS_CONTEXTS_FK_TODO_ITEMS,
-									todoItemData
-											.getAsString(TableTodoItemsAdapter.TABLE_TODO_ITEMS_ID));
-					valuesTodoContex
-							.put(TableTodoItemsContextsAdapter.TABLE_TODO_ITEMS_CONTEXTS_FK_TODO_CONTEXTS,
-									contextData
-											.getAsString(TableTodoContextsAdapter.TABLE_TODO_CONTEXTS_ID));
-					sqliteOpenHelper.getTableTodoItemsContextsAdapter().insert(
-							valuesTodoContex);
+		// isItemDone == null => Item just inserted
+		// isItemDone == 0 => Item is not done
+		if (isItemDone == null || isItemDone == 0) {
+			List<String> itemContexts = this
+					.getItemContextsFromBody(todoItemData);
+			for (String contextName : itemContexts) {
+				ContentValues contextData = sqliteOpenHelper
+						.getTableTodoContextsAdapter().getContextByName(
+								contextName);
+				if (contextData == null) {
+					contextData = new ContentValues();
+					contextData.put(
+							TableTodoContextsAdapter.TABLE_TODO_CONTEXTS_NAME,
+							contextName);
+					long id = sqliteOpenHelper.getTableTodoContextsAdapter()
+							.insert(contextData);
+					contextData
+							.put(TableTodoContextsAdapter.TABLE_TODO_CONTEXTS_ID,
+									id);
 				}
-				cursor.close();
-			} else {
-				Log.e(this.getClass().getName(),
-						"Contex Id contains negative value");
+
+				if (contextData
+						.getAsInteger(TableTodoContextsAdapter.TABLE_TODO_CONTEXTS_ID) > -1) {
+					String[] columns = {
+							TableTodoItemsContextsAdapter.TABLE_TODO_ITEMS_CONTEXTS_ID,
+							TableTodoItemsContextsAdapter.TABLE_TODO_ITEMS_CONTEXTS_FK_TODO_CONTEXTS,
+							TableTodoItemsContextsAdapter.TABLE_TODO_ITEMS_CONTEXTS_FK_TODO_ITEMS };
+					String selection = TableTodoItemsContextsAdapter.TABLE_TODO_ITEMS_CONTEXTS_FK_TODO_CONTEXTS
+							+ "=? and "
+							+ TableTodoItemsContextsAdapter.TABLE_TODO_ITEMS_CONTEXTS_FK_TODO_ITEMS
+							+ "=?";
+					String selectionArgs[] = {
+							contextData
+									.getAsString(TableTodoContextsAdapter.TABLE_TODO_CONTEXTS_ID),
+							todoItemData
+									.getAsString(TableTodoItemsAdapter.TABLE_TODO_ITEMS_ID) };
+					Cursor cursor = sqliteOpenHelper
+							.getTableTodoItemsContextsAdapter().query(columns,
+									selection, selectionArgs, null);
+					if (cursor.getCount() == 0) {
+						ContentValues valuesTodoContex = new ContentValues();
+						valuesTodoContex
+								.put(TableTodoItemsContextsAdapter.TABLE_TODO_ITEMS_CONTEXTS_FK_TODO_ITEMS,
+										todoItemData
+												.getAsString(TableTodoItemsAdapter.TABLE_TODO_ITEMS_ID));
+						valuesTodoContex
+								.put(TableTodoItemsContextsAdapter.TABLE_TODO_ITEMS_CONTEXTS_FK_TODO_CONTEXTS,
+										contextData
+												.getAsString(TableTodoContextsAdapter.TABLE_TODO_CONTEXTS_ID));
+						sqliteOpenHelper.getTableTodoItemsContextsAdapter()
+								.insert(valuesTodoContex);
+					}
+					cursor.close();
+				} else {
+					Log.e(this.getClass().getName(),
+							"Contex Id contains negative value");
+				}
 			}
 		}
 		sqliteOpenHelper.getTableTodoContextsAdapter().removeEmptyContexts();
@@ -185,10 +198,12 @@ public class TableTodoItemsAdapter implements ITableAdapter {
 
 	/** This method removes any links between current item and contexts. */
 	private void clearItemContextLinks(ContentValues todoItemData) {
-		String condition =TableTodoItemsContextsAdapter.TABLE_TODO_ITEMS_CONTEXTS_FK_TODO_ITEMS+"=?";
-		String conditionArgs[] = {todoItemData
-				.getAsString(TableTodoItemsAdapter.TABLE_TODO_ITEMS_ID)};
-		sqliteOpenHelper.getTableTodoItemsContextsAdapter().delete(condition, conditionArgs);
+		String condition = TableTodoItemsContextsAdapter.TABLE_TODO_ITEMS_CONTEXTS_FK_TODO_ITEMS
+				+ "=?";
+		String conditionArgs[] = { todoItemData
+				.getAsString(TableTodoItemsAdapter.TABLE_TODO_ITEMS_ID) };
+		sqliteOpenHelper.getTableTodoItemsContextsAdapter().delete(condition,
+				conditionArgs);
 	}
 
 }

@@ -107,7 +107,6 @@ public class DouiContentProvider extends ContentProvider {
 			throw new IllegalArgumentException(
 					"Unknown URI type passed to query(...): " + uriType);
 		}
-		getContext().getContentResolver().notifyChange(uri, null);
 		return result;
 	}
 
@@ -163,7 +162,6 @@ public class DouiContentProvider extends ContentProvider {
 			throw new IllegalArgumentException(
 					"Unknown URI type passed to query(...): " + uriType);
 		}
-		getContext().getContentResolver().notifyChange(uri, null);
 		return result;
 	}
 
@@ -192,15 +190,8 @@ public class DouiContentProvider extends ContentProvider {
 		int uriType = sURIMatcher.match(uri);
 		switch (uriType) {
 		case TODO_LISTS_URI_ID:
-			Cursor todoLists = douiSQLiteOpenHelper.getTableTodoListAdapter().query(
+			result = douiSQLiteOpenHelper.getTableTodoListAdapter().query(
 					projection, selection, selectionArgs, sortOrder);
-			String contextProjection[]={
-					"-1 "+TableTodoContextsAdapter.TABLE_TODO_CONTEXTS_ID,
-					TableTodoContextsAdapter.TABLE_TODO_CONTEXTS_NAME
-			};
-			Cursor contexts =douiSQLiteOpenHelper.getTableTodoContextsAdapter().query(contextProjection, null, null, null);
-			Cursor cursors[] = {todoLists, contexts};
-			result = new MergeCursor(cursors);
 			break;
 		case TODO_LIST_URI_ID: {
 			String selectConditions = TableTodoListAdapter.TABLE_TODO_LISTS_ID
@@ -234,20 +225,23 @@ public class DouiContentProvider extends ContentProvider {
 					sortOrder);
 		}
 			break;
-
+		
+		case TODO_CONTEXTS_URI_ID: {
+			result = douiSQLiteOpenHelper.getTableTodoContextsAdapter().query(projection, selection, selectionArgs, sortOrder);
+		}
+			break;
+		
 		case TODO_CONTEXT_URI_ID: {
 			String contextName = uri.getLastPathSegment();
 			result = douiSQLiteOpenHelper.getTableTodoContextsAdapter().queryContextItems(contextName);
 		}
 			break;
+			
 		default:
 			Log.e(this.getClass().getName(),
 					"Unknown URI type passed to query(...): " + uriType);
 			throw new IllegalArgumentException(
 					"Unknown URI type passed to query(...): " + uriType);
-		}
-		if (null != result) {
-			result.setNotificationUri(getContext().getContentResolver(), uri);
 		}
 		return result;
 	}
@@ -285,7 +279,6 @@ public class DouiContentProvider extends ContentProvider {
 			throw new IllegalArgumentException(
 					"Unknown URI type passed to query(...): " + uriType);
 		}
-		getContext().getContentResolver().notifyChange(uri, null);
 		return result;
 	}
 
