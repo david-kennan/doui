@@ -126,6 +126,7 @@ public class DouiTodoItemViewActivity extends Activity {
 						selectionArgs);
 				Toast toast = Toast.makeText(getApplicationContext(), "Done!", Toast.LENGTH_SHORT);
 				toast.show();
+				finish();
 			}
 			
 		});
