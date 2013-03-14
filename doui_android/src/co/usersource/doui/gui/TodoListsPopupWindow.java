@@ -4,6 +4,7 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.view.View;
 import android.widget.AdapterView;
@@ -27,6 +28,10 @@ public class TodoListsPopupWindow extends PopupWindow {
 
 	public TodoListsPopupWindow(Context popupContext, Uri popupItemUri) {
 		setFocusable(true);
+	    setOutsideTouchable(true);
+	    // Removes default black background
+	    setBackgroundDrawable(new BitmapDrawable());
+	    
 		this.context = popupContext;
 		this.itemUri = popupItemUri;
 		ListView lvTodoLists = new ListView(context);
@@ -62,7 +67,7 @@ public class TodoListsPopupWindow extends PopupWindow {
 				dismiss();
 			}
 		});
-
+		
 		this.setContentView(lvTodoLists);
 	}
 

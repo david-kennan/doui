@@ -93,21 +93,23 @@ public class DouiTodoItemViewActivity extends Activity {
 		tvTodoListName.setText(itemListName);
 		imbtSetList = (ImageButton) findViewById(R.id.imbtSetList);
 		imbtSetList.setOnClickListener(new OnClickListener() {
-			boolean isVisible = false;
-			TodoListsPopupWindow popup = new TodoListsPopupWindow(
-					getApplicationContext(), itemUri);
+			TodoListsPopupWindow popup;
 
 			public void onClick(View v) {
-				if (!isVisible) {
+				
+				if (popup==null || !popup.isShowing()) {
+					if(popup != null)
+					{
+						popup.dismiss();
+					}
+					popup = new TodoListsPopupWindow(
+							getApplicationContext(), itemUri);
 					popup.showAtLocation(llMain, Gravity.RIGHT|Gravity.TOP, 0, 0);
 					int location[] = { 0, 0 };
 					imbtSetList.getLocationOnScreen(location);
 					popup.update(0, location[1] - 200, 300, 200);
-					// popup.update();
-					isVisible = true;
 				} else {
 					popup.dismiss();
-					isVisible = false;
 				}
 			}
 		});
