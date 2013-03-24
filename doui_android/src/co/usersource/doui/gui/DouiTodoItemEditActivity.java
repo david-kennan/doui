@@ -12,8 +12,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 import co.usersource.doui.DouiContentProvider;
@@ -28,8 +28,8 @@ import co.usersource.doui.database.adapters.TableTodoListAdapter;
 public class DouiTodoItemEditActivity extends Activity {
 
 	private Uri itemUri;
-	private Button btCancel;
-	private Button btSave;
+	private ImageButton imbtCancel;
+	private ImageButton imbtSave;
 	private String itemId;
 	private String itemTitle;
 	private String itemBody;
@@ -93,15 +93,15 @@ public class DouiTodoItemEditActivity extends Activity {
 			tvCaption.setText(itemListName);
 		}
 		
-		btCancel = (Button) findViewById(R.id.btCancel);
-		btCancel.setOnClickListener(new OnClickListener() {
+		imbtCancel = (ImageButton) findViewById(R.id.imbtCancel);
+		imbtCancel.setOnClickListener(new OnClickListener() {
 
 			public void onClick(View v) {
 				finish();
 			}
 		});
-		btSave = (Button) findViewById(R.id.btSave);
-		btSave.setOnClickListener(new OnClickListener() {
+		imbtSave = (ImageButton) findViewById(R.id.imbtSave);
+		imbtSave.setOnClickListener(new OnClickListener() {
 
 			public void onClick(View v) {
 				ContentValues values = new ContentValues();
