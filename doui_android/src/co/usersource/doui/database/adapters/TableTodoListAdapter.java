@@ -25,8 +25,7 @@ public class TableTodoListAdapter implements ITableAdapter {
 			+ " integer primary key autoincrement, " + TABLE_TODO_LISTS_NAME
 			+ " TEXT" + ");";
 	/** Pre-defined array of Lists. */
-	public static final String STR_ARRAY_LISTS[] = { "Next", "Waiting",
-			"Finance and admin", "Health", "Someday", "...ETC..." };
+	public static final String STR_ARRAY_LISTS[] = { "-None-", "Finance and admin", "Health"};
 
 	private SQLiteOpenHelper sqliteOpenHelper;
 

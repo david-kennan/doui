@@ -10,7 +10,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 /**
  * @author rsh
- *
+ * Implementation for the adapter to manage ToDoItem statuses.
  */
 public class TableTodoStatusAdapter implements ITableAdapter {
 

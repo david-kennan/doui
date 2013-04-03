@@ -24,6 +24,9 @@ public class DouiContentProviderTestCase extends
 		super(DouiContentProvider.class, DouiContentProvider.class.getName());
 	}
 
+	/**
+	 * TC to check whether we have static set of the lists.
+	 * */
 	public void testToDoLists() {
 		ContentProvider provider = getProvider();
 		Uri uri = DouiContentProvider.TODO_LISTS_URI;
@@ -48,6 +51,9 @@ public class DouiContentProviderTestCase extends
 		}
 	}
 
+	/**
+	 * TC to check whether ToDo item could be created.
+	 * */
 	public void testCreateToDoItem() {
 		String todoItemTitle = "todoItemTitle";
 		String todoItemBody = "todoItemBody\n Multiline.";
@@ -85,6 +91,10 @@ public class DouiContentProviderTestCase extends
 		cursor.close();
 	}
 
+	/**
+	 * This TC check whether item with context tag can produce corresponding
+	 * context record.
+	 * */
 	public void testCreateToDoItemWithContext() {
 		String todoItemTitle = "todoItemTitle";
 		String contextName = "@context";
@@ -120,9 +130,9 @@ public class DouiContentProviderTestCase extends
 		assertTrue(cursor.getCount() > 0);
 		cursor.close();
 		// Access item from context name
-		Uri uriContex = Uri.parse("content://"
-				+ DouiContentProvider.AUTHORITY + "/"
-				+ DouiContentProvider.TODO_CONTEXTS_PATH+ "/" + contextName +"/");
+		Uri uriContex = Uri.parse("content://" + DouiContentProvider.AUTHORITY
+				+ "/" + DouiContentProvider.TODO_CONTEXTS_PATH + "/"
+				+ contextName + "/");
 		cursor = provider.query(uriContex, newItemFields, null, null, null);
 		assertTrue(cursor.getCount() > 0);
 		cursor.close();
@@ -133,6 +143,10 @@ public class DouiContentProviderTestCase extends
 		cursor.close();
 	}
 
+	/**
+	 * This TC intended to check whether we still can delete ToDo item from
+	 * database.
+	 * */
 	public void testDeleteToDoItem() {
 		String todoItemTitle = "todoItemTitle";
 		String todoItemBody = "todoItemBody\n Multiline.";
@@ -170,6 +184,9 @@ public class DouiContentProviderTestCase extends
 		cursor.close();
 	}
 
+	/**
+	 * This TC check whether we can update ToDo item properties.
+	 * */
 	public void testUpdateToDoItem() {
 		String todoItemTitle = "todoItemTitle";
 		String todoItemBody = "todoItemBody\n Multiline.";

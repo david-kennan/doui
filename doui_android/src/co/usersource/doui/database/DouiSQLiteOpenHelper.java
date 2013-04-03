@@ -99,10 +99,19 @@ public class DouiSQLiteOpenHelper extends SQLiteOpenHelper {
 	 */
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-		if(oldVersion == 0 && newVersion == 1)
+		if(oldVersion == 0 && (newVersion == 1 || newVersion == 2))
 		{
 			onCreate(db);
 		}
+		if(oldVersion == 1 && newVersion == 2)
+		{
+			/* TODO
+			 * 1. Lists from db v1 are categories now.
+			 * If todo has assigned list with the same name as existent category - set FK to that category.
+			 * 2. isDone became FK to the status 
+			 * */
+		}
+		
 	}
 
 }

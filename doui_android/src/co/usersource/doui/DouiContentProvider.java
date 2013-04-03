@@ -9,12 +9,9 @@ import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
-import android.database.MergeCursor;
 import android.net.Uri;
 import android.util.Log;
-
 import co.usersource.doui.database.DouiSQLiteOpenHelper;
-import co.usersource.doui.database.adapters.TableTodoContextsAdapter;
 import co.usersource.doui.database.adapters.TableTodoItemsAdapter;
 import co.usersource.doui.database.adapters.TableTodoListAdapter;
 
