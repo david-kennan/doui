@@ -114,7 +114,8 @@ public class DouiTodoItemViewActivity extends Activity {
 			}
 		});
 		
-		imbtSetDone = (ImageButton) findViewById(R.id.imbtDone);
+		// TODO this code is deprecated, must be replaced with some kind of the code to set item status.  
+		/*imbtSetDone = (ImageButton) findViewById(R.id.imbtDone);
 		imbtSetDone.setOnClickListener(new OnClickListener() {
 
 			public void onClick(View v) {
@@ -131,7 +132,7 @@ public class DouiTodoItemViewActivity extends Activity {
 				finish();
 			}
 			
-		});
+		});*/
 	}
 
 	@Override

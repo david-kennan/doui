@@ -12,6 +12,7 @@ import co.usersource.doui.database.adapters.TableTodoContextsAdapter;
 import co.usersource.doui.database.adapters.TableTodoItemsAdapter;
 import co.usersource.doui.database.adapters.TableTodoItemsContextsAdapter;
 import co.usersource.doui.database.adapters.TableTodoListAdapter;
+import co.usersource.doui.database.adapters.TableTodoStatusAdapter;
 
 /**
  * @author rsh
@@ -33,6 +34,16 @@ public class DouiSQLiteOpenHelper extends SQLiteOpenHelper {
 	private TableTodoItemsAdapter tableTodoItemsAdapter;
 	/** Helper member to access TodoContexts table. */
 	private TableTodoContextsAdapter tableTodoContextsAdapter;
+	/** Helper member to access TodoStatuses table. */
+	private TableTodoStatusAdapter tableTodoStatusAdapter;
+	
+	/**
+	 * @return the tableTodoStatusAdapter
+	 */
+	public TableTodoStatusAdapter getTableTodoStatusAdapter() {
+		return tableTodoStatusAdapter;
+	}
+
 	/** Helper member to access Items to Contexts linking table. */
 	private TableTodoItemsContextsAdapter tableTodoItemsContextsAdapter;
 
@@ -73,6 +84,7 @@ public class DouiSQLiteOpenHelper extends SQLiteOpenHelper {
 		tableTodoItemsAdapter = new TableTodoItemsAdapter(this);
 		tableTodoContextsAdapter = new TableTodoContextsAdapter(this);
 		tableTodoItemsContextsAdapter = new TableTodoItemsContextsAdapter(this);
+		tableTodoStatusAdapter = new TableTodoStatusAdapter(this);
 	}
 
 	/*
@@ -88,6 +100,7 @@ public class DouiSQLiteOpenHelper extends SQLiteOpenHelper {
 		tableTodoContextsAdapter.onCreate(database);
 		tableTodoItemsAdapter.onCreate(database);
 		tableTodoItemsContextsAdapter.onCreate(database);
+		tableTodoStatusAdapter.onCreate(database);
 	}
 
 	/*

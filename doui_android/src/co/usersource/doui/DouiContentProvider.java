@@ -14,6 +14,7 @@ import android.util.Log;
 import co.usersource.doui.database.DouiSQLiteOpenHelper;
 import co.usersource.doui.database.adapters.TableTodoItemsAdapter;
 import co.usersource.doui.database.adapters.TableTodoListAdapter;
+import co.usersource.doui.database.adapters.TableTodoStatusAdapter;
 
 /**
  * @author rsh
@@ -54,15 +55,30 @@ public class DouiContentProvider extends ContentProvider {
 	/** Id for concrete todo item list URI. */
 	public static final int TODO_ITEM_URI_ID = 60;
 
+	/** Suffix used to construct URI to access item statuses. */
+	public static final String STATUSES_PATH = "statuses";
+	/** Full URI to access todo statuses. */
+	public static final Uri STATUSES_URI = Uri.parse("content://" + AUTHORITY
+			+ "/" + STATUSES_PATH);
+	/** Id for statuses URI. */
+	public static final int STATUSES_URI_ID = 70;
+	/** Id for concrete status URI. */
+	public static final int STATUS_URI_ID = 80;
+
 	/** Member responsible to determinate what kind of the URI passed. */
 	private static final UriMatcher sURIMatcher = new UriMatcher(
 			UriMatcher.NO_MATCH);
 	static {
 		sURIMatcher.addURI(AUTHORITY, TODO_LISTS_PATH, TODO_LISTS_URI_ID);
 		sURIMatcher.addURI(AUTHORITY, TODO_LISTS_PATH + "/#", TODO_LIST_URI_ID);
+
+		sURIMatcher.addURI(AUTHORITY, STATUSES_PATH, STATUSES_URI_ID);
+		sURIMatcher.addURI(AUTHORITY, STATUSES_PATH + "/#", STATUS_URI_ID);
+
 		sURIMatcher.addURI(AUTHORITY, TODO_CONTEXTS_PATH, TODO_CONTEXTS_URI_ID);
 		sURIMatcher.addURI(AUTHORITY, TODO_CONTEXTS_PATH + "/*",
 				TODO_CONTEXT_URI_ID);
+
 		sURIMatcher.addURI(AUTHORITY, TODO_LISTS_PATH + "/#/" + TODO_PATH,
 				TODO_URI_ID);
 		sURIMatcher.addURI(AUTHORITY, TODO_LISTS_PATH + "/#/" + TODO_PATH
@@ -185,6 +201,7 @@ public class DouiContentProvider extends ContentProvider {
 			String[] selectionArgs, String sortOrder) {
 		Cursor result = null;
 		int uriType = sURIMatcher.match(uri);
+
 		switch (uriType) {
 		case TODO_LISTS_URI_ID:
 			result = douiSQLiteOpenHelper.getTableTodoListAdapter().query(
@@ -200,12 +217,31 @@ public class DouiContentProvider extends ContentProvider {
 		}
 			break;
 
+		case STATUSES_URI_ID:
+			result = douiSQLiteOpenHelper.getTableTodoStatusAdapter().query(
+					projection, selection, selectionArgs, sortOrder);
+			break;
+		case STATUS_URI_ID: {
+			String selectConditions = TableTodoStatusAdapter.TABLE_TODO_STATUSES_ID // TODO
+																					// maybe
+																					// name
+																					// here
+																					// should
+																					// be
+																					// used?
+					+ "= ?";
+			String selectConditionsArgs[] = { uri.getLastPathSegment() };
+			result = douiSQLiteOpenHelper.getTableTodoStatusAdapter().query(
+					projection, selectConditions, selectConditionsArgs,
+					sortOrder);
+		}
+			break;
+
 		case TODO_URI_ID: {
 			List<String> uriSegments = uri.getPathSegments();
 			String listId = uriSegments.get((uriSegments.size() - 1) - 1);
 			String selectConditions = TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_LIST
-					+ "= ? and "
-					+ TableTodoItemsAdapter.TABLE_TODO_ITEMS_IS_DONE + " <> 1";
+					+ "= ? ";
 			String selectConditionsArgs[] = { listId };
 			result = douiSQLiteOpenHelper.getTableTodoItemsAdapter().query(
 					projection, selectConditions, selectConditionsArgs,
@@ -222,18 +258,20 @@ public class DouiContentProvider extends ContentProvider {
 					sortOrder);
 		}
 			break;
-		
+
 		case TODO_CONTEXTS_URI_ID: {
-			result = douiSQLiteOpenHelper.getTableTodoContextsAdapter().query(projection, selection, selectionArgs, sortOrder);
+			result = douiSQLiteOpenHelper.getTableTodoContextsAdapter().query(
+					projection, selection, selectionArgs, sortOrder);
 		}
 			break;
-		
+
 		case TODO_CONTEXT_URI_ID: {
 			String contextName = uri.getLastPathSegment();
-			result = douiSQLiteOpenHelper.getTableTodoContextsAdapter().queryContextItems(contextName);
+			result = douiSQLiteOpenHelper.getTableTodoContextsAdapter()
+					.queryContextItems(contextName);
 		}
 			break;
-			
+
 		default:
 			Log.e(this.getClass().getName(),
 					"Unknown URI type passed to query(...): " + uriType);
