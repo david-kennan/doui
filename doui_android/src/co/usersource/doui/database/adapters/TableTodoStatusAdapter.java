@@ -41,6 +41,12 @@ public class TableTodoStatusAdapter implements ITableAdapter {
 	 */
 	public void onCreate(SQLiteDatabase database) {
 		database.execSQL(STR_CREATE_TABLE_TODO_STATUSES);
+		for (int i = 0; i < STR_ARRAY_STATUSES.length; i++) {
+			database.execSQL("insert or replace into " + TABLE_TODO_STATUSES + "("
+					+ TABLE_TODO_STATUSES_ID + "," + TABLE_TODO_STATUSES_NAME
+					+ ") values (" + i  + ",'" + STR_ARRAY_STATUSES[i] + "');");
+		}
+
 	}
 
 	/* (non-Javadoc)

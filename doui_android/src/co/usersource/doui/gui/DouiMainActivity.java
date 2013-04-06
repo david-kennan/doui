@@ -13,7 +13,7 @@ import android.widget.SimpleCursorAdapter;
 import co.usersource.doui.DouiContentProvider;
 import co.usersource.doui.R;
 import co.usersource.doui.database.adapters.TableTodoContextsAdapter;
-import co.usersource.doui.database.adapters.TableTodoListAdapter;
+import co.usersource.doui.database.adapters.TableTodoCategoriesAdapter;
 
 public class DouiMainActivity extends ListActivity {
 	private SimpleCursorAdapter adapter;
@@ -37,12 +37,12 @@ public class DouiMainActivity extends ListActivity {
 
 	private void fillList() {
 		String[] from = new String[] {
-				TableTodoListAdapter.TABLE_TODO_LISTS_NAME,
-				TableTodoListAdapter.TABLE_TODO_LISTS_ID };
+				TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME,
+				TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_ID };
 		int[] to = new int[] { R.id.label };
 
 		ContentResolver cr = getContentResolver();
-		cursorToDoList = cr.query(DouiContentProvider.TODO_LISTS_URI, from,
+		cursorToDoList = cr.query(DouiContentProvider.TODO_CATEGORIES_URI, from,
 				null, null, null);
 
 		String contextProjection[] = {
@@ -64,7 +64,7 @@ public class DouiMainActivity extends ListActivity {
 		Intent i = new Intent(this, DouiTodoListActivity.class);
 		Uri todoUri = null;
 		if (position < cursorToDoList.getCount()) {
-			todoUri = Uri.parse(DouiContentProvider.TODO_LISTS_URI + "/" + id
+			todoUri = Uri.parse(DouiContentProvider.TODO_CATEGORIES_URI + "/" + id
 					+ "/" + DouiContentProvider.TODO_PATH);
 		} else {
 			Cursor mainCursor = (Cursor) l.getItemAtPosition(position);
@@ -74,8 +74,8 @@ public class DouiMainActivity extends ListActivity {
 					.toString() + "/" + contextName);
 		}
 		// TODO check whether it is acceptable to use
-		// DouiContentProvider.TODO_LISTS_PATH
-		i.putExtra(DouiContentProvider.TODO_LISTS_PATH, todoUri);
+		// DouiContentProvider.TODO_CATEGORIES_PATH
+		i.putExtra(DouiContentProvider.TODO_CATEGORIES_PATH, todoUri);
 
 		startActivity(i);
 	}

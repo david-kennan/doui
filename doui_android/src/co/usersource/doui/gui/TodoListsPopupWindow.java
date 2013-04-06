@@ -16,7 +16,7 @@ import android.widget.Toast;
 import co.usersource.doui.DouiContentProvider;
 import co.usersource.doui.R;
 import co.usersource.doui.database.adapters.TableTodoItemsAdapter;
-import co.usersource.doui.database.adapters.TableTodoListAdapter;
+import co.usersource.doui.database.adapters.TableTodoCategoriesAdapter;
 
 /**
  * Popup window used to display list selection menu.
@@ -37,12 +37,12 @@ public class TodoListsPopupWindow extends PopupWindow {
 		ListView lvTodoLists = new ListView(context);
 
 		String[] from = new String[] {
-				TableTodoListAdapter.TABLE_TODO_LISTS_NAME,
-				TableTodoListAdapter.TABLE_TODO_LISTS_ID };
+				TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME,
+				TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_ID };
 		int[] to = new int[] { R.id.popupItemLabel };
 
 		ContentResolver cr = context.getContentResolver();
-		Cursor cursor = cr.query(DouiContentProvider.TODO_LISTS_URI, null,
+		Cursor cursor = cr.query(DouiContentProvider.TODO_CATEGORIES_URI, null,
 				null, null, null);
 
 		adapter = new SimpleCursorAdapter(context,

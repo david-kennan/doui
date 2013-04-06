@@ -11,7 +11,7 @@ import co.usersource.doui.database.adapters.ITableAdapter;
 import co.usersource.doui.database.adapters.TableTodoContextsAdapter;
 import co.usersource.doui.database.adapters.TableTodoItemsAdapter;
 import co.usersource.doui.database.adapters.TableTodoItemsContextsAdapter;
-import co.usersource.doui.database.adapters.TableTodoListAdapter;
+import co.usersource.doui.database.adapters.TableTodoCategoriesAdapter;
 import co.usersource.doui.database.adapters.TableTodoStatusAdapter;
 
 /**
@@ -80,7 +80,7 @@ public class DouiSQLiteOpenHelper extends SQLiteOpenHelper {
 	 * */
 	public DouiSQLiteOpenHelper(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
-		tableTodoListAdapter = new TableTodoListAdapter(this);  
+		tableTodoListAdapter = new TableTodoCategoriesAdapter(this);  
 		tableTodoItemsAdapter = new TableTodoItemsAdapter(this);
 		tableTodoContextsAdapter = new TableTodoContextsAdapter(this);
 		tableTodoItemsContextsAdapter = new TableTodoItemsContextsAdapter(this);
@@ -118,6 +118,8 @@ public class DouiSQLiteOpenHelper extends SQLiteOpenHelper {
 		}
 		if(oldVersion == 1 && newVersion == 2)
 		{
+			tableTodoStatusAdapter.onCreate(db);
+			tableTodoItemsAdapter.upgrade(db, oldVersion, newVersion);
 			/* TODO
 			 * 1. Lists from db v1 are categories now.
 			 * If todo has assigned list with the same name as existent category - set FK to that category.

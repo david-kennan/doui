@@ -11,25 +11,25 @@ import android.database.sqlite.SQLiteOpenHelper;
 /**
  * @author rsh Adapter class for the Todo Lists table.
  */
-public class TableTodoListAdapter implements ITableAdapter {
+public class TableTodoCategoriesAdapter implements ITableAdapter {
 
 	/** Table with lists of the todo. */
-	public static final String TABLE_TODO_LISTS = "todo_lists";
+	public static final String TABLE_TODO_CATEGORIES = "todo_categories";
 	/** Table with lists of the todo. Primary key. */
-	public static final String TABLE_TODO_LISTS_ID = "_id";
+	public static final String TABLE_TODO_CATEGORIES_ID = "_id";
 	/** Table with lists of the todo. Name of the list. */
-	public static final String TABLE_TODO_LISTS_NAME = "name";
+	public static final String TABLE_TODO_CATEGORIES_NAME = "name";
 	/** Table with lists of the todo. Create statement. */
-	public static final String STR_CREATE_TABLE_TODO_LISTS = "create table "
-			+ TABLE_TODO_LISTS + "(" + TABLE_TODO_LISTS_ID
-			+ " integer primary key autoincrement, " + TABLE_TODO_LISTS_NAME
+	public static final String STR_CREATE_TABLE_TODO_CATEGORIES = "create table "
+			+ TABLE_TODO_CATEGORIES + "(" + TABLE_TODO_CATEGORIES_ID
+			+ " integer primary key autoincrement, " + TABLE_TODO_CATEGORIES_NAME
 			+ " TEXT" + ");";
 	/** Pre-defined array of Lists. */
-	public static final String STR_ARRAY_LISTS[] = { "-None-", "Finance and admin", "Health"};
+	public static final String STR_ARRAY_CATEGORIES[] = { "-None-", "Finance and admin", "Health"};
 
 	private SQLiteOpenHelper sqliteOpenHelper;
 
-	public TableTodoListAdapter(SQLiteOpenHelper sqliteOpenHelper) {
+	public TableTodoCategoriesAdapter(SQLiteOpenHelper sqliteOpenHelper) {
 		this.sqliteOpenHelper = sqliteOpenHelper;
 	}
 
@@ -37,11 +37,11 @@ public class TableTodoListAdapter implements ITableAdapter {
 	 * @see co.usersource.doui.database.ITableAdapter#onCreate(android.database.sqlite.SQLiteDatabase)
 	 */
 	public void onCreate(SQLiteDatabase database) {
-		database.execSQL(STR_CREATE_TABLE_TODO_LISTS);
-		for (int i = 0; i < STR_ARRAY_LISTS.length; i++) {
-			database.execSQL("insert or replace into " + TABLE_TODO_LISTS + "("
-					+ TABLE_TODO_LISTS_ID + "," + TABLE_TODO_LISTS_NAME
-					+ ") values (" + i  + ",'" + STR_ARRAY_LISTS[i] + "');");
+		database.execSQL(STR_CREATE_TABLE_TODO_CATEGORIES);
+		for (int i = 0; i < STR_ARRAY_CATEGORIES.length; i++) {
+			database.execSQL("insert or replace into " + TABLE_TODO_CATEGORIES + "("
+					+ TABLE_TODO_CATEGORIES_ID + "," + TABLE_TODO_CATEGORIES_NAME
+					+ ") values (" + i  + ",'" + STR_ARRAY_CATEGORIES[i] + "');");
 		}
 	}
 
@@ -49,7 +49,7 @@ public class TableTodoListAdapter implements ITableAdapter {
 	 * @see co.usersource.doui.database.ITableAdapter#insert(android.content.ContentValues)
 	 */
 	public long insert(ContentValues values) {
-		return this.sqliteOpenHelper.getWritableDatabase().insert(TABLE_TODO_LISTS,
+		return this.sqliteOpenHelper.getWritableDatabase().insert(TABLE_TODO_CATEGORIES,
 				null, values);
 	}
 
@@ -75,7 +75,7 @@ public class TableTodoListAdapter implements ITableAdapter {
 			String[] selectionArgs, String sortOrder) {
 		Cursor result = null;
 		SQLiteDatabase database = this.sqliteOpenHelper.getReadableDatabase();
-		result = database.query(TABLE_TODO_LISTS, projection, selection,
+		result = database.query(TABLE_TODO_CATEGORIES, projection, selection,
 				selectionArgs, null, null, sortOrder);
 		return result;
 	}

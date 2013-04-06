@@ -44,8 +44,8 @@ public class TableTodoItemsAdapter implements ITableAdapter {
 			+ TableTodoStatusAdapter.TABLE_TODO_STATUSES + "("
 			+ TableTodoStatusAdapter.TABLE_TODO_STATUSES_ID + "),"
 			+ "FOREIGN KEY(" + TABLE_TODO_ITEMS_FK_LIST + ") REFERENCES "
-			+ TableTodoListAdapter.TABLE_TODO_LISTS + "("
-			+ TableTodoListAdapter.TABLE_TODO_LISTS_ID + ")" + ");";
+			+ TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES + "("
+			+ TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_ID + ")" + ");";
 
 	private DouiSQLiteOpenHelper sqliteOpenHelper;
 
@@ -200,6 +200,13 @@ public class TableTodoItemsAdapter implements ITableAdapter {
 				.getAsString(TableTodoItemsAdapter.TABLE_TODO_ITEMS_ID) };
 		sqliteOpenHelper.getTableTodoItemsContextsAdapter().delete(condition,
 				conditionArgs);
+	}
+
+	public void upgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+		if(oldVersion == 1 && newVersion == 2)
+		{
+			//String upgradeSql = "alter table add"
+		}
 	}
 
 }

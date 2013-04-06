@@ -19,7 +19,7 @@ import android.widget.Toast;
 import co.usersource.doui.DouiContentProvider;
 import co.usersource.doui.R;
 import co.usersource.doui.database.adapters.TableTodoItemsAdapter;
-import co.usersource.doui.database.adapters.TableTodoListAdapter;
+import co.usersource.doui.database.adapters.TableTodoCategoriesAdapter;
 
 /**
  * @author rsh
@@ -46,7 +46,7 @@ public class DouiTodoItemEditActivity extends Activity {
 		setContentView(R.layout.todo_item_edit);
 		Bundle extras = getIntent().getExtras();
 		if (extras != null) {
-			itemUri = extras.getParcelable(DouiContentProvider.TODO_LISTS_PATH);
+			itemUri = extras.getParcelable(DouiContentProvider.TODO_CATEGORIES_PATH);
 		}
 		
 		if (itemUri.getLastPathSegment().equals(DouiContentProvider.TODO_PATH)==false)
@@ -65,8 +65,8 @@ public class DouiTodoItemEditActivity extends Activity {
 			cursor.close();
 			// TODO not best solution. Think about JOIN.
 			Uri uriList = Uri.parse("content://" + DouiContentProvider.AUTHORITY
-					+ "/" + DouiContentProvider.TODO_LISTS_PATH + "/" + itemListId);
-			String listProperties[] = {TableTodoListAdapter.TABLE_TODO_LISTS_NAME};
+					+ "/" + DouiContentProvider.TODO_CATEGORIES_PATH + "/" + itemListId);
+			String listProperties[] = {TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME};
 			cursor = getContentResolver().query(uriList, listProperties, null,
 					null, null);
 			cursor.moveToFirst();
@@ -83,8 +83,8 @@ public class DouiTodoItemEditActivity extends Activity {
 			
 			String itemListId = pathSegments.get(pathSegments.size() - 2);
 			Uri uriList = Uri.parse("content://" + DouiContentProvider.AUTHORITY
-					+ "/" + DouiContentProvider.TODO_LISTS_PATH + "/" + itemListId);
-			String listProperties[] = {TableTodoListAdapter.TABLE_TODO_LISTS_NAME};
+					+ "/" + DouiContentProvider.TODO_CATEGORIES_PATH + "/" + itemListId);
+			String listProperties[] = {TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME};
 			Cursor cursor = getContentResolver().query(uriList, listProperties, null,
 					null, null);
 			cursor.moveToFirst();

@@ -20,11 +20,15 @@ import android.widget.TextView;
 import co.usersource.doui.DouiContentProvider;
 import co.usersource.doui.R;
 import co.usersource.doui.database.adapters.TableTodoItemsAdapter;
-import co.usersource.doui.database.adapters.TableTodoListAdapter;
+import co.usersource.doui.database.adapters.TableTodoCategoriesAdapter;
 
 /**
  * @author rsh
- * 
+ * This activity used to show a list of todo items.
+ * This activity can show todo items from different projections:
+ *  - context
+ *  - category
+ *  - status
  */
 public class DouiTodoListActivity extends ListActivity {
 	private SimpleCursorAdapter adapter;
@@ -37,7 +41,7 @@ public class DouiTodoListActivity extends ListActivity {
 		setContentView(R.layout.todo_list_activity);
 		Bundle extras = getIntent().getExtras();
 		if (extras != null) {
-			todoUri = extras.getParcelable(DouiContentProvider.TODO_LISTS_PATH);
+			todoUri = extras.getParcelable(DouiContentProvider.TODO_CATEGORIES_PATH);
 		}
 
 		fillList();
@@ -50,8 +54,8 @@ public class DouiTodoListActivity extends ListActivity {
 			public void onClick(View v) {
 				Intent i = new Intent(self, DouiTodoItemEditActivity.class);
 				// TODO check whether it is acceptable to use
-				// DouiContentProvider.TODO_LISTS_PATH
-				i.putExtra(DouiContentProvider.TODO_LISTS_PATH, todoUri);
+				// DouiContentProvider.TODO_CATEGORIES_PATH
+				i.putExtra(DouiContentProvider.TODO_CATEGORIES_PATH, todoUri);
 				startActivity(i);
 			}
 		});
@@ -64,8 +68,8 @@ public class DouiTodoListActivity extends ListActivity {
 		if (!itemListId.equals(DouiContentProvider.TODO_CONTEXTS_PATH)) {
 			Uri uriList = Uri.parse("content://"
 					+ DouiContentProvider.AUTHORITY + "/"
-					+ DouiContentProvider.TODO_LISTS_PATH + "/" + itemListId);
-			String listProperties[] = { TableTodoListAdapter.TABLE_TODO_LISTS_NAME };
+					+ DouiContentProvider.TODO_CATEGORIES_PATH + "/" + itemListId);
+			String listProperties[] = { TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME };
 			Cursor cursor = getContentResolver().query(uriList, listProperties,
 					null, null, null);
 			cursor.moveToFirst();
@@ -106,9 +110,9 @@ public class DouiTodoListActivity extends ListActivity {
 		todoItemsCursor.moveToPosition(position);
 		String idFkList = todoItemsCursor.getString(todoItemsCursor.getColumnIndex(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_LIST)); 
 		Intent i = new Intent(this, DouiTodoItemViewActivity.class);
-		Uri todoItemUri = Uri.parse(DouiContentProvider.TODO_LISTS_URI.toString()
+		Uri todoItemUri = Uri.parse(DouiContentProvider.TODO_CATEGORIES_URI.toString()
 				+ "/"+idFkList+"/" + DouiContentProvider.TODO_PATH+ "/" + id);
-		i.putExtra(DouiContentProvider.TODO_LISTS_PATH, todoItemUri);
+		i.putExtra(DouiContentProvider.TODO_CATEGORIES_PATH, todoItemUri);
 		startActivity(i);
 	}
 }
