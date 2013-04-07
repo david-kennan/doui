@@ -85,6 +85,8 @@ public class DouiMainActivity extends ListActivity {
 		// position from statuses cursor.
 		if (position >= categoriesCount
 				&& position < categoriesCount + statusesCount) {
+			todoUri = Uri.parse(DouiContentProvider.TODO_STATUSES_URI + "/"
+					+ id + "/" + DouiContentProvider.TODO_PATH);
 		}
 		// position from contexts cursor.
 		if (position >= categoriesCount + statusesCount
@@ -95,10 +97,8 @@ public class DouiMainActivity extends ListActivity {
 			todoUri = Uri.parse(DouiContentProvider.TODO_CONTEXTS_URI
 					.toString() + "/" + contextName);
 		}
-		// TODO check whether it is acceptable to use
-		// DouiContentProvider.TODO_CATEGORIES_PATH
-		i.putExtra(DouiContentProvider.TODO_CATEGORIES_PATH, todoUri);
 
+		i.putExtra(DouiTodoListActivity.STR_TODO_LIST_URI_EXT, todoUri);
 		startActivity(i);
 	}
 

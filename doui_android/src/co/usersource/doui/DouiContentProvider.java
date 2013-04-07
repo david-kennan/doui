@@ -34,6 +34,11 @@ public class DouiContentProvider extends ContentProvider {
 	public static final int TODO_CATEGORIES_URI_ID = 10;
 	/** Id for uri that match concrete todo category id from list. */
 	public static final int TODO_CATEGORY_URI_ID = 20;
+	/**
+	 * Id for uri that match concrete todo category and must return a list of
+	 * its items.
+	 */
+	public static final int TODO_CATEGORY_LIST_URI_ID = 21;
 
 	/** Suffix used to construct URI to access contexts list of todos. */
 	public static final String TODO_CONTEXTS_PATH = "contexts";
@@ -42,18 +47,21 @@ public class DouiContentProvider extends ContentProvider {
 			+ AUTHORITY + "/" + TODO_CONTEXTS_PATH);
 	/** Id for URI match context list. */
 	public static final int TODO_CONTEXTS_URI_ID = 30;
-	/** Id for URI that match concrete context. */
-	public static final int TODO_CONTEXT_URI_ID = 40;
+	/**
+	 * Id for URI that match concrete context. This URI returns list. No sense
+	 * to access to single context, as it is does not exists as separate object.
+	 */
+	public static final int TODO_CONTEXT_LIST_URI_ID = 40;
 
 	/** Suffix used to construct URI to access concrete todo item. */
 	public static final String TODO_PATH = "todo";
 	/** Full URI to access concrete todo item. */
 	public static final Uri TODO_URI = Uri.parse(TODO_CATEGORIES_URI.toString()
 			+ "/#/" + TODO_PATH);
-	/** Id for todo items list URI. */
-	public static final int TODO_URI_ID = 50;
-	/** Id for concrete todo item list URI. */
-	public static final int TODO_ITEM_URI_ID = 60;
+	/** Id for concrete todo item list URI accessed from status path. */
+	public static final int TODO_STATUS_ITEM_URI_ID = 60;
+	/** Id for concrete todo item list URI accessed from category path. */
+	public static final int TODO_CATEGORYS_ITEM_URI_ID = 61;
 
 	/** Suffix used to construct URI to access item statuses. */
 	public static final String TODO_STATUSES_PATH = "statuses";
@@ -64,9 +72,11 @@ public class DouiContentProvider extends ContentProvider {
 	public static final int TODO_STATUSES_URI_ID = 70;
 	/** Id for concrete status URI. */
 	public static final int TODO_STATUS_URI_ID = 80;
+	/** Id for URI which match a list of items for concrete status. */
+	public static final int TODO_STATUS_LIST_URI_ID = 81;
 
 	/** Member responsible to determinate what kind of the URI passed. */
-	private static final UriMatcher sURIMatcher = new UriMatcher(
+	public static final UriMatcher sURIMatcher = new UriMatcher(
 			UriMatcher.NO_MATCH);
 	static {
 		sURIMatcher.addURI(AUTHORITY, TODO_CATEGORIES_PATH,
@@ -80,12 +90,17 @@ public class DouiContentProvider extends ContentProvider {
 
 		sURIMatcher.addURI(AUTHORITY, TODO_CONTEXTS_PATH, TODO_CONTEXTS_URI_ID);
 		sURIMatcher.addURI(AUTHORITY, TODO_CONTEXTS_PATH + "/*",
-				TODO_CONTEXT_URI_ID);
+				TODO_CONTEXT_LIST_URI_ID);
 
 		sURIMatcher.addURI(AUTHORITY, TODO_CATEGORIES_PATH + "/#/" + TODO_PATH,
-				TODO_URI_ID);
+				TODO_CATEGORY_LIST_URI_ID);
+		sURIMatcher.addURI(AUTHORITY, TODO_STATUSES_PATH + "/#/" + TODO_PATH,
+				TODO_STATUS_LIST_URI_ID);
+
 		sURIMatcher.addURI(AUTHORITY, TODO_CATEGORIES_PATH + "/#/" + TODO_PATH
-				+ "/#", TODO_ITEM_URI_ID);
+				+ "/#", TODO_CATEGORYS_ITEM_URI_ID);
+		sURIMatcher.addURI(AUTHORITY, TODO_STATUSES_PATH + "/#/" + TODO_PATH
+				+ "/#", TODO_STATUS_ITEM_URI_ID);
 	}
 
 	private DouiSQLiteOpenHelper douiSQLiteOpenHelper;
@@ -106,11 +121,8 @@ public class DouiContentProvider extends ContentProvider {
 			result = douiSQLiteOpenHelper.getTableTodoCategoriesAdapter()
 					.delete(selection, selectionArgs);
 			break;
-		case TODO_URI_ID:
-			result = douiSQLiteOpenHelper.getTableTodoItemsAdapter().delete(
-					selection, selectionArgs);
-			break;
-		case TODO_ITEM_URI_ID:
+		case TODO_CATEGORYS_ITEM_URI_ID:
+		case TODO_STATUS_ITEM_URI_ID:
 			String itemSelection = TableTodoItemsAdapter.TABLE_TODO_ITEMS_ID
 					+ "=?";
 			String itemSelectionArgs[] = { uri.getLastPathSegment() };
@@ -160,14 +172,17 @@ public class DouiContentProvider extends ContentProvider {
 			Log.e(this.getClass().getName(),
 					"Attempt to insert new list from list URI:  " + uri);
 			break;
-		case TODO_URI_ID:
+		case TODO_CATEGORY_LIST_URI_ID:
+		case TODO_STATUS_LIST_URI_ID:
 			newItemId = douiSQLiteOpenHelper.getTableTodoItemsAdapter().insert(
 					values);
 			if (newItemId > -1) {
 				result = Uri.parse(uri.toString() + "/" + newItemId);
 			}
 			break;
-		case TODO_ITEM_URI_ID:
+
+		case TODO_CATEGORYS_ITEM_URI_ID:
+		case TODO_STATUS_ITEM_URI_ID:
 			Log.e(this.getClass().getName(),
 					"Attempt to insert new todo item from todo item URI:  "
 							+ uri);
@@ -239,8 +254,8 @@ public class DouiContentProvider extends ContentProvider {
 					sortOrder);
 		}
 			break;
-
-		case TODO_URI_ID: {
+		case TODO_STATUS_LIST_URI_ID:
+		case TODO_CATEGORY_LIST_URI_ID: {
 			List<String> uriSegments = uri.getPathSegments();
 			String listId = uriSegments.get((uriSegments.size() - 1) - 1);
 			String selectConditions = TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY
@@ -252,7 +267,8 @@ public class DouiContentProvider extends ContentProvider {
 		}
 			break;
 
-		case TODO_ITEM_URI_ID: {
+		case TODO_CATEGORYS_ITEM_URI_ID:
+		case TODO_STATUS_ITEM_URI_ID: {
 			String selectConditions = TableTodoItemsAdapter.TABLE_TODO_ITEMS_ID
 					+ "= ?";
 			String selectConditionsArgs[] = { uri.getLastPathSegment() };
@@ -268,7 +284,7 @@ public class DouiContentProvider extends ContentProvider {
 		}
 			break;
 
-		case TODO_CONTEXT_URI_ID: {
+		case TODO_CONTEXT_LIST_URI_ID: {
 			String contextName = uri.getLastPathSegment();
 			result = douiSQLiteOpenHelper.getTableTodoContextsAdapter()
 					.queryContextItems(contextName);
@@ -299,17 +315,14 @@ public class DouiContentProvider extends ContentProvider {
 			douiSQLiteOpenHelper.getTableTodoCategoriesAdapter().update(values,
 					selection, selectionArgs);
 			break;
-		case TODO_ITEM_URI_ID: {
+		case TODO_CATEGORYS_ITEM_URI_ID:
+		case TODO_STATUS_ITEM_URI_ID: {
 			String selectConditions = TableTodoItemsAdapter.TABLE_TODO_ITEMS_ID
 					+ "= ?";
 			String selectConditionsArgs[] = { uri.getLastPathSegment() };
 			douiSQLiteOpenHelper.getTableTodoItemsAdapter().update(values,
 					selectConditions, selectConditionsArgs);
 		}
-			break;
-		case TODO_URI_ID:
-			douiSQLiteOpenHelper.getTableTodoItemsAdapter().update(values,
-					selection, selectionArgs);
 			break;
 		default:
 			Log.e(this.getClass().getName(),

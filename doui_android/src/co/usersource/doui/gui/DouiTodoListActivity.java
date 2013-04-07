@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageButton;
@@ -21,18 +22,21 @@ import co.usersource.doui.DouiContentProvider;
 import co.usersource.doui.R;
 import co.usersource.doui.database.adapters.TableTodoItemsAdapter;
 import co.usersource.doui.database.adapters.TableTodoCategoriesAdapter;
+import co.usersource.doui.database.adapters.TableTodoStatusAdapter;
 
 /**
- * @author rsh
- * This activity used to show a list of todo items.
- * This activity can show todo items from different projections:
- *  - context
- *  - category
- *  - status
+ * @author rsh This activity used to show a list of todo items. This activity
+ *         can show todo items from different projections: - context - category
+ *         - status
  */
 public class DouiTodoListActivity extends ListActivity {
+	/**
+	 * Identifier used to pass todoListUri to this activity.
+	 * */
+	public static final String STR_TODO_LIST_URI_EXT = "STR_TODO_LIST_URI_EXT";
+
 	private SimpleCursorAdapter adapter;
-	private Uri todoUri;
+	private Uri todoListUri;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -41,7 +45,7 @@ public class DouiTodoListActivity extends ListActivity {
 		setContentView(R.layout.todo_list_activity);
 		Bundle extras = getIntent().getExtras();
 		if (extras != null) {
-			todoUri = extras.getParcelable(DouiContentProvider.TODO_CATEGORIES_PATH);
+			todoListUri = extras.getParcelable(STR_TODO_LIST_URI_EXT);
 		}
 
 		fillList();
@@ -55,42 +59,72 @@ public class DouiTodoListActivity extends ListActivity {
 				Intent i = new Intent(self, DouiTodoItemEditActivity.class);
 				// TODO check whether it is acceptable to use
 				// DouiContentProvider.TODO_CATEGORIES_PATH
-				i.putExtra(DouiContentProvider.TODO_CATEGORIES_PATH, todoUri);
+				i.putExtra(DouiContentProvider.TODO_CATEGORIES_PATH,
+						todoListUri);
 				startActivity(i);
 			}
 		});
 
-		List<String> pathSegments = todoUri.getPathSegments();
-
-		// pathSegments.get(pathSegments.size() - 2) could be context or id of
-		// todo list
-		String itemListId = pathSegments.get(pathSegments.size() - 2);
-		if (!itemListId.equals(DouiContentProvider.TODO_CONTEXTS_PATH)) {
-			Uri uriList = Uri.parse("content://"
+		String listId;
+		int uriMatchId = DouiContentProvider.sURIMatcher.match(todoListUri);
+		switch (uriMatchId) {
+		case DouiContentProvider.TODO_CATEGORY_LIST_URI_ID:
+			listId = getListIdFromPath();
+			Uri uriCategory = Uri.parse("content://"
 					+ DouiContentProvider.AUTHORITY + "/"
-					+ DouiContentProvider.TODO_CATEGORIES_PATH + "/" + itemListId);
-			String listProperties[] = { TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME };
-			Cursor cursor = getContentResolver().query(uriList, listProperties,
+					+ DouiContentProvider.TODO_CATEGORIES_PATH + "/"
+					+ listId);
+			String listCategoryProperties[] = { TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME };
+			Cursor cursorCategory = getContentResolver().query(uriCategory, listCategoryProperties,
 					null, null, null);
-			cursor.moveToFirst();
-			String itemListName = cursor.getString(0);
-			TextView tvCaption = (TextView) findViewById(R.id.tvListName);
-			tvCaption.setText(itemListName);
+			cursorCategory.moveToFirst();
+			this.setCaption(cursorCategory.getString(0));
 			imbtAddTodoItem.setVisibility(View.VISIBLE);
-		} else {
+			break;
+		case DouiContentProvider.TODO_STATUS_LIST_URI_ID:
+			listId = getListIdFromPath();
+			Uri uriStatus = Uri.parse("content://"
+					+ DouiContentProvider.AUTHORITY + "/"
+					+ DouiContentProvider.TODO_STATUSES_PATH + "/"
+					+ listId);
+			String listStatusProperties[] = { TableTodoStatusAdapter.TABLE_TODO_STATUSES_NAME };
+			Cursor cursorStatus = getContentResolver().query(uriStatus, listStatusProperties,
+					null, null, null);
+			cursorStatus.moveToFirst();
+			this.setCaption(cursorStatus.getString(0));
+			imbtAddTodoItem.setVisibility(View.VISIBLE);
+			break;
+		case DouiContentProvider.TODO_CONTEXT_LIST_URI_ID:
 			imbtAddTodoItem.setVisibility(View.GONE);
-			TextView tvCaption = (TextView) findViewById(R.id.tvListName);
-			tvCaption.setText(todoUri.getLastPathSegment());
-
+			this.setCaption(todoListUri.getLastPathSegment());
+			break;
+		default:
+			Log.e(this.getClass().getName(),
+					"Unknown URI given to build list: " + todoListUri);
 		}
+		
+	}
+	
+	/** Utility function to get list Id from URI. Work for categories and statuses.*/
+	private String getListIdFromPath()
+	{
+		List<String> pathSegments = todoListUri.getPathSegments();
+		return pathSegments.get(pathSegments.size() - 2);
 	}
 
+	/** Utility function to set activity caption. */
+	private void setCaption(String caption)
+	{
+		TextView tvCaption = (TextView) findViewById(R.id.tvListName);
+		tvCaption.setText(caption);
+	}
+	
 	private void fillList() {
 		String[] from = new String[] { TableTodoItemsAdapter.TABLE_TODO_ITEMS_TITLE };
 		int[] to = new int[] { R.id.label };
 
 		ContentResolver cr = getContentResolver();
-		Cursor cursor = cr.query(todoUri, null, null, null, null);
+		Cursor cursor = cr.query(todoListUri, null, null, null, null);
 
 		adapter = new SimpleCursorAdapter(getApplicationContext(),
 				R.layout.todo_row, cursor, from, to);
@@ -103,15 +137,22 @@ public class DouiTodoListActivity extends ListActivity {
 		super.onRestart();
 	}
 
+	// TODO Change this to determinate whetjer we come from status or category
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		super.onListItemClick(l, v, position, id);
 
 		Cursor todoItemsCursor = (Cursor) l.getItemAtPosition(position);
 		todoItemsCursor.moveToPosition(position);
-		String idFkList = todoItemsCursor.getString(todoItemsCursor.getColumnIndex(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY)); 
+		String idFkList = todoItemsCursor
+				.getString(todoItemsCursor
+						.getColumnIndex(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY));
 		Intent i = new Intent(this, DouiTodoItemViewActivity.class);
-		Uri todoItemUri = Uri.parse(DouiContentProvider.TODO_CATEGORIES_URI.toString()
-				+ "/"+idFkList+"/" + DouiContentProvider.TODO_PATH+ "/" + id);
+		Uri todoItemUri = Uri.parse(DouiContentProvider.TODO_CATEGORIES_URI
+				.toString()
+				+ "/"
+				+ idFkList
+				+ "/"
+				+ DouiContentProvider.TODO_PATH + "/" + id);
 		i.putExtra(DouiContentProvider.TODO_CATEGORIES_PATH, todoItemUri);
 		startActivity(i);
 	}
