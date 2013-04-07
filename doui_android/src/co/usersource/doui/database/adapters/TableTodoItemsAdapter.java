@@ -32,18 +32,18 @@ public class TableTodoItemsAdapter implements ITableAdapter {
 	/** Table where todo items stored. Foreign key to current item status. */
 	public static final String TABLE_TODO_ITEMS_FK_STATUS = "fk_status";
 	/** Table where todo items stored. Reference to the primary list item. */
-	public static final String TABLE_TODO_ITEMS_FK_LIST = "fk_list";
+	public static final String TABLE_TODO_ITEMS_FK_CATEGORY = "fk_category";
 	/** Table where todo items stored. Create statement. */
 	public static final String STR_CREATE_TABLE_TODO_ITEMS = "create table "
 			+ TABLE_TODO_ITEMS + "(" + TABLE_TODO_ITEMS_ID
 			+ " integer primary key autoincrement, " + TABLE_TODO_ITEMS_TITLE
 			+ " TEXT, " + TABLE_TODO_ITEMS_BODY + " TEXT, "
 			+ TABLE_TODO_ITEMS_FK_STATUS + " INTEGER DEFAULT NULL, "
-			+ TABLE_TODO_ITEMS_FK_LIST + " INTEGER, " + "FOREIGN KEY("
+			+ TABLE_TODO_ITEMS_FK_CATEGORY + " INTEGER, " + "FOREIGN KEY("
 			+ TABLE_TODO_ITEMS_FK_STATUS + ") REFERENCES "
 			+ TableTodoStatusAdapter.TABLE_TODO_STATUSES + "("
 			+ TableTodoStatusAdapter.TABLE_TODO_STATUSES_ID + "),"
-			+ "FOREIGN KEY(" + TABLE_TODO_ITEMS_FK_LIST + ") REFERENCES "
+			+ "FOREIGN KEY(" + TABLE_TODO_ITEMS_FK_CATEGORY + ") REFERENCES "
 			+ TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES + "("
 			+ TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_ID + ")" + ");";
 
@@ -59,7 +59,7 @@ public class TableTodoItemsAdapter implements ITableAdapter {
 
 	public long insert(ContentValues values) {
 		long result = -1;
-		Integer todoListId = values.getAsInteger(TABLE_TODO_ITEMS_FK_LIST);
+		Integer todoListId = values.getAsInteger(TABLE_TODO_ITEMS_FK_CATEGORY);
 		if (null == todoListId) {
 			Log.e(this.getClass().getName(),
 					"todoListId is null, unable to create new TodoItem");

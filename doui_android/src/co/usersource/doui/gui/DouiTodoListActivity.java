@@ -108,7 +108,7 @@ public class DouiTodoListActivity extends ListActivity {
 
 		Cursor todoItemsCursor = (Cursor) l.getItemAtPosition(position);
 		todoItemsCursor.moveToPosition(position);
-		String idFkList = todoItemsCursor.getString(todoItemsCursor.getColumnIndex(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_LIST)); 
+		String idFkList = todoItemsCursor.getString(todoItemsCursor.getColumnIndex(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY)); 
 		Intent i = new Intent(this, DouiTodoItemViewActivity.class);
 		Uri todoItemUri = Uri.parse(DouiContentProvider.TODO_CATEGORIES_URI.toString()
 				+ "/"+idFkList+"/" + DouiContentProvider.TODO_PATH+ "/" + id);

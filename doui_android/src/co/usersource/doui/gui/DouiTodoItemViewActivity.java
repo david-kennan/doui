@@ -67,7 +67,7 @@ public class DouiTodoItemViewActivity extends Activity {
 		String[] projection = { TableTodoItemsAdapter.TABLE_TODO_ITEMS_ID,
 				TableTodoItemsAdapter.TABLE_TODO_ITEMS_TITLE,
 				TableTodoItemsAdapter.TABLE_TODO_ITEMS_BODY,
-				TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_LIST };
+				TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY };
 		Cursor cursor = getContentResolver().query(itemUri, projection, null,
 				null, null);
 		cursor.moveToFirst();

@@ -54,7 +54,7 @@ public class DouiTodoItemEditActivity extends Activity {
 			String[] projection = { TableTodoItemsAdapter.TABLE_TODO_ITEMS_ID,
 					TableTodoItemsAdapter.TABLE_TODO_ITEMS_TITLE,
 					TableTodoItemsAdapter.TABLE_TODO_ITEMS_BODY,
-					TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_LIST };
+					TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY };
 			Cursor cursor = getContentResolver().query(itemUri, projection, null,
 					null, null);
 			cursor.moveToFirst();
@@ -116,12 +116,12 @@ public class DouiTodoItemEditActivity extends Activity {
 				
 				if(DouiContentProvider.TODO_PATH.equals(pathSegments.get(pathSegments.size()-1)))
 				{
-					values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_LIST,
+					values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY,
 							pathSegments.get(pathSegments.size()-2));
 					
 				}else
 				{
-					values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_LIST,
+					values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY,
 							pathSegments.get(pathSegments.size()-3));
 				}
 				

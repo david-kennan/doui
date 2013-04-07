@@ -6,6 +6,7 @@ package co.usersource.doui.database;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import co.usersource.doui.database.adapters.ITableAdapter;
 import co.usersource.doui.database.adapters.TableTodoContextsAdapter;
@@ -13,6 +14,7 @@ import co.usersource.doui.database.adapters.TableTodoItemsAdapter;
 import co.usersource.doui.database.adapters.TableTodoItemsContextsAdapter;
 import co.usersource.doui.database.adapters.TableTodoCategoriesAdapter;
 import co.usersource.doui.database.adapters.TableTodoStatusAdapter;
+import co.usersource.doui.database.upgradeHelper.DouiDatabaseUpgradeHelper_1_2;
 
 /**
  * @author rsh
@@ -25,11 +27,11 @@ public class DouiSQLiteOpenHelper extends SQLiteOpenHelper {
 	/** Database name. */
 	public static final String DATABASE_NAME = "todo.db";
 	/** Version for upgrade routines. */
-	public static final int DATABASE_VERSION = 1;
+	public static final int DATABASE_VERSION = 2;
 
 
-	/** Helper member to access TodoList table. */
-	private ITableAdapter tableTodoListAdapter;
+	/** Helper member to access Todo categories table. */
+	private TableTodoCategoriesAdapter tableTodoCategoriesAdapter;
 	/** Helper member to access TodoItems table. */
 	private TableTodoItemsAdapter tableTodoItemsAdapter;
 	/** Helper member to access TodoContexts table. */
@@ -69,10 +71,10 @@ public class DouiSQLiteOpenHelper extends SQLiteOpenHelper {
 	}
 
 	/**
-	 * @return the tableTodoListAdapter
+	 * @return the tableTodoCategoriesAdapter
 	 */
-	public ITableAdapter getTableTodoListAdapter() {
-		return tableTodoListAdapter;
+	public TableTodoCategoriesAdapter getTableTodoCategoriesAdapter() {
+		return tableTodoCategoriesAdapter;
 	}
 
 	/**
@@ -80,7 +82,7 @@ public class DouiSQLiteOpenHelper extends SQLiteOpenHelper {
 	 * */
 	public DouiSQLiteOpenHelper(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
-		tableTodoListAdapter = new TableTodoCategoriesAdapter(this);  
+		tableTodoCategoriesAdapter = new TableTodoCategoriesAdapter(this);  
 		tableTodoItemsAdapter = new TableTodoItemsAdapter(this);
 		tableTodoContextsAdapter = new TableTodoContextsAdapter(this);
 		tableTodoItemsContextsAdapter = new TableTodoItemsContextsAdapter(this);
@@ -96,7 +98,7 @@ public class DouiSQLiteOpenHelper extends SQLiteOpenHelper {
 	 */
 	@Override
 	public void onCreate(SQLiteDatabase database) {
-		tableTodoListAdapter.onCreate(database);
+		tableTodoCategoriesAdapter.onCreate(database);
 		tableTodoContextsAdapter.onCreate(database);
 		tableTodoItemsAdapter.onCreate(database);
 		tableTodoItemsContextsAdapter.onCreate(database);
@@ -118,13 +120,13 @@ public class DouiSQLiteOpenHelper extends SQLiteOpenHelper {
 		}
 		if(oldVersion == 1 && newVersion == 2)
 		{
-			tableTodoStatusAdapter.onCreate(db);
-			tableTodoItemsAdapter.upgrade(db, oldVersion, newVersion);
-			/* TODO
-			 * 1. Lists from db v1 are categories now.
-			 * If todo has assigned list with the same name as existent category - set FK to that category.
-			 * 2. isDone became FK to the status 
-			 * */
+			DouiDatabaseUpgradeHelper_1_2 upgradeHelper = new DouiDatabaseUpgradeHelper_1_2();
+			try{
+				upgradeHelper.onUpgrade(this, db, oldVersion, newVersion);
+			}catch(Exception e)
+			{
+				Log.e(this.getClass().getName(), "OnUpgrade exception: "+ e.getMessage());
+			}
 		}
 		
 	}

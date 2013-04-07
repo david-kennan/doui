@@ -72,7 +72,7 @@ public class DouiContentProviderTestCase extends
 		ContentValues values = new ContentValues();
 		values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_TITLE, todoItemTitle);
 		values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_BODY, todoItemBody);
-		values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_LIST, listId);
+		values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY, listId);
 		Uri uriToDoItems = Uri.parse("content://"
 				+ DouiContentProvider.AUTHORITY + "/"
 				+ DouiContentProvider.TODO_CATEGORIES_PATH + "/" + listId + "/"
@@ -82,7 +82,7 @@ public class DouiContentProviderTestCase extends
 		String newItemFields[] = {
 				TableTodoItemsAdapter.TABLE_TODO_ITEMS_TITLE,
 				TableTodoItemsAdapter.TABLE_TODO_ITEMS_BODY,
-				TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_LIST };
+				TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY };
 		cursor = provider.query(newItemUri, newItemFields, null, null, null);
 		assertTrue(cursor.getCount() > 0);
 		cursor.moveToFirst();
@@ -116,7 +116,7 @@ public class DouiContentProviderTestCase extends
 		ContentValues values = new ContentValues();
 		values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_TITLE, todoItemTitle);
 		values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_BODY, todoItemBody);
-		values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_LIST, listId);
+		values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY, listId);
 		Uri uriToDoItems = Uri.parse("content://"
 				+ DouiContentProvider.AUTHORITY + "/"
 				+ DouiContentProvider.TODO_CATEGORIES_PATH + "/" + listId + "/"
@@ -126,7 +126,7 @@ public class DouiContentProviderTestCase extends
 		String newItemFields[] = {
 				TableTodoItemsAdapter.TABLE_TODO_ITEMS_TITLE,
 				TableTodoItemsAdapter.TABLE_TODO_ITEMS_BODY,
-				TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_LIST };
+				TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY };
 		cursor = provider.query(newItemUri, newItemFields, null, null, null);
 		assertTrue(cursor.getCount() > 0);
 		cursor.close();
@@ -165,7 +165,7 @@ public class DouiContentProviderTestCase extends
 		ContentValues values = new ContentValues();
 		values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_TITLE, todoItemTitle);
 		values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_BODY, todoItemBody);
-		values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_LIST, listId);
+		values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY, listId);
 		Uri uriToDoItems = Uri.parse("content://"
 				+ DouiContentProvider.AUTHORITY + "/"
 				+ DouiContentProvider.TODO_CATEGORIES_PATH + "/" + listId + "/"
@@ -175,7 +175,7 @@ public class DouiContentProviderTestCase extends
 		String newItemFields[] = {
 				TableTodoItemsAdapter.TABLE_TODO_ITEMS_TITLE,
 				TableTodoItemsAdapter.TABLE_TODO_ITEMS_BODY,
-				TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_LIST };
+				TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY };
 		cursor = provider.query(newItemUri, newItemFields, null, null, null);
 		assertTrue(cursor.getCount() > 0);
 		cursor.close();
@@ -207,7 +207,7 @@ public class DouiContentProviderTestCase extends
 		ContentValues values = new ContentValues();
 		values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_TITLE, todoItemTitle);
 		values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_BODY, todoItemBody);
-		values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_LIST, listId);
+		values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY, listId);
 		Uri uriToDoItems = Uri.parse("content://"
 				+ DouiContentProvider.AUTHORITY + "/"
 				+ DouiContentProvider.TODO_CATEGORIES_PATH + "/" + listId + "/"
@@ -217,7 +217,7 @@ public class DouiContentProviderTestCase extends
 		String newItemFields[] = {
 				TableTodoItemsAdapter.TABLE_TODO_ITEMS_TITLE,
 				TableTodoItemsAdapter.TABLE_TODO_ITEMS_BODY,
-				TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_LIST };
+				TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY };
 
 		values.clear();
 		values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_TITLE, todoItemTitle2);

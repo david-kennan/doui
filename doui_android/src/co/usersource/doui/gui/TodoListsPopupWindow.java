@@ -55,7 +55,7 @@ public class TodoListsPopupWindow extends PopupWindow {
 					int position, long id) {
 
 				ContentValues values = new ContentValues();
-				values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_LIST, id);
+				values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY, id);
 
 				String selection = TableTodoItemsAdapter.TABLE_TODO_ITEMS_ID
 						+ "=?";
