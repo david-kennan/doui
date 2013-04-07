@@ -35,7 +35,31 @@
         android:layout_marginLeft="5sp"
         android:text="Medium Text"
         android:textAppearance="?android:attr/textAppearanceMedium" />
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/white" />
 
+    <TextView
+        android:id="@+id/tvTodoSecondList"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="5sp"
+        android:text="Medium Text"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/white" />
+
+    <TextView
+        android:id="@+id/tvTodoContexts"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="5sp"
+        android:text="Small Text"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+    
     <View
         android:layout_width="fill_parent"
         android:layout_height="1dp"
@@ -76,15 +100,6 @@
             android:layout_weight="1"
             android:background="@android:color/transparent"
             android:src="@android:drawable/ic_menu_more" />
-
-        <ImageButton
-            android:id="@+id/imbtLike"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:background="@android:color/transparent"
-            android:scaleType="fitCenter"
-            android:src="@drawable/heart" />
     </LinearLayout>
 
 </LinearLayout>

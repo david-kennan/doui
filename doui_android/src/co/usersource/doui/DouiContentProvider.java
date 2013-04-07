@@ -240,13 +240,7 @@ public class DouiContentProvider extends ContentProvider {
 					projection, selection, selectionArgs, sortOrder);
 			break;
 		case TODO_STATUS_URI_ID: {
-			String selectConditions = TableTodoStatusAdapter.TABLE_TODO_STATUSES_ID // TODO
-																					// maybe
-																					// name
-																					// here
-																					// should
-																					// be
-																					// used?
+			String selectConditions = TableTodoStatusAdapter.TABLE_TODO_STATUSES_ID
 					+ "= ?";
 			String selectConditionsArgs[] = { uri.getLastPathSegment() };
 			result = douiSQLiteOpenHelper.getTableTodoStatusAdapter().query(
@@ -254,7 +248,17 @@ public class DouiContentProvider extends ContentProvider {
 					sortOrder);
 		}
 			break;
-		case TODO_STATUS_LIST_URI_ID:
+		case TODO_STATUS_LIST_URI_ID: {
+			List<String> uriSegments = uri.getPathSegments();
+			String listId = uriSegments.get((uriSegments.size() - 1) - 1);
+			String selectConditions = TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_STATUS
+					+ "= ? ";
+			String selectConditionsArgs[] = { listId };
+			result = douiSQLiteOpenHelper.getTableTodoItemsAdapter().query(
+					projection, selectConditions, selectConditionsArgs,
+					sortOrder);
+		}
+			break;
 		case TODO_CATEGORY_LIST_URI_ID: {
 			List<String> uriSegments = uri.getPathSegments();
 			String listId = uriSegments.get((uriSegments.size() - 1) - 1);
