@@ -67,16 +67,16 @@ public class DouiTodoItemViewActivity extends Activity {
 		}
 		this.refreshTodoItemData();
 
-		/*imbtEdit = (ImageButton) findViewById(R.id.imbtEdit);
+		imbtEdit = (ImageButton) findViewById(R.id.imbtEdit);
 		final DouiTodoItemViewActivity self = this;
 		imbtEdit.setOnClickListener(new OnClickListener() {
 
 			public void onClick(View v) {
 				Intent i = new Intent(self, DouiTodoItemEditActivity.class);
-				i.putExtra(DouiContentProvider.TODO_CATEGORIES_PATH, itemUri);
+				i.putExtra(DouiTodoItemEditActivity.STR_TODO_ITEM_URI_EXT, itemUri);
 				startActivity(i);
 			}
-		});*/
+		});
 	}
 
 	private void refreshTodoItemData() {

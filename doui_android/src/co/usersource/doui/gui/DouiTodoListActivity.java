@@ -57,9 +57,7 @@ public class DouiTodoListActivity extends ListActivity {
 
 			public void onClick(View v) {
 				Intent i = new Intent(self, DouiTodoItemEditActivity.class);
-				// TODO check whether it is acceptable to use
-				// DouiContentProvider.TODO_CATEGORIES_PATH
-				i.putExtra(DouiContentProvider.TODO_CATEGORIES_PATH,
+				i.putExtra(DouiTodoItemEditActivity.STR_TODO_ITEM_URI_EXT,
 						todoListUri);
 				startActivity(i);
 			}
