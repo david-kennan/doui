@@ -12,6 +12,8 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -38,7 +40,7 @@ public class DouiTodoItemEditActivity extends Activity {
 	private ImageButton imbtCancel;
 	private ImageButton imbtSave;
 	private String itemId;
-	
+
 	private String itemTitle = "";
 	private String itemBody = "";
 	private String itemCategoryId;
@@ -46,11 +48,9 @@ public class DouiTodoItemEditActivity extends Activity {
 	private String itemStatusId;
 	private String itemStatusName = "";
 
-	
 	private TextView tvTodoListName;
 	private EditText etTodoItemTitle;
 	private EditText etTodoItemBody;
-
 
 	private int uriMatch;
 
@@ -71,49 +71,6 @@ public class DouiTodoItemEditActivity extends Activity {
 		this.loadToDoItemProperties();
 		this.initUiControls();
 
-		// TODO Restore this
-		/*imbtSave = (ImageButton) findViewById(R.id.imbtSave);
-		imbtSave.setOnClickListener(new OnClickListener() {
-
-			public void onClick(View v) {
-				ContentValues values = new ContentValues();
-				values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_TITLE,
-						((EditText) findViewById(R.id.etTodoItemTitle))
-								.getText().toString());
-				values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_BODY,
-						((EditText) findViewById(R.id.etTodoItemBody))
-								.getText().toString());
-
-				List<String> pathSegments = itemUri.getPathSegments();
-
-				if (DouiContentProvider.TODO_PATH.equals(pathSegments
-						.get(pathSegments.size() - 1))) {
-					values.put(
-							TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY,
-							pathSegments.get(pathSegments.size() - 2));
-
-				} else {
-					values.put(
-							TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY,
-							pathSegments.get(pathSegments.size() - 3));
-				}
-
-				if (itemUri.getLastPathSegment().equals(
-						DouiContentProvider.TODO_PATH)) {
-					itemUri = getContentResolver().insert(itemUri, values);
-				} else {
-					String selection = TableTodoItemsAdapter.TABLE_TODO_ITEMS_ID
-							+ "=?";
-					String selectionArgs[] = { itemUri.getLastPathSegment() };
-					getContentResolver().update(itemUri, values, selection,
-							selectionArgs);
-				}
-				Toast toast = Toast.makeText(getApplicationContext(),
-						"Item saved", Toast.LENGTH_SHORT);
-				toast.show();
-				finish();
-			}
-		});*/
 	}
 
 	/**
@@ -223,8 +180,39 @@ public class DouiTodoItemEditActivity extends Activity {
 		tvSecondListName = (TextView) findViewById(R.id.tvSecondListName);
 
 		etTodoItemTitle.setText(itemTitle);
-		etTodoItemBody.setText(itemBody);
+		etTodoItemTitle.addTextChangedListener(new TextWatcher() {
 
+			public void onTextChanged(CharSequence s, int start, int before,
+					int count) {
+
+			}
+
+			public void beforeTextChanged(CharSequence s, int start, int count,
+					int after) {
+
+			}
+
+			public void afterTextChanged(Editable s) {
+				itemTitle = etTodoItemTitle.getText().toString();
+			}
+		});
+		etTodoItemBody.setText(itemBody);
+		etTodoItemBody.addTextChangedListener(new TextWatcher() {
+
+			public void onTextChanged(CharSequence s, int start, int before,
+					int count) {
+
+			}
+
+			public void beforeTextChanged(CharSequence s, int start, int count,
+					int after) {
+
+			}
+
+			public void afterTextChanged(Editable s) {
+				itemBody = etTodoItemBody.getText().toString();
+			}
+		});
 		switch (uriMatch) {
 		case DouiContentProvider.TODO_CATEGORYS_ITEM_URI_ID:
 			tvTodoListName.setText(itemCategoryName);
@@ -264,6 +252,44 @@ public class DouiTodoItemEditActivity extends Activity {
 				finish();
 			}
 		});
+		imbtSave = (ImageButton) findViewById(R.id.imbtSave);
+		imbtSave.setOnClickListener(new OnClickListener() {
 
+			public void onClick(View v) {
+				if (!itemTitle.equals("")) {
+					ContentValues values = new ContentValues();
+					values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_TITLE,
+							itemTitle);
+					values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_BODY,
+							itemBody);
+
+					values.put(
+							TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY,
+							itemCategoryId);
+					values.put(
+							TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_STATUS,
+							itemStatusId);
+
+					if (null != itemId) {
+						itemUri = getContentResolver().insert(itemUri, values);
+					} else {
+						String selection = TableTodoItemsAdapter.TABLE_TODO_ITEMS_ID
+								+ "=?";
+						String selectionArgs[] = { itemId };
+						getContentResolver().update(itemUri, values, selection,
+								selectionArgs);
+					}
+					Toast toast = Toast.makeText(getApplicationContext(),
+							"Item saved", Toast.LENGTH_SHORT);
+					toast.show();
+					finish();
+				} else {
+					Toast toast = Toast.makeText(getApplicationContext(),
+							"Can't save item without title!", Toast.LENGTH_SHORT);
+					toast.show();
+
+				}
+			}
+		});
 	}
 }
