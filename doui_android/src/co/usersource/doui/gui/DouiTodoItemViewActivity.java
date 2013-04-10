@@ -164,7 +164,7 @@ public class DouiTodoItemViewActivity extends Activity {
 		
 		/*imbtSetList = (ImageButton) findViewById(R.id.imbtSetList);
 		imbtSetList.setOnClickListener(new OnClickListener() {
-			TodoListsPopupWindow popup;
+			TodoListPopupWindow popup;
 
 			public void onClick(View v) {
 
@@ -172,7 +172,7 @@ public class DouiTodoItemViewActivity extends Activity {
 					if (popup != null) {
 						popup.dismiss();
 					}
-					popup = new TodoListsPopupWindow(getApplicationContext(),
+					popup = new TodoListPopupWindow(getApplicationContext(),
 							itemUri);
 					popup.showAtLocation(llMain, Gravity.RIGHT | Gravity.TOP,
 							0, 0);

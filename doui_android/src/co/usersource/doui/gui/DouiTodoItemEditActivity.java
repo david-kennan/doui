@@ -15,6 +15,7 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.EditText;
@@ -23,8 +24,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 import co.usersource.doui.DouiContentProvider;
 import co.usersource.doui.R;
-import co.usersource.doui.database.adapters.TableTodoItemsAdapter;
 import co.usersource.doui.database.adapters.TableTodoCategoriesAdapter;
+import co.usersource.doui.database.adapters.TableTodoItemsAdapter;
 import co.usersource.doui.database.adapters.TableTodoStatusAdapter;
 
 /**
@@ -35,6 +36,9 @@ public class DouiTodoItemEditActivity extends Activity {
 
 	/** Id for extras used to store URI for todo item. */
 	public static final String STR_TODO_ITEM_URI_EXT = "STR_TODO_ITEM_URI_EXT";
+
+	/** Name for the category to be set by default. */
+	private static final String STR_DEFAULT_CATEGORY_NAME = "-None-";
 
 	private Uri itemUri;
 	private ImageButton imbtCancel;
@@ -119,6 +123,31 @@ public class DouiTodoItemEditActivity extends Activity {
 	}
 
 	/**
+	 * Utility function to load Category properties by existing name. Updates
+	 * local category fields.
+	 * */
+	private void loadCategoryByName(String itemCategoryName) {
+		if (itemCategoryName != null && !itemCategoryName.equals("")) {
+			// Load category name
+			Uri uriList = Uri.parse("content://"
+					+ DouiContentProvider.AUTHORITY + "/"
+					+ DouiContentProvider.TODO_CATEGORIES_PATH);
+			String listProperties[] = {
+					TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_ID,
+					TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME };
+			String selection = TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME
+					+ "=?";
+			String selectionArgs[] = { itemCategoryName };
+			Cursor cursor = getContentResolver().query(uriList, listProperties,
+					selection, selectionArgs, null);
+			cursor.moveToFirst();
+			this.itemCategoryId = cursor.getString(0);
+			this.itemCategoryName = cursor.getString(1);
+			cursor.close();
+		}
+	}
+
+	/**
 	 * Utility function to load Status properties by existing id. Updates local
 	 * status fields.
 	 * */
@@ -153,14 +182,14 @@ public class DouiTodoItemEditActivity extends Activity {
 			List<String> pathSegments = itemUri.getPathSegments();
 			String itemCategoryId = pathSegments.get(pathSegments.size() - 2);
 			this.loadCategoryById(itemCategoryId);
-			// TODO set default status here
+			// Default status is null.
 			break;
 		case DouiContentProvider.TODO_STATUS_LIST_URI_ID:
 			List<String> statusPathSegments = itemUri.getPathSegments();
 			String itemStatusId = statusPathSegments.get(statusPathSegments
 					.size() - 2);
 			this.loadStatusById(itemStatusId);
-			// TODO set default category here
+			this.loadCategoryByName(STR_DEFAULT_CATEGORY_NAME);
 			break;
 		default:
 			Log.e(this.getClass().getName(), "Unknown URI for edit Activity: "
@@ -177,8 +206,6 @@ public class DouiTodoItemEditActivity extends Activity {
 		etTodoItemTitle = (EditText) findViewById(R.id.etTodoItemTitle);
 		etTodoItemBody = (EditText) findViewById(R.id.etTodoItemBody);
 		tvTodoListName = (TextView) findViewById(R.id.tvListName);
-		tvSecondListName = (TextView) findViewById(R.id.tvSecondListName);
-
 		etTodoItemTitle.setText(itemTitle);
 		etTodoItemTitle.addTextChangedListener(new TextWatcher() {
 
@@ -213,21 +240,26 @@ public class DouiTodoItemEditActivity extends Activity {
 				itemBody = etTodoItemBody.getText().toString();
 			}
 		});
+
+		this.createSecondListControl();
+
 		switch (uriMatch) {
 		case DouiContentProvider.TODO_CATEGORYS_ITEM_URI_ID:
 			tvTodoListName.setText(itemCategoryName);
-			tvSecondListName.setText(itemStatusName);
+			tvSecondListName.setVisibility(View.GONE);
 			break;
 		case DouiContentProvider.TODO_STATUS_ITEM_URI_ID:
 			tvTodoListName.setText(itemStatusName);
+			tvSecondListName.setVisibility(View.VISIBLE);
 			tvSecondListName.setText(itemCategoryName);
 			break;
 		case DouiContentProvider.TODO_CATEGORY_LIST_URI_ID:
 			tvTodoListName.setText(itemCategoryName);
-			tvSecondListName.setText(itemStatusName);
+			tvSecondListName.setVisibility(View.GONE);
 			break;
 		case DouiContentProvider.TODO_STATUS_LIST_URI_ID:
 			tvTodoListName.setText(itemStatusName);
+			tvSecondListName.setVisibility(View.VISIBLE);
 			tvSecondListName.setText(itemCategoryName);
 			break;
 		default:
@@ -244,6 +276,45 @@ public class DouiTodoItemEditActivity extends Activity {
 		}
 		tvTodoContexts.setText(strContexts);
 
+		this.createActionBar();
+	}
+
+	private void createSecondListControl() {
+		tvSecondListName = (TextView) findViewById(R.id.tvSecondListName);
+		tvSecondListName.setOnClickListener(new OnClickListener() {
+			TodoListPopupWindow popup;
+			public void onClick(View v) {
+				Uri uriList = Uri.parse("content://"
+						+ DouiContentProvider.AUTHORITY + "/"
+						+ DouiContentProvider.TODO_CATEGORIES_PATH);
+				String[] projection = {
+						TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME,
+						TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_ID };
+				
+				if (popup == null || !popup.isShowing()) {
+					if (popup != null) {
+						popup.dismiss();
+					}
+					popup = new TodoListPopupWindow(
+							getApplicationContext(), uriList, "Change Category",
+							projection, null, null);
+					popup.showAtLocation(tvSecondListName, Gravity.TOP | Gravity.LEFT,
+							0, 0);
+					int location[] = { 0, 0 };
+					tvSecondListName.getLocationOnScreen(location);
+					popup.update(location[0],location[1]+tvSecondListName.getHeight(), 300, 200);
+					
+				} else {
+					popup.dismiss();
+				}
+			}
+		});
+	}
+
+	/**
+	 * Utility function to create action bar at the top of the screen.
+	 * */
+	private void createActionBar() {
 		// Actionbar buttons.
 		imbtCancel = (ImageButton) findViewById(R.id.imbtCancel);
 		imbtCancel.setOnClickListener(new OnClickListener() {
@@ -285,7 +356,8 @@ public class DouiTodoItemEditActivity extends Activity {
 					finish();
 				} else {
 					Toast toast = Toast.makeText(getApplicationContext(),
-							"Can't save item without title!", Toast.LENGTH_SHORT);
+							"Can't save item without title!",
+							Toast.LENGTH_SHORT);
 					toast.show();
 
 				}
