@@ -18,6 +18,8 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -30,6 +32,8 @@ import co.usersource.doui.database.adapters.TableTodoStatusAdapter;
 
 /**
  * @author rsh
+ * 
+ *         Todo item editor activity.
  * 
  */
 public class DouiTodoItemEditActivity extends Activity {
@@ -274,15 +278,25 @@ public class DouiTodoItemEditActivity extends Activity {
 		while (contextMatcher.find()) {
 			strContexts += contextMatcher.group(0) + " ";
 		}
-		tvTodoContexts.setText(strContexts);
+		if (!strContexts.equals("")) {
+			tvTodoContexts.setText(strContexts);
+			tvTodoContexts.setVisibility(View.VISIBLE);
+		} else {
+			tvTodoContexts.setVisibility(View.GONE);
+		}
 
 		this.createActionBar();
 	}
 
+	/**
+	 * Utility function create second list name control. This control is active
+	 * only for category name and have popup, which allow to select category.
+	 * */
 	private void createSecondListControl() {
 		tvSecondListName = (TextView) findViewById(R.id.tvSecondListName);
 		tvSecondListName.setOnClickListener(new OnClickListener() {
 			TodoListPopupWindow popup;
+
 			public void onClick(View v) {
 				Uri uriList = Uri.parse("content://"
 						+ DouiContentProvider.AUTHORITY + "/"
@@ -290,20 +304,30 @@ public class DouiTodoItemEditActivity extends Activity {
 				String[] projection = {
 						TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME,
 						TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_ID };
-				
+
 				if (popup == null || !popup.isShowing()) {
 					if (popup != null) {
 						popup.dismiss();
 					}
-					popup = new TodoListPopupWindow(
-							getApplicationContext(), uriList, "Change Category",
-							projection, null, null);
-					popup.showAtLocation(tvSecondListName, Gravity.TOP | Gravity.LEFT,
-							0, 0);
+					popup = new TodoListPopupWindow(getApplicationContext(),
+							uriList, "Change Category", projection, null, null);
+					popup.getLvTodoLists().setOnItemClickListener(
+							new OnItemClickListener() {
+
+								public void onItemClick(AdapterView<?> arg0,
+										View arg1, int position, long id) {
+									loadCategoryById(new Long(id).toString());
+									popup.dismiss();
+								}
+							});
+					popup.showAtLocation(tvSecondListName, Gravity.TOP
+							| Gravity.LEFT, 0, 0);
 					int location[] = { 0, 0 };
 					tvSecondListName.getLocationOnScreen(location);
-					popup.update(location[0],location[1]+tvSecondListName.getHeight(), 300, 200);
-					
+					popup.update(location[0],
+							location[1] + tvSecondListName.getHeight(), 300,
+							200);
+
 				} else {
 					popup.dismiss();
 				}
@@ -341,7 +365,7 @@ public class DouiTodoItemEditActivity extends Activity {
 							TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_STATUS,
 							itemStatusId);
 
-					if (null != itemId) {
+					if (null == itemId) {
 						itemUri = getContentResolver().insert(itemUri, values);
 					} else {
 						String selection = TableTodoItemsAdapter.TABLE_TODO_ITEMS_ID

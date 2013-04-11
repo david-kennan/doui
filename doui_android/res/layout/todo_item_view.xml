@@ -47,10 +47,6 @@
         android:layout_marginLeft="5sp"
         android:text="Medium Text"
         android:textAppearance="?android:attr/textAppearanceMedium" />
-    <View
-        android:layout_width="fill_parent"
-        android:layout_height="1dp"
-        android:background="@android:color/white" />
 
     <TextView
         android:id="@+id/tvTodoContexts"

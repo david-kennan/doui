@@ -146,19 +146,17 @@ public class DouiTodoListActivity extends ListActivity {
 		int uriMatchId = DouiContentProvider.sURIMatcher.match(todoListUri);
 		switch (uriMatchId) {
 		case DouiContentProvider.TODO_CATEGORY_LIST_URI_ID:
+		case DouiContentProvider.TODO_CONTEXT_LIST_URI_ID:
 			pathStart = DouiContentProvider.TODO_CATEGORIES_URI.toString();
 			idFkList = todoItemsCursor
 					.getString(todoItemsCursor
 							.getColumnIndex(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY));
 			break;
 		case DouiContentProvider.TODO_STATUS_LIST_URI_ID:
-			pathStart = DouiContentProvider.TODO_STATUSES_PATH.toString();
+			pathStart = DouiContentProvider.TODO_STATUSES_URI.toString();
 			idFkList = todoItemsCursor
 					.getString(todoItemsCursor
 							.getColumnIndex(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_STATUS));
-			break;
-		case DouiContentProvider.TODO_CONTEXT_LIST_URI_ID:
-			pathStart = DouiContentProvider.TODO_CATEGORIES_URI.toString();
 			break;
 		default:
 			Log.e(this.getClass().getName(),

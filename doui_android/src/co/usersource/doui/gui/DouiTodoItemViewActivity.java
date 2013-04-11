@@ -15,14 +15,16 @@ import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.AdapterView;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.AdapterView.OnItemClickListener;
 import co.usersource.doui.DouiContentProvider;
 import co.usersource.doui.R;
-import co.usersource.doui.database.adapters.TableTodoItemsAdapter;
 import co.usersource.doui.database.adapters.TableTodoCategoriesAdapter;
+import co.usersource.doui.database.adapters.TableTodoItemsAdapter;
 import co.usersource.doui.database.adapters.TableTodoStatusAdapter;
 
 /**
@@ -33,6 +35,9 @@ public class DouiTodoItemViewActivity extends Activity {
 
 	/** Id for extras used to store URI for todo item. */
 	public static final String STR_TODO_ITEM_URI_EXT = "STR_TODO_ITEM_URI_EXT";
+	
+	/** Name for status done */
+	private static final String STR_DONE_STATUS_NAME = "Done";
 
 	private Uri itemUri;
 	private String itemId;
@@ -61,6 +66,7 @@ public class DouiTodoItemViewActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.todo_item_view);
+		
 		Bundle extras = getIntent().getExtras();
 		if (extras != null) {
 			itemUri = extras.getParcelable(STR_TODO_ITEM_URI_EXT);
@@ -143,11 +149,12 @@ public class DouiTodoItemViewActivity extends Activity {
 		switch (uriMatchId) {
 		case DouiContentProvider.TODO_STATUS_ITEM_URI_ID:
 			tvTodoListName.setText(itemStatusName);
+			tvTodoSecondList.setVisibility(View.VISIBLE);
 			tvTodoSecondList.setText(itemCategoryName);
 			break;
 		case DouiContentProvider.TODO_CATEGORYS_ITEM_URI_ID:
 			tvTodoListName.setText(itemCategoryName);
-			tvTodoSecondList.setText(itemStatusName);
+			tvTodoSecondList.setVisibility(View.GONE);
 			break;
 		default:
 			break;
@@ -160,20 +167,58 @@ public class DouiTodoItemViewActivity extends Activity {
 		while (contextMatcher.find()) {
 			strContexts+=contextMatcher.group(0)+" ";
 		}
-		tvTodoContexts.setText(strContexts);
+		if(!strContexts.equals(""))
+		{
+			tvTodoContexts.setText(strContexts);
+			tvTodoContexts.setVisibility(View.VISIBLE);
+		}else
+		{
+			tvTodoContexts.setVisibility(View.GONE);
+		}
 		
-		/*imbtSetList = (ImageButton) findViewById(R.id.imbtSetList);
+		imbtSetDone = (ImageButton) findViewById(R.id.imbtDone);
+		imbtSetDone.setOnClickListener(new OnClickListener() {
+			
+			public void onClick(View v) {
+				String doneStatusId = getStatusIdByName(STR_DONE_STATUS_NAME);
+				if(null!=doneStatusId)
+				{
+					setItemStatus(doneStatusId);
+				}
+			}
+		});
+		
+		imbtSetList = (ImageButton) findViewById(R.id.imbtSetList);
 		imbtSetList.setOnClickListener(new OnClickListener() {
 			TodoListPopupWindow popup;
 
 			public void onClick(View v) {
+				Uri uriList = Uri.parse("content://"
+						+ DouiContentProvider.AUTHORITY + "/"
+						+ DouiContentProvider.TODO_STATUSES_PATH);
+				String[] projection = {
+						TableTodoStatusAdapter.TABLE_TODO_STATUSES_NAME,
+						TableTodoStatusAdapter.TABLE_TODO_STATUSES_ID };
 
+				String skipItem = TableTodoStatusAdapter.TABLE_TODO_STATUSES_NAME + " <> ?" +
+						"and "+TableTodoStatusAdapter.TABLE_TODO_STATUSES_ID+" <> ?";
+				String[] skipItemArg = {STR_DONE_STATUS_NAME, itemStatusId};
 				if (popup == null || !popup.isShowing()) {
 					if (popup != null) {
 						popup.dismiss();
 					}
 					popup = new TodoListPopupWindow(getApplicationContext(),
-							itemUri);
+							uriList, "Set status", projection, skipItem, skipItemArg);
+					popup.getLvTodoLists().setOnItemClickListener(
+							new OnItemClickListener() {
+
+								public void onItemClick(AdapterView<?> arg0,
+										View arg1, int position, long id) {
+									setItemStatus(new Long(id).toString());
+									popup.dismiss();
+								}
+							});
+
 					popup.showAtLocation(llMain, Gravity.RIGHT | Gravity.TOP,
 							0, 0);
 					int location[] = { 0, 0 };
@@ -183,9 +228,53 @@ public class DouiTodoItemViewActivity extends Activity {
 					popup.dismiss();
 				}
 			}
-		});*/
+		});
 	}
+	/**
+	 * Utility function to load Category properties by existing name. Updates
+	 * local category fields.
+	 * */
+	private String getStatusIdByName(String itemStatusName) {
+		String result = null;
+		if (itemStatusName != null && !itemStatusName.equals("")) {
+			// Load category name
+			Uri uriList = Uri.parse("content://"
+					+ DouiContentProvider.AUTHORITY + "/"
+					+ DouiContentProvider.TODO_STATUSES_PATH);
+			String listProperties[] = {
+					TableTodoStatusAdapter.TABLE_TODO_STATUSES_ID,
+					TableTodoStatusAdapter.TABLE_TODO_STATUSES_NAME };
+			String selection = TableTodoStatusAdapter.TABLE_TODO_STATUSES_NAME
+					+ "=?";
+			String selectionArgs[] = { itemStatusName };
+			Cursor cursor = getContentResolver().query(uriList, listProperties,
+					selection, selectionArgs, null);
+			cursor.moveToFirst();
+			result = cursor.getString(0);
+			cursor.close();
+		}
+		return result;
+	}
+	
+	private void setItemStatus(String statusId)
+	{
+		ContentValues values = new ContentValues();
+		values.put(
+				TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_STATUS,
+				statusId);
 
+		String selection = TableTodoItemsAdapter.TABLE_TODO_ITEMS_ID
+				+ "=?";
+		String selectionArgs[] = { itemId };
+		getContentResolver().update(itemUri, values, selection,
+				selectionArgs);
+		itemStatusId = statusId;
+		Toast toast = Toast.makeText(getApplicationContext(), "Status set", Toast.LENGTH_SHORT);
+		toast.show();
+		refreshTodoItemData();
+
+	}
+	
 	@Override
 	protected void onRestart() {
 		this.refreshTodoItemData();
