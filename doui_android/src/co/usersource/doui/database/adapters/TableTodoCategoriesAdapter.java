@@ -57,7 +57,9 @@ public class TableTodoCategoriesAdapter implements ITableAdapter {
 	 * @see co.usersource.doui.database.ITableAdapter#delete(java.lang.String, java.lang.String[])
 	 */
 	public int delete(String arg1, String[] arg2) {
-		return 0;
+		SQLiteDatabase database = this.sqliteOpenHelper.getWritableDatabase();
+		int result = database.delete(TABLE_TODO_CATEGORIES, arg1, arg2);
+		return result;
 	}
 
 	/* (non-Javadoc)
@@ -65,7 +67,9 @@ public class TableTodoCategoriesAdapter implements ITableAdapter {
 	 */
 	public int update(ContentValues values, String selection,
 			String[] selectionArgs) {
-		return 0;
+		SQLiteDatabase database = this.sqliteOpenHelper.getWritableDatabase();
+		int result = database.update(TABLE_TODO_CATEGORIES, values, selection, selectionArgs);
+		return result;
 	}
 
 	/* (non-Javadoc)

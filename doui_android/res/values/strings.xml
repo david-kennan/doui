@@ -8,5 +8,8 @@
     <string name="todoItemViewBtEdit">Edit</string>
     <string name="todoItemViewBtSetDone">Set done</string>
     <string name="todoItemViewBtToList">Move to list</string>
+    <string name="todoCategoryEditableRowSave">Save</string>
+    <string name="todoCategoryEditableRowAdd">Add category</string>
+    <string name="todoCategoriesManagerTitle">Categories</string>
 
 </resources>

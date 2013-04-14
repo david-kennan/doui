@@ -22,5 +22,6 @@
         <activity android:name=".gui.DouiTodoListActivity"></activity>
         <activity android:name=".gui.DouiTodoItemEditActivity"></activity>
         <activity android:name=".gui.DouiTodoItemViewActivity"></activity>
+        <activity android:name=".gui.DouiTodoCategoriesManagerActivity"></activity>
 </application>
 </manifest>

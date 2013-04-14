@@ -42,10 +42,10 @@ public class TableTodoItemsAdapter implements ITableAdapter {
 			+ TABLE_TODO_ITEMS_FK_CATEGORY + " INTEGER, " + "FOREIGN KEY("
 			+ TABLE_TODO_ITEMS_FK_STATUS + ") REFERENCES "
 			+ TableTodoStatusAdapter.TABLE_TODO_STATUSES + "("
-			+ TableTodoStatusAdapter.TABLE_TODO_STATUSES_ID + "),"
+			+ TableTodoStatusAdapter.TABLE_TODO_STATUSES_ID + ") ON DELETE RESTRICT,"
 			+ "FOREIGN KEY(" + TABLE_TODO_ITEMS_FK_CATEGORY + ") REFERENCES "
 			+ TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES + "("
-			+ TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_ID + ")" + ");";
+			+ TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_ID + ") ON DELETE RESTRICT" + ");";
 
 	private DouiSQLiteOpenHelper sqliteOpenHelper;
 

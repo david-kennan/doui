@@ -121,6 +121,15 @@ public class DouiContentProvider extends ContentProvider {
 			result = douiSQLiteOpenHelper.getTableTodoCategoriesAdapter()
 					.delete(selection, selectionArgs);
 			break;
+		// Single row delete
+		case TODO_CATEGORY_URI_ID: {
+			String selectConditions = TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_ID
+					+ "= ?";
+			String selectConditionsArgs[] = { uri.getLastPathSegment() };
+			douiSQLiteOpenHelper.getTableTodoCategoriesAdapter().delete(selectConditions, selectConditionsArgs);
+		}
+			break;
+
 		case TODO_CATEGORYS_ITEM_URI_ID:
 		case TODO_STATUS_ITEM_URI_ID:
 			String itemSelection = TableTodoItemsAdapter.TABLE_TODO_ITEMS_ID
@@ -315,10 +324,21 @@ public class DouiContentProvider extends ContentProvider {
 		int uriType = sURIMatcher.match(uri);
 		switch (uriType) {
 
+		// Batch update of multiple items
 		case TODO_CATEGORIES_URI_ID:
 			douiSQLiteOpenHelper.getTableTodoCategoriesAdapter().update(values,
 					selection, selectionArgs);
 			break;
+		// Single row update
+		case TODO_CATEGORY_URI_ID: {
+			String selectConditions = TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_ID
+					+ "= ?";
+			String selectConditionsArgs[] = { uri.getLastPathSegment() };
+			douiSQLiteOpenHelper.getTableTodoCategoriesAdapter().update(values,
+					selectConditions, selectConditionsArgs);
+		}
+			break;
+
 		case TODO_CATEGORYS_ITEM_URI_ID:
 		case TODO_STATUS_ITEM_URI_ID: {
 			String selectConditions = TableTodoItemsAdapter.TABLE_TODO_ITEMS_ID

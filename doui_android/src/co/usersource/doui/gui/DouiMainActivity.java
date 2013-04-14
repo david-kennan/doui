@@ -8,12 +8,14 @@ import android.database.MergeCursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import co.usersource.doui.DouiContentProvider;
 import co.usersource.doui.R;
-import co.usersource.doui.database.adapters.TableTodoContextsAdapter;
 import co.usersource.doui.database.adapters.TableTodoCategoriesAdapter;
+import co.usersource.doui.database.adapters.TableTodoContextsAdapter;
 import co.usersource.doui.database.adapters.TableTodoStatusAdapter;
 
 public class DouiMainActivity extends ListActivity {
@@ -21,6 +23,7 @@ public class DouiMainActivity extends ListActivity {
 	private Cursor cursorToDoCategories;
 	private Cursor cursorStatuses;
 	private Cursor cursorContexts;
+	private Button btCategories;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -28,7 +31,14 @@ public class DouiMainActivity extends ListActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 		fillList();
-
+		btCategories = (Button)findViewById(R.id.btCategories);
+		btCategories.setOnClickListener(new OnClickListener() {
+			
+			public void onClick(View v) {
+				Intent i = new Intent(DouiMainActivity.this, DouiTodoCategoriesManagerActivity.class);
+				startActivity(i);
+			}
+		});
 	}
 
 	@Override
