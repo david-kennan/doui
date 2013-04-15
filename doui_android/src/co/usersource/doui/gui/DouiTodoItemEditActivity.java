@@ -317,6 +317,7 @@ public class DouiTodoItemEditActivity extends Activity {
 								public void onItemClick(AdapterView<?> arg0,
 										View arg1, int position, long id) {
 									loadCategoryById(new Long(id).toString());
+									tvSecondListName.setText(itemCategoryName);
 									popup.dismiss();
 								}
 							});
