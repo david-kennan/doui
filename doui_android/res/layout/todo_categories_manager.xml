@@ -31,7 +31,8 @@
     </ListView>
 
     <include
-        android:layout_width="wrap_content"
+        android:id="@+id/iAddRowView"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         layout="@layout/todo_category_editable_row" />
 

@@ -51,6 +51,17 @@ public class DouiTodoCategoryEditHelper {
 		//imbtCancel.setVisibility(View.VISIBLE);
 		imbtDelete.setVisibility(View.VISIBLE);
 	}
+
+	public void switchEditableRowToInsert()
+	{
+		tvItemName.setVisibility(View.GONE);
+		etItemName.setVisibility(View.VISIBLE);
+		etItemName.setText("New category");
+		imbtSave.setVisibility(View.VISIBLE);
+
+		//imbtCancel.setVisibility(View.VISIBLE);
+		imbtDelete.setVisibility(View.GONE);
+	}
 	
 	public void switchEditableRowToView()
 	{
