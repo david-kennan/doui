@@ -37,11 +37,11 @@
 
     </ListView>
 
-    <Button
-        android:id="@+id/btCategories"
+    <ImageButton
+        android:id="@+id/imbtCategories"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
-        android:text="Categories" />
+        android:src="@android:drawable/ic_menu_manage" 
+        android:background="@android:color/transparent"/>
 
 </LinearLayout>

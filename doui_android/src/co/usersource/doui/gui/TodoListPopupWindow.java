@@ -22,6 +22,7 @@ public class TodoListPopupWindow extends PopupWindow {
 	private SimpleCursorAdapter adapter;
 	private Uri listUri;
 	private ListView lvTodoLists;
+	LinearLayout llMain;
 
 	/**
 	 * @return the lvTodoLists
@@ -33,14 +34,11 @@ public class TodoListPopupWindow extends PopupWindow {
 	public TodoListPopupWindow(Context popupContext, Uri listUri,
 			String caption, String[] projection, String condition,
 			String[] conditionArgs) {
-		setFocusable(true);
-		setOutsideTouchable(true);
-		// Removes default black background
-		setBackgroundDrawable(new BitmapDrawable());
-
+		super(new LinearLayout(popupContext));
+		llMain = (LinearLayout)getContentView();
 		this.context = popupContext;
 		this.listUri = listUri;
-		LinearLayout llMain = new LinearLayout(context);
+				
 		llMain.setOrientation(LinearLayout.VERTICAL);
 		if (null != caption) {
 			TextView tvCaption = new TextView(context);
@@ -62,6 +60,11 @@ public class TodoListPopupWindow extends PopupWindow {
 		lvTodoLists.setAdapter(adapter);
 
 		this.setContentView(llMain);
+
+		setFocusable(true);
+		setOutsideTouchable(true);
+		// Removes default black background
+		setBackgroundDrawable(new BitmapDrawable());
 	}
 
 	/*

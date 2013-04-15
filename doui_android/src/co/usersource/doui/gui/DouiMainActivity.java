@@ -9,7 +9,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import co.usersource.doui.DouiContentProvider;
@@ -23,7 +23,7 @@ public class DouiMainActivity extends ListActivity {
 	private Cursor cursorToDoCategories;
 	private Cursor cursorStatuses;
 	private Cursor cursorContexts;
-	private Button btCategories;
+	private ImageButton imbtCategories;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -31,8 +31,8 @@ public class DouiMainActivity extends ListActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 		fillList();
-		btCategories = (Button)findViewById(R.id.btCategories);
-		btCategories.setOnClickListener(new OnClickListener() {
+		imbtCategories = (ImageButton)findViewById(R.id.imbtCategories);
+		imbtCategories.setOnClickListener(new OnClickListener() {
 			
 			public void onClick(View v) {
 				Intent i = new Intent(DouiMainActivity.this, DouiTodoCategoriesManagerActivity.class);
