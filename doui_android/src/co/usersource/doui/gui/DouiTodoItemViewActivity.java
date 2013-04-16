@@ -3,6 +3,8 @@
  */
 package co.usersource.doui.gui;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,11 +18,11 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.AdapterView.OnItemClickListener;
 import co.usersource.doui.DouiContentProvider;
 import co.usersource.doui.R;
 import co.usersource.doui.database.adapters.TableTodoCategoriesAdapter;
@@ -200,9 +202,15 @@ public class DouiTodoItemViewActivity extends Activity {
 						TableTodoStatusAdapter.TABLE_TODO_STATUSES_NAME,
 						TableTodoStatusAdapter.TABLE_TODO_STATUSES_ID };
 
-				String skipItem = TableTodoStatusAdapter.TABLE_TODO_STATUSES_NAME + " <> ?" +
-						"and "+TableTodoStatusAdapter.TABLE_TODO_STATUSES_ID+" <> ?";
-				String[] skipItemArg = {STR_DONE_STATUS_NAME, itemStatusId};
+				List<String> args = new ArrayList<String>();
+				String skipItem = TableTodoStatusAdapter.TABLE_TODO_STATUSES_NAME + " <> ? ";
+				args.add(STR_DONE_STATUS_NAME);
+				if(itemStatusId != null)
+				{
+					skipItem += "and "+TableTodoStatusAdapter.TABLE_TODO_STATUSES_ID+" <> ?";
+					args.add(itemStatusId);
+				}
+				String[] skipItemArg = args.toArray(new String[args.size()]);
 				if (popup == null || !popup.isShowing()) {
 					if (popup != null) {
 						popup.dismiss();

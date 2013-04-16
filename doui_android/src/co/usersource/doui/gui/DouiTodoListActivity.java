@@ -38,6 +38,8 @@ public class DouiTodoListActivity extends ListActivity {
 	private SimpleCursorAdapter adapter;
 	private Uri todoListUri;
 
+	private Cursor cursor;
+
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -120,8 +122,12 @@ public class DouiTodoListActivity extends ListActivity {
 		String[] from = new String[] { TableTodoItemsAdapter.TABLE_TODO_ITEMS_TITLE };
 		int[] to = new int[] { R.id.label };
 
+		if(cursor!=null && !cursor.isClosed())
+		{
+			cursor.close();
+		}
 		ContentResolver cr = getContentResolver();
-		Cursor cursor = cr.query(todoListUri, null, null, null, null);
+		cursor = cr.query(todoListUri, null, null, null, null);
 
 		adapter = new SimpleCursorAdapter(getApplicationContext(),
 				R.layout.todo_row, cursor, from, to);
