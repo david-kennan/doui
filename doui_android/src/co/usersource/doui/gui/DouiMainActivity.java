@@ -62,15 +62,15 @@ public class DouiMainActivity extends ListActivity {
 				TableTodoStatusAdapter.TABLE_TODO_STATUSES_NAME,
 				TableTodoStatusAdapter.TABLE_TODO_STATUSES_ID };
 		cursorStatuses = cr.query(DouiContentProvider.TODO_STATUSES_URI,
-				statusProjection, null, null, null);
+				statusProjection, null, null, TableTodoStatusAdapter.TABLE_TODO_STATUSES_NAME);
 
 		String contextProjection[] = {
 				TableTodoContextsAdapter.TABLE_TODO_CONTEXTS_NAME,
 				TableTodoContextsAdapter.TABLE_TODO_CONTEXTS_ID };
 		cursorContexts = cr.query(DouiContentProvider.TODO_CONTEXTS_URI,
-				contextProjection, null, null, null);
+				contextProjection, null, null, TableTodoContextsAdapter.TABLE_TODO_CONTEXTS_NAME);
 
-		Cursor cursors[] = { cursorToDoCategories, cursorStatuses,
+		Cursor cursors[] = { cursorStatuses, cursorToDoCategories, 
 				cursorContexts };
 		Cursor cursor = new MergeCursor(cursors);
 
