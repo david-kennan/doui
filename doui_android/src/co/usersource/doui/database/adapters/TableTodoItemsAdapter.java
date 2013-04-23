@@ -127,7 +127,8 @@ public class TableTodoItemsAdapter implements ITableAdapter {
 		Pattern contextPattern = Pattern.compile("@(\\w*)");
 		Matcher contextMatcher = contextPattern.matcher(itemBody);
 		while (contextMatcher.find()) {
-			result.add(contextMatcher.group(0));
+			String contextName =contextMatcher.group(0).substring(1); 
+			result.add(contextName);
 		}
 		return result;
 	}

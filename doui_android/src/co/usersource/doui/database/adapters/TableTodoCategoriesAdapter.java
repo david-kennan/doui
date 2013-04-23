@@ -25,7 +25,7 @@ public class TableTodoCategoriesAdapter implements ITableAdapter {
 			+ " integer primary key autoincrement, " + TABLE_TODO_CATEGORIES_NAME
 			+ " TEXT" + ");";
 	/** Pre-defined array of Lists. */
-	public static final String STR_ARRAY_CATEGORIES[] = { "-None-", "#Finance and admin", "#Health"};
+	public static final String STR_ARRAY_CATEGORIES[] = { "-None-", "Finance and admin", "Health"};
 
 	private SQLiteOpenHelper sqliteOpenHelper;
 
