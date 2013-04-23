@@ -53,12 +53,9 @@ public class DouiTodoListActivity extends ListActivity {
 		fillList();
 
 		ImageButton imbtAddTodoItem = (ImageButton) findViewById(R.id.imbtAddTodoItem);
-		final DouiTodoListActivity self = this;
-		// TODO imbtAddTodoItem must be disabled in contexts view
 		imbtAddTodoItem.setOnClickListener(new OnClickListener() {
-
 			public void onClick(View v) {
-				Intent i = new Intent(self, DouiTodoItemEditActivity.class);
+				Intent i = new Intent(DouiTodoListActivity.this, DouiTodoItemEditActivity.class);
 				i.putExtra(DouiTodoItemEditActivity.STR_TODO_ITEM_URI_EXT,
 						todoListUri);
 				startActivity(i);
@@ -122,12 +119,23 @@ public class DouiTodoListActivity extends ListActivity {
 		String[] from = new String[] { TableTodoItemsAdapter.TABLE_TODO_ITEMS_TITLE };
 		int[] to = new int[] { R.id.label };
 
-		if(cursor!=null && !cursor.isClosed())
-		{
+		if (cursor != null && !cursor.isClosed()) {
 			cursor.close();
 		}
+		String doneListId = getStatusIdByName(TableTodoStatusAdapter.STR_DONE_STATUS_NAME);
 		ContentResolver cr = getContentResolver();
-		cursor = cr.query(todoListUri, null, null, null, null);
+		int uriMatchId = DouiContentProvider.sURIMatcher.match(todoListUri);
+		if (DouiContentProvider.TODO_STATUS_LIST_URI_ID != uriMatchId) {
+			String selectCondition = TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_STATUS
+					+ " <> ? or "
+					+ TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_STATUS
+					+ " is null ";
+			String selectConditionArgs[] = { doneListId };
+			cursor = cr.query(todoListUri, null, selectCondition,
+					selectConditionArgs, null);
+		} else {
+			cursor = cr.query(todoListUri, null, null, null, null);
+		}
 
 		adapter = new SimpleCursorAdapter(getApplicationContext(),
 				R.layout.todo_row, cursor, from, to);
@@ -175,4 +183,31 @@ public class DouiTodoListActivity extends ListActivity {
 		i.putExtra(DouiTodoItemViewActivity.STR_TODO_ITEM_URI_EXT, todoItemUri);
 		startActivity(i);
 	}
+
+	/**
+	 * Utility function to load Category properties by existing name. Updates
+	 * local category fields.
+	 * */
+	private String getStatusIdByName(String itemStatusName) {
+		String result = null;
+		if (itemStatusName != null && !itemStatusName.equals("")) {
+			// Load category name
+			Uri uriList = Uri.parse("content://"
+					+ DouiContentProvider.AUTHORITY + "/"
+					+ DouiContentProvider.TODO_STATUSES_PATH);
+			String listProperties[] = {
+					TableTodoStatusAdapter.TABLE_TODO_STATUSES_ID,
+					TableTodoStatusAdapter.TABLE_TODO_STATUSES_NAME };
+			String selection = TableTodoStatusAdapter.TABLE_TODO_STATUSES_NAME
+					+ "=?";
+			String selectionArgs[] = { itemStatusName };
+			Cursor cursor = getContentResolver().query(uriList, listProperties,
+					selection, selectionArgs, null);
+			cursor.moveToFirst();
+			result = cursor.getString(0);
+			cursor.close();
+		}
+		return result;
+	}
+
 }

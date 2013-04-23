@@ -3,6 +3,8 @@
  */
 package co.usersource.doui;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import android.content.ContentProvider;
@@ -12,8 +14,8 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.util.Log;
 import co.usersource.doui.database.DouiSQLiteOpenHelper;
-import co.usersource.doui.database.adapters.TableTodoItemsAdapter;
 import co.usersource.doui.database.adapters.TableTodoCategoriesAdapter;
+import co.usersource.doui.database.adapters.TableTodoItemsAdapter;
 import co.usersource.doui.database.adapters.TableTodoStatusAdapter;
 
 /**
@@ -126,7 +128,8 @@ public class DouiContentProvider extends ContentProvider {
 			String selectConditions = TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_ID
 					+ "= ?";
 			String selectConditionsArgs[] = { uri.getLastPathSegment() };
-			douiSQLiteOpenHelper.getTableTodoCategoriesAdapter().delete(selectConditions, selectConditionsArgs);
+			douiSQLiteOpenHelper.getTableTodoCategoriesAdapter().delete(
+					selectConditions, selectConditionsArgs);
 		}
 			break;
 
@@ -262,7 +265,16 @@ public class DouiContentProvider extends ContentProvider {
 			String listId = uriSegments.get((uriSegments.size() - 1) - 1);
 			String selectConditions = TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_STATUS
 					+ "= ? ";
-			String selectConditionsArgs[] = { listId };
+			if (null != selection) {
+				selectConditions += " and (" + selection + ")";
+			}
+			List<String> listSelectConditionsArgs = new ArrayList<String>();
+			listSelectConditionsArgs.add(listId);
+			if (null != selectionArgs) {
+				listSelectConditionsArgs.addAll(Arrays.asList(selectionArgs));
+			}
+			String selectConditionsArgs[] = listSelectConditionsArgs
+					.toArray(new String[listSelectConditionsArgs.size()]);
 			result = douiSQLiteOpenHelper.getTableTodoItemsAdapter().query(
 					projection, selectConditions, selectConditionsArgs,
 					sortOrder);
@@ -273,7 +285,16 @@ public class DouiContentProvider extends ContentProvider {
 			String listId = uriSegments.get((uriSegments.size() - 1) - 1);
 			String selectConditions = TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY
 					+ "= ? ";
-			String selectConditionsArgs[] = { listId };
+			if (null != selection) {
+				selectConditions += " and (" + selection + ")";
+			}
+			List<String> listSelectConditionsArgs = new ArrayList<String>();
+			listSelectConditionsArgs.add(listId);
+			if (null != selectionArgs) {
+				listSelectConditionsArgs.addAll(Arrays.asList(selectionArgs));
+			}
+			String selectConditionsArgs[] = listSelectConditionsArgs
+					.toArray(new String[listSelectConditionsArgs.size()]);
 			result = douiSQLiteOpenHelper.getTableTodoItemsAdapter().query(
 					projection, selectConditions, selectConditionsArgs,
 					sortOrder);

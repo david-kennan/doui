@@ -38,9 +38,6 @@ public class DouiTodoItemViewActivity extends Activity {
 	/** Id for extras used to store URI for todo item. */
 	public static final String STR_TODO_ITEM_URI_EXT = "STR_TODO_ITEM_URI_EXT";
 	
-	/** Name for status done */
-	private static final String STR_DONE_STATUS_NAME = "Done";
-
 	private Uri itemUri;
 	private String itemId;
 	private String itemBody;
@@ -182,7 +179,7 @@ public class DouiTodoItemViewActivity extends Activity {
 		imbtSetDone.setOnClickListener(new OnClickListener() {
 			
 			public void onClick(View v) {
-				String doneStatusId = getStatusIdByName(STR_DONE_STATUS_NAME);
+				String doneStatusId = getStatusIdByName(TableTodoStatusAdapter.STR_DONE_STATUS_NAME);
 				if(null!=doneStatusId)
 				{
 					setItemStatus(doneStatusId);
@@ -204,7 +201,7 @@ public class DouiTodoItemViewActivity extends Activity {
 
 				List<String> args = new ArrayList<String>();
 				String skipItem = TableTodoStatusAdapter.TABLE_TODO_STATUSES_NAME + " <> ? ";
-				args.add(STR_DONE_STATUS_NAME);
+				args.add(TableTodoStatusAdapter.STR_DONE_STATUS_NAME);
 				if(itemStatusId != null)
 				{
 					skipItem += "and "+TableTodoStatusAdapter.TABLE_TODO_STATUSES_ID+" <> ?";
@@ -226,7 +223,7 @@ public class DouiTodoItemViewActivity extends Activity {
 									popup.dismiss();
 								}
 							});
-
+					//TODO Make this constants and increase size. Issue #30
 					popup.showAtLocation(llMain, Gravity.RIGHT | Gravity.TOP,
 							0, 0);
 					int location[] = { 0, 0 };
