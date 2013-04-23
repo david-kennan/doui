@@ -58,7 +58,7 @@ public class DouiMainActivity extends ListActivity {
 
 		ContentResolver cr = getContentResolver();
 		String categoryProjection[] = {
-				R.drawable.app_icon_48 + " as img_id",
+				R.drawable.ic_category + " as img_id",
 				TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME,
 				"'"+TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES+"' as TABLE_NAME",
 				TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_ID };
@@ -67,7 +67,7 @@ public class DouiMainActivity extends ListActivity {
 						null, null);
 
 		String statusProjection[] = {
-				R.drawable.app_icon_48 + " as img_id",
+				R.drawable.ic_status + " as img_id",
 				TableTodoStatusAdapter.TABLE_TODO_STATUSES_NAME,
 				"'"+TableTodoStatusAdapter.TABLE_TODO_STATUSES+"' as TABLE_NAME",
 				TableTodoStatusAdapter.TABLE_TODO_STATUSES_ID };
@@ -75,7 +75,7 @@ public class DouiMainActivity extends ListActivity {
 				statusProjection, null, null, TableTodoStatusAdapter.TABLE_TODO_STATUSES_NAME);
 
 		String contextProjection[] = {
-				R.drawable.app_icon_48 + " as img_id",
+				R.drawable.ic_context + " as img_id",
 				TableTodoContextsAdapter.TABLE_TODO_CONTEXTS_NAME,
 				"'"+TableTodoContextsAdapter.TABLE_TODO_CONTEXTS+"' as TABLE_NAME",
 				TableTodoContextsAdapter.TABLE_TODO_CONTEXTS_ID };
