@@ -21,6 +21,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -47,13 +48,55 @@ public class DouiTodoItemEditActivity extends Activity {
 	private static final String STR_DEFAULT_CATEGORY_NAME = "-None-";
 
 	private Uri itemUri;
-	private ImageButton imbtCancel;
-	private ImageButton imbtSave;
+	private Button btCancel;
+	private Button btSave;
 	private String itemId;
 
 	private String itemTitle = "";
 	private String itemBody = "";
 	private String itemCategoryId;
+	/**
+	 * @return the itemTitle
+	 */
+	public String getItemTitle() {
+		return itemTitle;
+	}
+
+	/**
+	 * @param itemTitle the itemTitle to set
+	 */
+	public void setItemTitle(String itemTitle) {
+		this.itemTitle = itemTitle;
+	}
+
+	/**
+	 * @return the itemBody
+	 */
+	public String getItemBody() {
+		return itemBody;
+	}
+
+	/**
+	 * @param itemBody the itemBody to set
+	 */
+	public void setItemBody(String itemBody) {
+		this.itemBody = itemBody;
+	}
+
+	/**
+	 * @return the itemCategoryId
+	 */
+	public String getItemCategoryId() {
+		return itemCategoryId;
+	}
+
+	/**
+	 * @param itemCategoryId the itemCategoryId to set
+	 */
+	public void setItemCategoryId(String itemCategoryId) {
+		this.itemCategoryId = itemCategoryId;
+	}
+
 	private String itemCategoryName = "";
 	private String itemStatusId;
 	private String itemStatusName = "";
@@ -234,6 +277,7 @@ public class DouiTodoItemEditActivity extends Activity {
 
 			public void afterTextChanged(Editable s) {
 				itemTitle = etTodoItemTitle.getText().toString();
+				DouiTodoItemEditActivity.this.showActionBarTop(true);
 			}
 		});
 		etTodoItemBody.setText(itemBody);
@@ -251,6 +295,7 @@ public class DouiTodoItemEditActivity extends Activity {
 
 			public void afterTextChanged(Editable s) {
 				itemBody = etTodoItemBody.getText().toString();
+				DouiTodoItemEditActivity.this.showActionBarTop(true);
 			}
 		});
 
@@ -294,7 +339,7 @@ public class DouiTodoItemEditActivity extends Activity {
 			tvTodoContexts.setVisibility(View.GONE);
 		}
 
-		this.createActionBar();
+		this.createActionBarTop();
 		this.createStatusActionBar();
 	}
 
@@ -328,6 +373,7 @@ public class DouiTodoItemEditActivity extends Activity {
 										View arg1, int position, long id) {
 									loadCategoryById(new Long(id).toString());
 									tvSecondListName.setText(itemCategoryName);
+									DouiTodoItemEditActivity.this.showActionBarTop(true);
 									popup.dismiss();
 								}
 							});
@@ -346,20 +392,31 @@ public class DouiTodoItemEditActivity extends Activity {
 		});
 	}
 
+	private void showActionBarTop(boolean isVisible) {
+		LinearLayout llActionBarTop = (LinearLayout)findViewById(R.id.llActionBarTop);
+		if(isVisible)
+		{
+			llActionBarTop.setVisibility(View.VISIBLE);
+		}else
+		{
+			llActionBarTop.setVisibility(View.GONE);
+		}
+	}
 	/**
 	 * Utility function to create action bar at the top of the screen.
 	 * */
-	private void createActionBar() {
+	private void createActionBarTop() {
+		this.showActionBarTop(false);
 		// Actionbar buttons.
-		imbtCancel = (ImageButton) findViewById(R.id.imbtCancel);
-		imbtCancel.setOnClickListener(new OnClickListener() {
+		btCancel = (Button) findViewById(R.id.imbtCancel);
+		btCancel.setOnClickListener(new OnClickListener() {
 
 			public void onClick(View v) {
 				finish();
 			}
 		});
-		imbtSave = (ImageButton) findViewById(R.id.imbtSave);
-		imbtSave.setOnClickListener(new OnClickListener() {
+		btSave = (Button) findViewById(R.id.imbtSave);
+		btSave.setOnClickListener(new OnClickListener() {
 
 			public void onClick(View v) {
 				if (!itemTitle.equals("")) {
