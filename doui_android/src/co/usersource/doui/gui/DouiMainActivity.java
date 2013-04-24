@@ -94,7 +94,7 @@ public class DouiMainActivity extends ListActivity {
 	
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		super.onListItemClick(l, v, position, id);
-		mergeCursor.move(position);
+		mergeCursor.moveToPosition(position);
 		String tableName = mergeCursor.getString(mergeCursor.getColumnIndex("TABLE_NAME"));
 		Intent i = new Intent(this, DouiTodoListActivity.class);
 		Uri todoUri = null;
@@ -112,7 +112,7 @@ public class DouiMainActivity extends ListActivity {
 		{
 			Cursor mainCursor = (Cursor) l.getItemAtPosition(position);
 			mainCursor.moveToPosition(position);
-			String contextName = mainCursor.getString(0);
+			String contextName = mainCursor.getString(1);
 			todoUri = Uri.parse(DouiContentProvider.TODO_CONTEXTS_URI
 					.toString() + "/" + contextName);
 			
