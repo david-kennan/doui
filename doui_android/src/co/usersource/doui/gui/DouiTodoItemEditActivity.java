@@ -18,6 +18,7 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.view.View.MeasureSpec;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -25,6 +26,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.ListAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 import co.usersource.doui.DouiContentProvider;
@@ -55,6 +57,7 @@ public class DouiTodoItemEditActivity extends Activity {
 	private String itemTitle = "";
 	private String itemBody = "";
 	private String itemCategoryId;
+
 	/**
 	 * @return the itemTitle
 	 */
@@ -63,7 +66,8 @@ public class DouiTodoItemEditActivity extends Activity {
 	}
 
 	/**
-	 * @param itemTitle the itemTitle to set
+	 * @param itemTitle
+	 *            the itemTitle to set
 	 */
 	public void setItemTitle(String itemTitle) {
 		this.itemTitle = itemTitle;
@@ -77,7 +81,8 @@ public class DouiTodoItemEditActivity extends Activity {
 	}
 
 	/**
-	 * @param itemBody the itemBody to set
+	 * @param itemBody
+	 *            the itemBody to set
 	 */
 	public void setItemBody(String itemBody) {
 		this.itemBody = itemBody;
@@ -91,7 +96,8 @@ public class DouiTodoItemEditActivity extends Activity {
 	}
 
 	/**
-	 * @param itemCategoryId the itemCategoryId to set
+	 * @param itemCategoryId
+	 *            the itemCategoryId to set
 	 */
 	public void setItemCategoryId(String itemCategoryId) {
 		this.itemCategoryId = itemCategoryId;
@@ -258,7 +264,7 @@ public class DouiTodoItemEditActivity extends Activity {
 	 * URI.
 	 * */
 	private void initUiControls() {
-		llMain = (LinearLayout)findViewById(R.id.llMain);
+		llMain = (LinearLayout) findViewById(R.id.llMain);
 		etTodoItemTitle = (EditText) findViewById(R.id.etTodoItemTitle);
 		etTodoItemBody = (EditText) findViewById(R.id.etTodoItemBody);
 		tvTodoListName = (TextView) findViewById(R.id.tvListName);
@@ -373,7 +379,8 @@ public class DouiTodoItemEditActivity extends Activity {
 										View arg1, int position, long id) {
 									loadCategoryById(new Long(id).toString());
 									tvSecondListName.setText(itemCategoryName);
-									DouiTodoItemEditActivity.this.showActionBarTop(true);
+									DouiTodoItemEditActivity.this
+											.showActionBarTop(true);
 									popup.dismiss();
 								}
 							});
@@ -393,15 +400,14 @@ public class DouiTodoItemEditActivity extends Activity {
 	}
 
 	private void showActionBarTop(boolean isVisible) {
-		LinearLayout llActionBarTop = (LinearLayout)findViewById(R.id.llActionBarTop);
-		if(isVisible)
-		{
+		LinearLayout llActionBarTop = (LinearLayout) findViewById(R.id.llActionBarTop);
+		if (isVisible) {
 			llActionBarTop.setVisibility(View.VISIBLE);
-		}else
-		{
+		} else {
 			llActionBarTop.setVisibility(View.GONE);
 		}
 	}
+
 	/**
 	 * Utility function to create action bar at the top of the screen.
 	 * */
@@ -456,24 +462,42 @@ public class DouiTodoItemEditActivity extends Activity {
 			}
 		});
 	}
-	
-	private void createStatusActionBar()
-	{
+
+	/** Utility function to create Action bar with "Done" and "Set status buttons". */
+	private void createStatusActionBar() {
 		imbtSetDone = (ImageButton) findViewById(R.id.imbtDone);
 		imbtSetDone.setOnClickListener(new OnClickListener() {
-			
+
 			public void onClick(View v) {
 				String doneStatusId = getStatusIdByName(TableTodoStatusAdapter.STR_DONE_STATUS_NAME);
-				if(null!=doneStatusId)
-				{
+				if (null != doneStatusId) {
 					setItemStatus(doneStatusId);
 				}
 			}
 		});
-		
+
 		imbtSetList = (ImageButton) findViewById(R.id.imbtSetList);
 		imbtSetList.setOnClickListener(new OnClickListener() {
 			TodoListPopupWindow popup;
+
+			private int getListHeight() {
+				int itemCount = popup.getCursor().getCount();
+				ListAdapter mAdapter = popup.getLvTodoLists().getAdapter();
+
+				int listviewElementsHeight = 0;
+				for (int i = 0; i < itemCount; i++) {
+
+					View childView = mAdapter.getView(i, null,
+							popup.getLvTodoLists());
+					childView.measure(MeasureSpec.makeMeasureSpec(0,
+							MeasureSpec.UNSPECIFIED), MeasureSpec
+							.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
+					listviewElementsHeight += childView.getMeasuredHeight();
+				}
+
+				return listviewElementsHeight;
+
+			}
 
 			public void onClick(View v) {
 				Uri uriList = Uri.parse("content://"
@@ -484,11 +508,13 @@ public class DouiTodoItemEditActivity extends Activity {
 						TableTodoStatusAdapter.TABLE_TODO_STATUSES_ID };
 
 				List<String> args = new ArrayList<String>();
-				String skipItem = TableTodoStatusAdapter.TABLE_TODO_STATUSES_NAME + " <> ? ";
+				String skipItem = TableTodoStatusAdapter.TABLE_TODO_STATUSES_NAME
+						+ " <> ? ";
 				args.add(TableTodoStatusAdapter.STR_DONE_STATUS_NAME);
-				if(itemStatusId != null)
-				{
-					skipItem += "and "+TableTodoStatusAdapter.TABLE_TODO_STATUSES_ID+" <> ?";
+				if (itemStatusId != null) {
+					skipItem += "and "
+							+ TableTodoStatusAdapter.TABLE_TODO_STATUSES_ID
+							+ " <> ?";
 					args.add(itemStatusId);
 				}
 				String[] skipItemArg = args.toArray(new String[args.size()]);
@@ -497,7 +523,7 @@ public class DouiTodoItemEditActivity extends Activity {
 						popup.dismiss();
 					}
 					popup = new TodoListPopupWindow(getApplicationContext(),
-							uriList, "Set status", projection, skipItem, skipItemArg);
+							uriList, null, projection, skipItem, skipItemArg);
 					popup.getLvTodoLists().setOnItemClickListener(
 							new OnItemClickListener() {
 
@@ -507,18 +533,19 @@ public class DouiTodoItemEditActivity extends Activity {
 									popup.dismiss();
 								}
 							});
-					//TODO Make this constants and increase size. Issue #30
+					int popupHeight = this.getListHeight();
 					popup.showAtLocation(llMain, Gravity.RIGHT | Gravity.TOP,
 							0, 0);
 					int location[] = { 0, 0 };
 					imbtSetList.getLocationOnScreen(location);
-					popup.update(0, location[1] - 200, 300, 200);
+					popup.update(0, location[1] - popupHeight, 300, popupHeight);
 				} else {
 					popup.dismiss();
 				}
 			}
 		});
 	}
+
 	/**
 	 * Utility function to load Category properties by existing name. Updates
 	 * local category fields.
@@ -545,23 +572,19 @@ public class DouiTodoItemEditActivity extends Activity {
 		return result;
 	}
 
-	/** Utility function to set item status by given status Id*/
-	private void setItemStatus(String statusId)
-	{
+	/** Utility function to set item status by given status Id */
+	private void setItemStatus(String statusId) {
 		ContentValues values = new ContentValues();
-		values.put(
-				TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_STATUS,
-				statusId);
+		values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_STATUS, statusId);
 
-		String selection = TableTodoItemsAdapter.TABLE_TODO_ITEMS_ID
-				+ "=?";
+		String selection = TableTodoItemsAdapter.TABLE_TODO_ITEMS_ID + "=?";
 		String selectionArgs[] = { itemId };
-		getContentResolver().update(itemUri, values, selection,
-				selectionArgs);
+		getContentResolver().update(itemUri, values, selection, selectionArgs);
 		itemStatusId = statusId;
-		Toast toast = Toast.makeText(getApplicationContext(), "Status set", Toast.LENGTH_SHORT);
+		Toast toast = Toast.makeText(getApplicationContext(), "Status set",
+				Toast.LENGTH_SHORT);
 		toast.show();
-		//refreshTodoItemData();
+		// refreshTodoItemData();
 	}
 
 }

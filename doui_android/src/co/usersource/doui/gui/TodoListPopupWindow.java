@@ -23,6 +23,14 @@ public class TodoListPopupWindow extends PopupWindow {
 	private Uri listUri;
 	private ListView lvTodoLists;
 	LinearLayout llMain;
+	private Cursor cursor;
+
+	/**
+	 * @return the cursor
+	 */
+	public Cursor getCursor() {
+		return cursor;
+	}
 
 	/**
 	 * @return the lvTodoLists
@@ -52,7 +60,7 @@ public class TodoListPopupWindow extends PopupWindow {
 		int[] to = new int[] { R.id.popupItemLabel };
 
 		ContentResolver cr = context.getContentResolver();
-		Cursor cursor = cr.query(this.listUri, projection, condition, conditionArgs,
+		cursor = cr.query(this.listUri, projection, condition, conditionArgs,
 				null);
 
 		adapter = new SimpleCursorAdapter(context,

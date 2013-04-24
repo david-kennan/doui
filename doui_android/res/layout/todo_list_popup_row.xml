@@ -9,7 +9,7 @@
         android:layout_height="wrap_content"
         android:lines="1"
         android:text="to:"
-        android:textSize="24dp" 
+        android:textSize="20dp" 
         >
     </TextView>
     
@@ -20,7 +20,7 @@
         android:lines="1"
         android:text="test"
         android:layout_marginLeft="6sp"
-        android:textSize="24dp" 
+        android:textSize="20dp" 
         >
     </TextView>
 
