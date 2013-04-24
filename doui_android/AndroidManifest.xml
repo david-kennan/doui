@@ -22,7 +22,6 @@
         <provider android:name="DouiContentProvider" android:enabled="true" android:multiprocess="true" android:authorities="co.usersource.doui.contentprovider"/>
         <activity android:name=".gui.DouiTodoListActivity"></activity>
         <activity android:name=".gui.DouiTodoItemEditActivity"></activity>
-        <activity android:name=".gui.DouiTodoItemViewActivity"></activity>
         <activity android:name=".gui.DouiTodoCategoriesManagerActivity"></activity>
 </application>
 </manifest>

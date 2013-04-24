@@ -177,10 +177,10 @@ public class DouiTodoListActivity extends ListActivity {
 					"Unknown URI given to build list: " + todoListUri);
 		}
 
-		Intent i = new Intent(this, DouiTodoItemViewActivity.class);
+		Intent i = new Intent(this, DouiTodoItemEditActivity.class);
 		Uri todoItemUri = Uri.parse(pathStart + "/" + idFkList + "/"
 				+ DouiContentProvider.TODO_PATH + "/" + id);
-		i.putExtra(DouiTodoItemViewActivity.STR_TODO_ITEM_URI_EXT, todoItemUri);
+		i.putExtra(DouiTodoItemEditActivity.STR_TODO_ITEM_URI_EXT, todoItemUri);
 		startActivity(i);
 	}
 
