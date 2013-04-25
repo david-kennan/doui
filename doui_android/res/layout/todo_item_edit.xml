@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/llMain"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:id="@+id/llMain" >
+    android:orientation="vertical" >
 
     <LinearLayout
         android:id="@+id/llActionBarTop"
@@ -58,14 +58,19 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10" >
-
-        <requestFocus />
     </EditText>
+
+    <EditText
+        android:id="@+id/etTodoItemBody"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:maxLines="4" />
 
     <View
         android:layout_width="fill_parent"
         android:layout_height="1dp"
-        android:background="@android:color/white" />
+        android:background="@android:color/darker_gray" />
 
     <TextView
         android:id="@+id/tvSecondListName"
@@ -85,18 +90,17 @@
         android:layout_height="1dp"
         android:background="@android:color/darker_gray" />
 
-    <EditText
-        android:id="@+id/etTodoItemBody"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:maxLines="4"
-        android:ems="10" />
     <View
         android:layout_width="fill_parent"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
         android:layout_height="0dip"
-        android:background="@android:color/transparent"
-        android:layout_weight="1" />
-    
+        android:layout_weight="1"
+        android:background="@android:color/transparent" >
+
+        <requestFocus />
+    </View>
+
     <LinearLayout
         android:id="@+id/llStatuses"
         android:layout_width="match_parent"
@@ -119,5 +123,5 @@
             android:background="@android:color/transparent"
             android:src="@android:drawable/ic_menu_more" />
     </LinearLayout>
-    
+
 </LinearLayout>
