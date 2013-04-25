@@ -3,6 +3,7 @@
  */
 package co.usersource.doui.database.adapters;
 
+import android.R;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;

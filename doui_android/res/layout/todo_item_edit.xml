@@ -17,7 +17,6 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:background="@android:color/transparent"
-            android:textColor="@android:color/primary_text_dark"
             android:drawableLeft="@android:drawable/ic_menu_close_clear_cancel"
             android:text="Cancel" />
 
@@ -27,7 +26,6 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:background="@android:color/transparent"
-            android:textColor="@android:color/primary_text_dark"
             android:text="Save" />
     </LinearLayout>
 
@@ -93,9 +91,17 @@
         android:layout_height="wrap_content"
         android:maxLines="4"
         android:ems="10" />
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="0dip"
+        android:background="@android:color/transparent"
+        android:layout_weight="1" />
+    
     <LinearLayout
+        android:id="@+id/llStatuses"
         android:layout_width="match_parent"
-        android:layout_height="48sp" >
+        android:layout_height="48sp"
+        android:gravity="bottom" >
 
         <ImageButton
             android:id="@+id/imbtDone"

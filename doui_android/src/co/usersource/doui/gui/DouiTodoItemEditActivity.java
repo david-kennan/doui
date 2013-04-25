@@ -3,7 +3,6 @@
  */
 package co.usersource.doui.gui;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -11,14 +10,16 @@ import java.util.regex.Pattern;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.database.Cursor;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
-import android.view.View.MeasureSpec;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -26,7 +27,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.ListAdapter;
+import android.widget.LinearLayout.LayoutParams;
 import android.widget.TextView;
 import android.widget.Toast;
 import co.usersource.doui.DouiContentProvider;
@@ -48,6 +49,14 @@ public class DouiTodoItemEditActivity extends Activity {
 
 	/** Name for the category to be set by default. */
 	private static final String STR_DEFAULT_CATEGORY_NAME = "-None-";
+
+	/**
+	 * Array of drawable IDs for each status. Must be in sync with
+	 * {@link TableTodoStatusAdapter.STR_ARRAY_STATUSES}
+	 */
+	private static final int IDS_STATUS_IMAGES[] = { R.drawable.ic_status_next,
+			R.drawable.ic_status_calendar, R.drawable.ic_status_waiting,
+			R.drawable.ic_status_done, R.drawable.ic_status_someday };
 
 	private Uri itemUri;
 	private Button btCancel;
@@ -122,6 +131,8 @@ public class DouiTodoItemEditActivity extends Activity {
 	private ImageButton imbtSetList;
 
 	private LinearLayout llMain;
+
+	private LinearLayout llStatuses;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -463,87 +474,104 @@ public class DouiTodoItemEditActivity extends Activity {
 		});
 	}
 
-	/** Utility function to create Action bar with "Done" and "Set status buttons". */
+	/**
+	 * Utility function to create Action bar with "Done" and
+	 * "Set status buttons".
+	 */
 	private void createStatusActionBar() {
-		imbtSetDone = (ImageButton) findViewById(R.id.imbtDone);
-		imbtSetDone.setOnClickListener(new OnClickListener() {
+		llStatuses = (LinearLayout) findViewById(R.id.llStatuses);
+		llStatuses.removeAllViews();
+		Uri uriList = Uri.parse("content://" + DouiContentProvider.AUTHORITY
+				+ "/" + DouiContentProvider.TODO_STATUSES_PATH);
+		String listProperties[] = {
+				TableTodoStatusAdapter.TABLE_TODO_STATUSES_ID,
+				TableTodoStatusAdapter.TABLE_TODO_STATUSES_NAME };
+		Cursor cursor = getContentResolver().query(uriList, listProperties,
+				null, null, null);
+		int itemCounter = 0;
+		while (!cursor.isLast()) {
+			cursor.moveToNext();
+			final String statusId = cursor.getString(0);
+			ImageButton imbtStatus = new ImageButton(getApplicationContext());
 
-			public void onClick(View v) {
-				String doneStatusId = getStatusIdByName(TableTodoStatusAdapter.STR_DONE_STATUS_NAME);
-				if (null != doneStatusId) {
-					setItemStatus(doneStatusId);
-				}
+			if (itemCounter < IDS_STATUS_IMAGES.length) {
+				imbtStatus.setImageDrawable(getResources().getDrawable(
+						IDS_STATUS_IMAGES[itemCounter]));
 			}
-		});
+			if (!statusId.equals(itemStatusId)) {
+				imbtStatus.setOnClickListener(new OnClickListener() {
 
-		imbtSetList = (ImageButton) findViewById(R.id.imbtSetList);
-		imbtSetList.setOnClickListener(new OnClickListener() {
-			TodoListPopupWindow popup;
-
-			private int getListHeight() {
-				int itemCount = popup.getCursor().getCount();
-				ListAdapter mAdapter = popup.getLvTodoLists().getAdapter();
-
-				int listviewElementsHeight = 0;
-				for (int i = 0; i < itemCount; i++) {
-
-					View childView = mAdapter.getView(i, null,
-							popup.getLvTodoLists());
-					childView.measure(MeasureSpec.makeMeasureSpec(0,
-							MeasureSpec.UNSPECIFIED), MeasureSpec
-							.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
-					listviewElementsHeight += childView.getMeasuredHeight();
-				}
-
-				return listviewElementsHeight;
-
-			}
-
-			public void onClick(View v) {
-				Uri uriList = Uri.parse("content://"
-						+ DouiContentProvider.AUTHORITY + "/"
-						+ DouiContentProvider.TODO_STATUSES_PATH);
-				String[] projection = {
-						TableTodoStatusAdapter.TABLE_TODO_STATUSES_NAME,
-						TableTodoStatusAdapter.TABLE_TODO_STATUSES_ID };
-
-				List<String> args = new ArrayList<String>();
-				String skipItem = TableTodoStatusAdapter.TABLE_TODO_STATUSES_NAME
-						+ " <> ? ";
-				args.add(TableTodoStatusAdapter.STR_DONE_STATUS_NAME);
-				if (itemStatusId != null) {
-					skipItem += "and "
-							+ TableTodoStatusAdapter.TABLE_TODO_STATUSES_ID
-							+ " <> ?";
-					args.add(itemStatusId);
-				}
-				String[] skipItemArg = args.toArray(new String[args.size()]);
-				if (popup == null || !popup.isShowing()) {
-					if (popup != null) {
-						popup.dismiss();
+					public void onClick(View v) {
+						setItemStatus(statusId);
+						finish();
 					}
-					popup = new TodoListPopupWindow(getApplicationContext(),
-							uriList, null, projection, skipItem, skipItemArg);
-					popup.getLvTodoLists().setOnItemClickListener(
-							new OnItemClickListener() {
-
-								public void onItemClick(AdapterView<?> arg0,
-										View arg1, int position, long id) {
-									setItemStatus(new Long(id).toString());
-									popup.dismiss();
-								}
-							});
-					int popupHeight = this.getListHeight();
-					popup.showAtLocation(llMain, Gravity.RIGHT | Gravity.TOP,
-							0, 0);
-					int location[] = { 0, 0 };
-					imbtSetList.getLocationOnScreen(location);
-					popup.update(0, location[1] - popupHeight, 300, popupHeight);
-				} else {
-					popup.dismiss();
-				}
+				});
+			} else {
+				imbtStatus.setPressed(true);
+				imbtStatus.setClickable(false);
 			}
-		});
+			itemCounter++;
+			llStatuses.addView(imbtStatus, new LinearLayout.LayoutParams(
+					LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT, 1));
+		}
+		cursor.close();
+
+		/*
+		 * imbtSetDone = (ImageButton) findViewById(R.id.imbtDone);
+		 * imbtSetDone.setSelected(true); imbtSetDone.setOnClickListener(new
+		 * OnClickListener() {
+		 * 
+		 * public void onClick(View v) { String doneStatusId =
+		 * getStatusIdByName(TableTodoStatusAdapter.STR_DONE_STATUS_NAME); if
+		 * (null != doneStatusId) { setItemStatus(doneStatusId); } } });
+		 * 
+		 * imbtSetList = (ImageButton) findViewById(R.id.imbtSetList);
+		 * imbtSetList.setOnClickListener(new OnClickListener() {
+		 * TodoListPopupWindow popup;
+		 * 
+		 * private int getListHeight() { int itemCount =
+		 * popup.getCursor().getCount(); ListAdapter mAdapter =
+		 * popup.getLvTodoLists().getAdapter();
+		 * 
+		 * int listviewElementsHeight = 0; for (int i = 0; i < itemCount; i++) {
+		 * 
+		 * View childView = mAdapter.getView(i, null, popup.getLvTodoLists());
+		 * childView.measure(MeasureSpec.makeMeasureSpec(0,
+		 * MeasureSpec.UNSPECIFIED), MeasureSpec .makeMeasureSpec(0,
+		 * MeasureSpec.UNSPECIFIED)); listviewElementsHeight +=
+		 * childView.getMeasuredHeight(); }
+		 * 
+		 * return listviewElementsHeight;
+		 * 
+		 * }
+		 * 
+		 * public void onClick(View v) { Uri uriList = Uri.parse("content://" +
+		 * DouiContentProvider.AUTHORITY + "/" +
+		 * DouiContentProvider.TODO_STATUSES_PATH); String[] projection = {
+		 * TableTodoStatusAdapter.TABLE_TODO_STATUSES_NAME,
+		 * TableTodoStatusAdapter.TABLE_TODO_STATUSES_ID };
+		 * 
+		 * List<String> args = new ArrayList<String>(); String skipItem =
+		 * TableTodoStatusAdapter.TABLE_TODO_STATUSES_NAME + " <> ? ";
+		 * args.add(TableTodoStatusAdapter.STR_DONE_STATUS_NAME); if
+		 * (itemStatusId != null) { skipItem += "and " +
+		 * TableTodoStatusAdapter.TABLE_TODO_STATUSES_ID + " <> ?";
+		 * args.add(itemStatusId); } String[] skipItemArg = args.toArray(new
+		 * String[args.size()]); if (popup == null || !popup.isShowing()) { if
+		 * (popup != null) { popup.dismiss(); } popup = new
+		 * TodoListPopupWindow(getApplicationContext(), uriList, null,
+		 * projection, skipItem, skipItemArg);
+		 * popup.getLvTodoLists().setOnItemClickListener( new
+		 * OnItemClickListener() {
+		 * 
+		 * public void onItemClick(AdapterView<?> arg0, View arg1, int position,
+		 * long id) { setItemStatus(new Long(id).toString()); popup.dismiss(); }
+		 * }); int popupHeight = this.getListHeight();
+		 * popup.showAtLocation(llMain, Gravity.RIGHT | Gravity.TOP, 0, 0); int
+		 * location[] = { 0, 0 }; imbtSetList.getLocationOnScreen(location);
+		 * popup.update(0, location[1] - popupHeight, 300, popupHeight); } else
+		 * { popup.dismiss(); } } });
+		 */
 	}
 
 	/**
