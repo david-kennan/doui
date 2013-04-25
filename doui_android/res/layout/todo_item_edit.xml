@@ -106,22 +106,6 @@
         android:layout_width="match_parent"
         android:layout_height="48sp"
         android:gravity="bottom" >
-
-        <ImageButton
-            android:id="@+id/imbtDone"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:background="@android:color/transparent"
-            android:src="@drawable/done" />
-
-        <ImageButton
-            android:id="@+id/imbtSetList"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:background="@android:color/transparent"
-            android:src="@android:drawable/ic_menu_more" />
     </LinearLayout>
 
 </LinearLayout>

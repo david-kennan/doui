@@ -18,16 +18,17 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.view.Gravity;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 import co.usersource.doui.DouiContentProvider;
@@ -125,12 +126,6 @@ public class DouiTodoItemEditActivity extends Activity {
 	private TextView tvTodoContexts;
 
 	private TextView tvSecondListName;
-
-	private ImageButton imbtSetDone;
-
-	private ImageButton imbtSetList;
-
-	private LinearLayout llMain;
 
 	private LinearLayout llStatuses;
 
@@ -275,7 +270,6 @@ public class DouiTodoItemEditActivity extends Activity {
 	 * URI.
 	 * */
 	private void initUiControls() {
-		llMain = (LinearLayout) findViewById(R.id.llMain);
 		etTodoItemTitle = (EditText) findViewById(R.id.etTodoItemTitle);
 		etTodoItemBody = (EditText) findViewById(R.id.etTodoItemBody);
 		tvTodoListName = (TextView) findViewById(R.id.tvListName);
@@ -357,7 +351,9 @@ public class DouiTodoItemEditActivity extends Activity {
 		}
 
 		this.createActionBarTop();
-		this.createStatusActionBar();
+		if (null != itemId) {
+			this.createStatusActionBar();
+		}
 	}
 
 	/**
@@ -367,47 +363,50 @@ public class DouiTodoItemEditActivity extends Activity {
 	private void createSecondListControl() {
 		tvSecondListName = (TextView) findViewById(R.id.tvSecondListName);
 		tvSecondListName.setOnClickListener(new OnClickListener() {
-			TodoListPopupWindow popup;
 
 			public void onClick(View v) {
-				Uri uriList = Uri.parse("content://"
-						+ DouiContentProvider.AUTHORITY + "/"
-						+ DouiContentProvider.TODO_CATEGORIES_PATH);
-				String[] projection = {
-						TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME,
-						TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_ID };
-
-				if (popup == null || !popup.isShowing()) {
-					if (popup != null) {
-						popup.dismiss();
-					}
-					popup = new TodoListPopupWindow(getApplicationContext(),
-							uriList, "Change Category", projection, null, null);
-					popup.getLvTodoLists().setOnItemClickListener(
-							new OnItemClickListener() {
-
-								public void onItemClick(AdapterView<?> arg0,
-										View arg1, int position, long id) {
-									loadCategoryById(new Long(id).toString());
-									tvSecondListName.setText(itemCategoryName);
-									DouiTodoItemEditActivity.this
-											.showActionBarTop(true);
-									popup.dismiss();
-								}
-							});
-					popup.showAtLocation(tvSecondListName, Gravity.TOP
-							| Gravity.LEFT, 0, 0);
-					int location[] = { 0, 0 };
-					tvSecondListName.getLocationOnScreen(location);
-					popup.update(location[0],
-							location[1] + tvSecondListName.getHeight(), 300,
-							200);
-
-				} else {
-					popup.dismiss();
-				}
+				registerForContextMenu(v);
+				openContextMenu(v);
+				unregisterForContextMenu(v);
 			}
 		});
+	}
+
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onCreateContextMenu(android.view.ContextMenu, android.view.View, android.view.ContextMenu.ContextMenuInfo)
+	 */
+	@Override
+	public void onCreateContextMenu(ContextMenu menu, View v,
+			ContextMenuInfo menuInfo) {
+		super.onCreateContextMenu(menu, v, menuInfo);
+		Uri uriList = Uri.parse("content://"
+				+ DouiContentProvider.AUTHORITY + "/"
+				+ DouiContentProvider.TODO_CATEGORIES_PATH);
+		String[] projection = {
+				TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME,
+				TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_ID };
+		Cursor cursor = getContentResolver().query(uriList, projection,
+				null, null,
+				TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME);
+		while (!cursor.isLast()) {
+			cursor.moveToNext();
+			int itemId = cursor.getInt(1);
+			int position = cursor.getPosition();
+			String itemName = cursor.getString(0);
+			menu.add(0, itemId, position + 1, itemName);
+		}
+		menu.setHeaderTitle("Set category");
+	}
+
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onContextItemSelected(android.view.MenuItem)
+	 */
+	@Override
+	public boolean onContextItemSelected(MenuItem item) {
+		loadCategoryById(""+item.getItemId());
+		tvSecondListName.setText(itemCategoryName);
+		showActionBarTop(true);
+		return super.onContextItemSelected(item);
 	}
 
 	private void showActionBarTop(boolean isVisible) {
@@ -507,8 +506,6 @@ public class DouiTodoItemEditActivity extends Activity {
 					}
 				});
 			} else {
-				// imbtStatus.setPressed(true);
-				// imbtStatus.setClickable(false);
 				TypedArray array = getTheme().obtainStyledAttributes(
 						new int[] { android.R.attr.colorPressedHighlight });
 				int backgroundColor = array.getColor(0, Color.GREEN);
@@ -524,32 +521,6 @@ public class DouiTodoItemEditActivity extends Activity {
 		cursor.close();
 	}
 
-	/**
-	 * Utility function to load Category properties by existing name. Updates
-	 * local category fields.
-	 * */
-	private String getStatusIdByName(String itemStatusName) {
-		String result = null;
-		if (itemStatusName != null && !itemStatusName.equals("")) {
-			// Load category name
-			Uri uriList = Uri.parse("content://"
-					+ DouiContentProvider.AUTHORITY + "/"
-					+ DouiContentProvider.TODO_STATUSES_PATH);
-			String listProperties[] = {
-					TableTodoStatusAdapter.TABLE_TODO_STATUSES_ID,
-					TableTodoStatusAdapter.TABLE_TODO_STATUSES_NAME };
-			String selection = TableTodoStatusAdapter.TABLE_TODO_STATUSES_NAME
-					+ "=?";
-			String selectionArgs[] = { itemStatusName };
-			Cursor cursor = getContentResolver().query(uriList, listProperties,
-					selection, selectionArgs, null);
-			cursor.moveToFirst();
-			result = cursor.getString(0);
-			cursor.close();
-		}
-		return result;
-	}
-
 	/** Utility function to set item status by given status Id */
 	private void setItemStatus(String statusId) {
 		ContentValues values = new ContentValues();
@@ -562,7 +533,6 @@ public class DouiTodoItemEditActivity extends Activity {
 		Toast toast = Toast.makeText(getApplicationContext(), "Status set",
 				Toast.LENGTH_SHORT);
 		toast.show();
-		// refreshTodoItemData();
 	}
 
 }
