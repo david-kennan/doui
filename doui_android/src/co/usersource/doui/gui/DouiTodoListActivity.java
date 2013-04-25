@@ -138,7 +138,7 @@ public class DouiTodoListActivity extends ListActivity {
 		}
 
 		adapter = new SimpleCursorAdapter(getApplicationContext(),
-				R.layout.todo_row, cursor, from, to);
+				R.layout.todo_row, cursor, from, to,0);
 		setListAdapter(adapter);
 	}
 

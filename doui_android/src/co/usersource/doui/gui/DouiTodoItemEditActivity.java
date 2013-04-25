@@ -28,7 +28,6 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
-import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 import co.usersource.doui.DouiContentProvider;

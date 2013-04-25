@@ -76,7 +76,7 @@ public class DouiTodoCategoriesManagerActivity extends ListActivity {
 						selectConditionArgs, null);
 		adapter = new SimpleCursorAdapter(getApplicationContext(),
 				R.layout.todo_category_editable_row, cursorToDoCategories,
-				from, to);
+				from, to, 0);
 		setListAdapter(adapter);
 	}
 

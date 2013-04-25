@@ -16,7 +16,6 @@ import co.usersource.doui.R;
  */
 public class DouiTodoCategoryEditHelper {
 
-	private View editableRow;
 	private EditText etItemName;
 	/**
 	 * @return the etItemName
@@ -33,11 +32,9 @@ public class DouiTodoCategoryEditHelper {
 	private ImageButton imbtDelete;
 	
 	public DouiTodoCategoryEditHelper(View editableRow){
-		this.editableRow = editableRow;
 		tvItemName = (TextView)editableRow.findViewById(R.id.tvItemName);
 		etItemName = (EditText)editableRow.findViewById(R.id.etItemName);
 		imbtSave = (ImageButton)editableRow.findViewById(R.id.imbtSave);		
-//		imbtCancel = (ImageButton)editableRow.findViewById(R.id.imbtCancel);
 		imbtDelete = (ImageButton)editableRow.findViewById(R.id.imbtDelete);
 	}
 	

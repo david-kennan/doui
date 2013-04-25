@@ -87,7 +87,7 @@ public class DouiMainActivity extends ListActivity {
 		mergeCursor = new MergeCursor(cursors);
 
 		adapter = new SimpleCursorAdapter(getApplicationContext(),
-				R.layout.todo_list_row, mergeCursor, from, to);
+				R.layout.todo_list_row, mergeCursor, from, to, 0);
 		setListAdapter(adapter);
 	}
 
