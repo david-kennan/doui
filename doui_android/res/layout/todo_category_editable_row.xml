@@ -6,45 +6,49 @@
 
     <TextView
         android:id="@+id/tvItemName"
+        android:layout_marginLeft="4dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/todoCategoryEditableRowAdd"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textColor="@android:color/primary_text_light" />
 
     <EditText
+        android:hint="Add category"
         android:id="@+id/etItemName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:singleLine="true"
-        android:ems="10"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textColor="@android:color/primary_text_light"
         android:visibility="gone" >
 
         <requestFocus />
     </EditText>
-    
+
     <ImageButton
         android:id="@+id/imbtDelete"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:visibility="gone"
         android:background="@android:color/transparent"
-        android:src="@android:drawable/ic_menu_delete" />
-    
+        android:src="@android:drawable/ic_menu_delete"
+        android:visibility="gone" />
+
     <ImageButton
         android:id="@+id/imbtSave"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:visibility="gone"
         android:background="@android:color/transparent"
-        android:src="@android:drawable/ic_menu_save" />
-    
+        android:src="@android:drawable/ic_menu_save"
+        android:visibility="gone" />
+
     <ImageButton
         android:id="@+id/imbtCancel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:visibility="gone"
         android:background="@android:color/transparent"
-        android:src="@android:drawable/ic_menu_close_clear_cancel" />
-    
+        android:src="@android:drawable/ic_menu_close_clear_cancel"
+        android:visibility="gone" />
+
 </LinearLayout>

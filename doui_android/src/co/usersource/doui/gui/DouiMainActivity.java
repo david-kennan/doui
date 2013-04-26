@@ -3,6 +3,7 @@ package co.usersource.doui.gui;
 import android.app.ListActivity;
 import android.content.ContentResolver;
 import android.content.Intent;
+import android.content.res.TypedArray;
 import android.database.Cursor;
 import android.database.MergeCursor;
 import android.net.Uri;
@@ -54,7 +55,7 @@ public class DouiMainActivity extends ListActivity {
 				TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME,
 				"TABLE_NAME",
 				TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_ID };
-		int[] to = new int[] { R.id.icon, R.id.label };
+		int[] to = new int[] { R.id.icon, R.id.label};
 
 		ContentResolver cr = getContentResolver();
 		String categoryProjection[] = {
@@ -88,6 +89,7 @@ public class DouiMainActivity extends ListActivity {
 
 		adapter = new SimpleCursorAdapter(getApplicationContext(),
 				R.layout.todo_list_row, mergeCursor, from, to, 0);
+		
 		setListAdapter(adapter);
 	}
 
