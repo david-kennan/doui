@@ -64,7 +64,7 @@ public class DouiMainActivity extends ListActivity {
 				TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_ID };
 		cursorToDoCategories = cr
 				.query(DouiContentProvider.TODO_CATEGORIES_URI, categoryProjection, null,
-						null, null);
+						null, TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME);
 
 		String statusProjection[] = {
 				R.drawable.ic_status + " as img_id",
@@ -72,7 +72,7 @@ public class DouiMainActivity extends ListActivity {
 				"'"+TableTodoStatusAdapter.TABLE_TODO_STATUSES+"' as TABLE_NAME",
 				TableTodoStatusAdapter.TABLE_TODO_STATUSES_ID };
 		cursorStatuses = cr.query(DouiContentProvider.TODO_STATUSES_URI,
-				statusProjection, null, null, TableTodoStatusAdapter.TABLE_TODO_STATUSES_NAME);
+				statusProjection, null, null, TableTodoStatusAdapter.TABLE_TODO_STATUSES_ID);
 
 		String contextProjection[] = {
 				R.drawable.ic_context + " as img_id",
