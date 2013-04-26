@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
     android:orientation="horizontal" >
 
     <TextView
@@ -14,17 +15,18 @@
         android:textColor="@android:color/primary_text_light" />
 
     <EditText
-        android:hint="Add category"
+        android:hint="@string/new_category_hint"
+        android:inputType="textCapSentences"
         android:id="@+id/etItemName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
         android:layout_weight="1"
         android:singleLine="true"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:textColor="@android:color/primary_text_light"
         android:visibility="gone" >
-
-        <requestFocus />
     </EditText>
 
     <ImageButton

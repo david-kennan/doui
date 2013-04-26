@@ -11,5 +11,6 @@
     <string name="todoCategoryEditableRowSave">Save</string>
     <string name="todoCategoryEditableRowAdd">Add category</string>
     <string name="todoCategoriesManagerTitle">Categories</string>
+    <string name="new_category_hint">New category</string>
 
 </resources>

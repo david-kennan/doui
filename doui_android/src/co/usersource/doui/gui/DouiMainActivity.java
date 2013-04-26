@@ -3,7 +3,6 @@ package co.usersource.doui.gui;
 import android.app.ListActivity;
 import android.content.ContentResolver;
 import android.content.Intent;
-import android.content.res.TypedArray;
 import android.database.Cursor;
 import android.database.MergeCursor;
 import android.net.Uri;
