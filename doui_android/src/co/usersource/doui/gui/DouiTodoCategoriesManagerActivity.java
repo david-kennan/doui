@@ -13,7 +13,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.ViewGroup.LayoutParams;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -54,7 +53,7 @@ public class DouiTodoCategoriesManagerActivity extends Activity {
 
 		String selectCondition = TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME
 				+ "<>?";
-		String[] selectConditionArgs = { "-None-" };
+		String[] selectConditionArgs = { TableTodoCategoriesAdapter.STR_NONE_CATEGORY_NAME };
 		ContentResolver cr = getContentResolver();
 		cursorToDoCategories = cr.query(
 				DouiContentProvider.TODO_CATEGORIES_URI, from, selectCondition,

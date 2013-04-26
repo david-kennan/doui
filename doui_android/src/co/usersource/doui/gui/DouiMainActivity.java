@@ -62,9 +62,13 @@ public class DouiMainActivity extends ListActivity {
 				TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME,
 				"'"+TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES+"' as TABLE_NAME",
 				TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_ID };
+		String selectCondition = TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME
+				+ "<>?";
+		String[] selectConditionArgs = { TableTodoCategoriesAdapter.STR_NONE_CATEGORY_NAME };
+
 		cursorToDoCategories = cr
-				.query(DouiContentProvider.TODO_CATEGORIES_URI, categoryProjection, null,
-						null, TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME);
+				.query(DouiContentProvider.TODO_CATEGORIES_URI, categoryProjection, selectCondition,
+						selectConditionArgs, TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME);
 
 		String statusProjection[] = {
 				R.drawable.ic_status + " as img_id",
