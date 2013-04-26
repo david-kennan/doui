@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 
 import android.app.Activity;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.res.TypedArray;
 import android.database.Cursor;
 import android.graphics.Color;
@@ -23,6 +24,8 @@ import android.view.ContextMenu.ContextMenuInfo;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnFocusChangeListener;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -290,6 +293,7 @@ public class DouiTodoItemEditActivity extends Activity {
 				DouiTodoItemEditActivity.this.showActionBarTop(true);
 			}
 		});
+
 		etTodoItemBody.setText(itemBody);
 		etTodoItemBody.addTextChangedListener(new TextWatcher() {
 
@@ -371,22 +375,23 @@ public class DouiTodoItemEditActivity extends Activity {
 		});
 	}
 
-	/* (non-Javadoc)
-	 * @see android.app.Activity#onCreateContextMenu(android.view.ContextMenu, android.view.View, android.view.ContextMenu.ContextMenuInfo)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.app.Activity#onCreateContextMenu(android.view.ContextMenu,
+	 * android.view.View, android.view.ContextMenu.ContextMenuInfo)
 	 */
 	@Override
 	public void onCreateContextMenu(ContextMenu menu, View v,
 			ContextMenuInfo menuInfo) {
 		super.onCreateContextMenu(menu, v, menuInfo);
-		Uri uriList = Uri.parse("content://"
-				+ DouiContentProvider.AUTHORITY + "/"
-				+ DouiContentProvider.TODO_CATEGORIES_PATH);
+		Uri uriList = Uri.parse("content://" + DouiContentProvider.AUTHORITY
+				+ "/" + DouiContentProvider.TODO_CATEGORIES_PATH);
 		String[] projection = {
 				TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME,
 				TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_ID };
-		Cursor cursor = getContentResolver().query(uriList, projection,
-				null, null,
-				TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME);
+		Cursor cursor = getContentResolver().query(uriList, projection, null,
+				null, TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME);
 		while (!cursor.isLast()) {
 			cursor.moveToNext();
 			int itemId = cursor.getInt(1);
@@ -397,12 +402,14 @@ public class DouiTodoItemEditActivity extends Activity {
 		menu.setHeaderTitle("Set category");
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see android.app.Activity#onContextItemSelected(android.view.MenuItem)
 	 */
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
-		loadCategoryById(""+item.getItemId());
+		loadCategoryById("" + item.getItemId());
 		tvSecondListName.setText(itemCategoryName);
 		showActionBarTop(true);
 		return super.onContextItemSelected(item);
@@ -532,6 +539,35 @@ public class DouiTodoItemEditActivity extends Activity {
 		Toast toast = Toast.makeText(getApplicationContext(), "Status set",
 				Toast.LENGTH_SHORT);
 		toast.show();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.app.Activity#onWindowFocusChanged(boolean)
+	 */
+	@Override
+	public void onWindowFocusChanged(boolean hasFocus) {
+		super.onWindowFocusChanged(hasFocus);
+		if (hasFocus) {
+			etTodoItemTitle
+					.setOnFocusChangeListener(new OnFocusChangeListener() {
+						public void onFocusChange(View v, boolean hasFocus) {
+							if (hasFocus) {
+								etTodoItemTitle.post(new Runnable() {
+									public void run() {
+										InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+										imm.showSoftInput(
+												etTodoItemTitle,
+												InputMethodManager.SHOW_IMPLICIT);
+									}
+								});
+							}
+						}
+					});
+			etTodoItemTitle.requestFocus();
+			etTodoItemTitle.requestFocusFromTouch();
+		}
 	}
 
 }

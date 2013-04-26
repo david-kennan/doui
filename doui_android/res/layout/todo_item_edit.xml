@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/llMain"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -9,7 +10,8 @@
         android:id="@+id/llActionBarTop"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal" >
+        android:orientation="horizontal"
+        tools:ignore="NestedWeights" >
 
         <Button
             android:id="@+id/imbtCancel"
@@ -18,7 +20,7 @@
             android:layout_weight="1"
             android:background="@android:color/transparent"
             android:drawableLeft="@android:drawable/ic_menu_close_clear_cancel"
-            android:text="Cancel" />
+            android:text="@string/item_edit_bt_cancel" />
 
         <Button
             android:id="@+id/imbtSave"
@@ -26,12 +28,13 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:background="@android:color/transparent"
-            android:text="Save" />
+            android:text="@string/item_edit_bt_save" />
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
+        android:layout_height="wrap_content"
+        tools:ignore="UseCompoundDrawables" >
 
         <ImageView
             android:id="@+id/imvAppIcon"
@@ -44,7 +47,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center|center_vertical"
-            android:text="Large Text"
             android:textAppearance="?android:attr/textAppearanceLarge" />
     </LinearLayout>
 
@@ -57,7 +59,13 @@
         android:id="@+id/etTodoItemTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:ems="10" >
+        android:ems="10"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:hint="@string/item_title_hint"
+        android:inputType="textCapSentences" >
+
+        <requestFocus />
     </EditText>
 
     <EditText
@@ -65,6 +73,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:hint="@string/item_body_hint"
+        android:inputType="textCapSentences"
         android:maxLines="4" />
 
     <View
@@ -77,13 +89,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Medium Text"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        tools:ignore="HardcodedText" />
 
     <TextView
         android:id="@+id/tvTodoContexts"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="TextView" />
+        android:layout_height="wrap_content" />
 
     <View
         android:layout_width="fill_parent"
@@ -92,11 +104,11 @@
 
     <View
         android:layout_width="fill_parent"
-        android:focusable="true"
-        android:focusableInTouchMode="true"
         android:layout_height="0dip"
         android:layout_weight="1"
-        android:background="@android:color/transparent" >
+        android:background="@android:color/transparent"
+        android:focusable="true"
+        android:focusableInTouchMode="true" >
 
         <requestFocus />
     </View>

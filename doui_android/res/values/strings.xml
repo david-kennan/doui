@@ -12,5 +12,9 @@
     <string name="todoCategoryEditableRowAdd">Add category</string>
     <string name="todoCategoriesManagerTitle">Categories</string>
     <string name="new_category_hint">New category</string>
+    <string name="item_title_hint">To do</string>
+    <string name="item_body_hint">Optional description</string>
+    <string name="item_edit_bt_save">Save</string>
+    <string name="item_edit_bt_cancel">Cancel</string>
 
 </resources>
