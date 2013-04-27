@@ -100,6 +100,10 @@ public class DouiTodoCategoryEditHelper {
 		imbtSave.setVisibility(View.GONE);
 		// imbtCancel.setVisibility(View.GONE);
 		imbtDelete.setVisibility(View.GONE);
+		InputMethodManager imm = (InputMethodManager) parent
+				.getSystemService(Context.INPUT_METHOD_SERVICE);
+		imm.hideSoftInputFromWindow(etItemName.getWindowToken(), 0);
+
 	}
 
 	public OnClickListener getImbtSaveOnClickListener() {
