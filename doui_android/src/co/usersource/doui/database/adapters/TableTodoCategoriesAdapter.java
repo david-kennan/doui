@@ -25,7 +25,7 @@ public class TableTodoCategoriesAdapter implements ITableAdapter {
 			+ " integer primary key autoincrement, " + TABLE_TODO_CATEGORIES_NAME
 			+ " TEXT" + ");";
 	/** Special category assigned to item if no category selected*/
-	public static final String STR_NONE_CATEGORY_NAME = "-None-";
+	public static final String STR_NONE_CATEGORY_NAME = "uncategorized";
 	/** Pre-defined array of Lists. */
 	public static final String STR_ARRAY_CATEGORIES[] = { STR_NONE_CATEGORY_NAME, "Finance and admin", "Health"};
 

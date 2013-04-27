@@ -323,7 +323,7 @@ public class DouiTodoItemEditActivity extends Activity {
 		case DouiContentProvider.TODO_STATUS_ITEM_URI_ID:
 			tvTodoListName.setText(itemStatusName);
 			tvSecondListName.setVisibility(View.VISIBLE);
-			tvSecondListName.setText(itemCategoryName);
+			tvSecondListName.setText("#"+itemCategoryName);
 			break;
 		case DouiContentProvider.TODO_CATEGORY_LIST_URI_ID:
 			tvTodoListName.setText(itemCategoryName);
@@ -332,7 +332,7 @@ public class DouiTodoItemEditActivity extends Activity {
 		case DouiContentProvider.TODO_STATUS_LIST_URI_ID:
 			tvTodoListName.setText(itemStatusName);
 			tvSecondListName.setVisibility(View.VISIBLE);
-			tvSecondListName.setText(itemCategoryName);
+			tvSecondListName.setText("#"+itemCategoryName);
 			break;
 		default:
 			Log.e(this.getClass().getName(), "Unknown URI for edit Activity: "
@@ -410,7 +410,7 @@ public class DouiTodoItemEditActivity extends Activity {
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
 		loadCategoryById("" + item.getItemId());
-		tvSecondListName.setText(itemCategoryName);
+		tvSecondListName.setText("#"+itemCategoryName);
 		showActionBarTop(true);
 		return super.onContextItemSelected(item);
 	}
