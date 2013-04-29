@@ -133,7 +133,7 @@ public class DouiContentProviderTestCase extends
 		// Access item from context name
 		Uri uriContex = Uri.parse("content://" + DouiContentProvider.AUTHORITY
 				+ "/" + DouiContentProvider.TODO_CONTEXTS_PATH + "/"
-				+ contextName + "/");
+				+ contextName.substring(1) + "/" + DouiContentProvider.TODO_PATH +"/");
 		cursor = provider.query(uriContex, newItemFields, null, null, null);
 		assertTrue(cursor.getCount() > 0);
 		cursor.close();

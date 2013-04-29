@@ -119,7 +119,7 @@ public class DouiMainActivity extends ListActivity {
 			mainCursor.moveToPosition(position);
 			String contextName = mainCursor.getString(1);
 			todoUri = Uri.parse(DouiContentProvider.TODO_CONTEXTS_URI
-					.toString() + "/" + contextName);
+					.toString() + "/" + contextName +  "/" + DouiContentProvider.TODO_PATH);
 			
 		}
 		i.putExtra(DouiTodoListActivity.STR_TODO_LIST_URI_EXT, todoUri);

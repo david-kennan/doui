@@ -36,6 +36,7 @@ import android.widget.Toast;
 import co.usersource.doui.DouiContentProvider;
 import co.usersource.doui.R;
 import co.usersource.doui.database.adapters.TableTodoCategoriesAdapter;
+import co.usersource.doui.database.adapters.TableTodoContextsAdapter;
 import co.usersource.doui.database.adapters.TableTodoItemsAdapter;
 import co.usersource.doui.database.adapters.TableTodoStatusAdapter;
 
@@ -69,6 +70,12 @@ public class DouiTodoItemEditActivity extends Activity {
 	private String itemTitle = "";
 	private String itemBody = "";
 	private String itemCategoryId;
+	private String itemCategoryName = "";
+	private String itemStatusId;
+	private String itemStatusName = "";
+	// Context id which was used to access item from Context list
+	private String itemPrimaryContextId;
+	private String itemPrimaryContextName;
 
 	/**
 	 * @return the itemTitle
@@ -114,10 +121,6 @@ public class DouiTodoItemEditActivity extends Activity {
 	public void setItemCategoryId(String itemCategoryId) {
 		this.itemCategoryId = itemCategoryId;
 	}
-
-	private String itemCategoryName = "";
-	private String itemStatusId;
-	private String itemStatusName = "";
 
 	private TextView tvTodoListName;
 	private EditText etTodoItemTitle;
@@ -168,8 +171,31 @@ public class DouiTodoItemEditActivity extends Activity {
 		cursor.close();
 		this.loadCategoryById(itemCategoryId);
 		this.loadStatusById(itemStatusId);
+		this.loadItemPrimaryContext();
 	}
 
+	/**
+	 * If item accessed from context list, load it's properties. Otherwise do nothing.
+	 * */
+	private void loadItemPrimaryContext()
+	{
+		if(DouiContentProvider.TODO_CONTEXT_ITEM_URI_ID==uriMatch)
+		{
+			List<String> uriComponents = itemUri.getPathSegments();
+			Uri contextUri = DouiContentProvider.AUTHORITY_URI;
+			for(int i = 0; i<uriComponents.size()-2;i++)
+			{
+				contextUri = Uri.withAppendedPath(contextUri, uriComponents.get(i));
+			}
+			String[] contextProps = {TableTodoContextsAdapter.TABLE_TODO_CONTEXTS_ID,TableTodoContextsAdapter.TABLE_TODO_CONTEXTS_NAME};
+			Cursor cursor = getContentResolver().query(contextUri, contextProps,
+					null, null, null);
+			cursor.moveToFirst();
+			this.itemPrimaryContextId = cursor.getString(cursor.getColumnIndex(TableTodoContextsAdapter.TABLE_TODO_CONTEXTS_ID));
+			this.itemPrimaryContextName = cursor.getString(cursor.getColumnIndex(TableTodoContextsAdapter.TABLE_TODO_CONTEXTS_NAME));
+			cursor.close();
+		}
+	}
 	/**
 	 * Utility function to load Category properties by existing id. Updates
 	 * local category fields.
@@ -243,7 +269,8 @@ public class DouiTodoItemEditActivity extends Activity {
 	 * */
 	private void loadToDoItemProperties() {
 		switch (uriMatch) {
-		case DouiContentProvider.TODO_CATEGORYS_ITEM_URI_ID:
+		case DouiContentProvider.TODO_CONTEXT_ITEM_URI_ID:
+		case DouiContentProvider.TODO_CATEGORIES_ITEM_URI_ID:
 		case DouiContentProvider.TODO_STATUS_ITEM_URI_ID:
 			this.loadToDoItemFromUri();
 			break;
@@ -316,12 +343,17 @@ public class DouiTodoItemEditActivity extends Activity {
 		this.createSecondListControl();
 
 		switch (uriMatch) {
-		case DouiContentProvider.TODO_CATEGORYS_ITEM_URI_ID:
+		case DouiContentProvider.TODO_CATEGORIES_ITEM_URI_ID:
 			tvTodoListName.setText(itemCategoryName);
 			tvSecondListName.setVisibility(View.GONE);
 			break;
 		case DouiContentProvider.TODO_STATUS_ITEM_URI_ID:
 			tvTodoListName.setText(itemStatusName);
+			tvSecondListName.setVisibility(View.VISIBLE);
+			tvSecondListName.setText("#"+itemCategoryName);
+			break;
+		case DouiContentProvider.TODO_CONTEXT_ITEM_URI_ID:
+			tvTodoListName.setText(itemPrimaryContextName);
 			tvSecondListName.setVisibility(View.VISIBLE);
 			tvSecondListName.setText("#"+itemCategoryName);
 			break;

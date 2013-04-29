@@ -91,7 +91,7 @@ public class DouiTodoListActivity extends ListActivity {
 			break;
 		case DouiContentProvider.TODO_CONTEXT_LIST_URI_ID:
 			imbtAddTodoItem.setVisibility(View.GONE);
-			this.setCaption(todoListUri.getLastPathSegment());
+			this.setCaption(todoListUri.getPathSegments().get(todoListUri.getPathSegments().size()-2));
 			break;
 		default:
 			Log.e(this.getClass().getName(),
@@ -160,11 +160,14 @@ public class DouiTodoListActivity extends ListActivity {
 		int uriMatchId = DouiContentProvider.sURIMatcher.match(todoListUri);
 		switch (uriMatchId) {
 		case DouiContentProvider.TODO_CATEGORY_LIST_URI_ID:
-		case DouiContentProvider.TODO_CONTEXT_LIST_URI_ID:
 			pathStart = DouiContentProvider.TODO_CATEGORIES_URI.toString();
 			idFkList = todoItemsCursor
 					.getString(todoItemsCursor
 							.getColumnIndex(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY));
+			break;
+		case DouiContentProvider.TODO_CONTEXT_LIST_URI_ID:
+			pathStart = DouiContentProvider.TODO_CONTEXTS_URI.toString();
+			idFkList = todoListUri.getPathSegments().get(todoListUri.getPathSegments().size()-2);
 			break;
 		case DouiContentProvider.TODO_STATUS_LIST_URI_ID:
 			pathStart = DouiContentProvider.TODO_STATUSES_URI.toString();
