@@ -76,6 +76,7 @@
         android:focusable="true"
         android:focusableInTouchMode="true"
         android:hint="@string/item_body_hint"
+        android:imeOptions="actionNone"
         android:inputType="textCapSentences"
         android:maxLines="4" />
 
