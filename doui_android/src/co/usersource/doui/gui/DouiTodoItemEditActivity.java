@@ -51,7 +51,7 @@ public class DouiTodoItemEditActivity extends Activity {
 	public static final String STR_TODO_ITEM_URI_EXT = "STR_TODO_ITEM_URI_EXT";
 
 	/** Name for the category to be set by default. */
-	private static final String STR_DEFAULT_CATEGORY_NAME = "-None-";
+	private static final String STR_DEFAULT_CATEGORY_NAME = TableTodoCategoriesAdapter.STR_NONE_CATEGORY_NAME;
 
 	/**
 	 * Array of drawable IDs for each status. Must be in sync with
