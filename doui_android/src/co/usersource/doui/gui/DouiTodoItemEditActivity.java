@@ -307,7 +307,7 @@ public class DouiTodoItemEditActivity extends Activity {
 
 	public boolean onCreateOptionsMenu(Menu menu) {
 	    MenuInflater inflater = getMenuInflater();
-	    inflater.inflate(R.menu.item_edit_menu, menu);
+	    inflater.inflate(R.menu.todo_item_edit_menu, menu);
 	    menu.findItem(R.id.menu_cancel).setVisible(showSaveCancelMenu);
 	    menu.findItem(R.id.menu_save).setVisible(showSaveCancelMenu);
 	    return true;

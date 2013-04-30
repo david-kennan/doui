@@ -7,6 +7,9 @@ import android.database.Cursor;
 import android.database.MergeCursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageButton;
@@ -32,11 +35,12 @@ public class DouiMainActivity extends ListActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 		fillList();
-		imbtCategories = (ImageButton)findViewById(R.id.imbtCategories);
+		imbtCategories = (ImageButton) findViewById(R.id.imbtCategories);
 		imbtCategories.setOnClickListener(new OnClickListener() {
-			
+
 			public void onClick(View v) {
-				Intent i = new Intent(DouiMainActivity.this, DouiTodoCategoriesManagerActivity.class);
+				Intent i = new Intent(DouiMainActivity.this,
+						DouiTodoCategoriesManagerActivity.class);
 				startActivity(i);
 			}
 		});
@@ -49,81 +53,107 @@ public class DouiMainActivity extends ListActivity {
 	}
 
 	private void fillList() {
-		String[] from = new String[] {
-				"img_id",
+		String[] from = new String[] { "img_id",
 				TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME,
 				"TABLE_NAME",
 				TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_ID };
-		int[] to = new int[] { R.id.icon, R.id.label};
+		int[] to = new int[] { R.id.icon, R.id.label };
 
 		ContentResolver cr = getContentResolver();
 		String categoryProjection[] = {
 				R.drawable.ic_category + " as img_id",
 				TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME,
-				"'"+TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES+"' as TABLE_NAME",
+				"'" + TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES
+						+ "' as TABLE_NAME",
 				TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_ID };
 		String selectCondition = TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME
 				+ "<>?";
 		String[] selectConditionArgs = { TableTodoCategoriesAdapter.STR_NONE_CATEGORY_NAME };
 
-		cursorToDoCategories = cr
-				.query(DouiContentProvider.TODO_CATEGORIES_URI, categoryProjection, selectCondition,
-						selectConditionArgs, TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME);
+		cursorToDoCategories = cr.query(
+				DouiContentProvider.TODO_CATEGORIES_URI, categoryProjection,
+				selectCondition, selectConditionArgs,
+				TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME);
 
 		String statusProjection[] = {
 				R.drawable.ic_status + " as img_id",
 				TableTodoStatusAdapter.TABLE_TODO_STATUSES_NAME,
-				"'"+TableTodoStatusAdapter.TABLE_TODO_STATUSES+"' as TABLE_NAME",
+				"'" + TableTodoStatusAdapter.TABLE_TODO_STATUSES
+						+ "' as TABLE_NAME",
 				TableTodoStatusAdapter.TABLE_TODO_STATUSES_ID };
 		cursorStatuses = cr.query(DouiContentProvider.TODO_STATUSES_URI,
-				statusProjection, null, null, TableTodoStatusAdapter.TABLE_TODO_STATUSES_ID);
+				statusProjection, null, null,
+				TableTodoStatusAdapter.TABLE_TODO_STATUSES_ID);
 
 		String contextProjection[] = {
 				R.drawable.ic_context + " as img_id",
 				TableTodoContextsAdapter.TABLE_TODO_CONTEXTS_NAME,
-				"'"+TableTodoContextsAdapter.TABLE_TODO_CONTEXTS+"' as TABLE_NAME",
+				"'" + TableTodoContextsAdapter.TABLE_TODO_CONTEXTS
+						+ "' as TABLE_NAME",
 				TableTodoContextsAdapter.TABLE_TODO_CONTEXTS_ID };
 		cursorContexts = cr.query(DouiContentProvider.TODO_CONTEXTS_URI,
-				contextProjection, null, null, TableTodoContextsAdapter.TABLE_TODO_CONTEXTS_NAME);
+				contextProjection, null, null,
+				TableTodoContextsAdapter.TABLE_TODO_CONTEXTS_NAME);
 
-		Cursor cursors[] = { cursorStatuses, cursorToDoCategories, 
+		Cursor cursors[] = { cursorStatuses, cursorToDoCategories,
 				cursorContexts };
 		mergeCursor = new MergeCursor(cursors);
 
 		adapter = new SimpleCursorAdapter(getApplicationContext(),
 				R.layout.todo_list_row, mergeCursor, from, to, 0);
-		
+
 		setListAdapter(adapter);
 	}
 
-	
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		super.onListItemClick(l, v, position, id);
 		mergeCursor.moveToPosition(position);
-		String tableName = mergeCursor.getString(mergeCursor.getColumnIndex("TABLE_NAME"));
+		String tableName = mergeCursor.getString(mergeCursor
+				.getColumnIndex("TABLE_NAME"));
 		Intent i = new Intent(this, DouiTodoListActivity.class);
 		Uri todoUri = null;
-		if(tableName.equals(TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES))
-		{
+		if (tableName.equals(TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES)) {
 			todoUri = Uri.parse(DouiContentProvider.TODO_CATEGORIES_URI + "/"
 					+ id + "/" + DouiContentProvider.TODO_PATH);
-			
-		}else if(tableName.equals(TableTodoStatusAdapter.TABLE_TODO_STATUSES))
-		{
+
+		} else if (tableName.equals(TableTodoStatusAdapter.TABLE_TODO_STATUSES)) {
 			todoUri = Uri.parse(DouiContentProvider.TODO_STATUSES_URI + "/"
 					+ id + "/" + DouiContentProvider.TODO_PATH);
-			
-		}else if(tableName.equals(TableTodoContextsAdapter.TABLE_TODO_CONTEXTS))
-		{
+
+		} else if (tableName
+				.equals(TableTodoContextsAdapter.TABLE_TODO_CONTEXTS)) {
 			Cursor mainCursor = (Cursor) l.getItemAtPosition(position);
 			mainCursor.moveToPosition(position);
 			String contextName = mainCursor.getString(1);
 			todoUri = Uri.parse(DouiContentProvider.TODO_CONTEXTS_URI
-					.toString() + "/" + contextName +  "/" + DouiContentProvider.TODO_PATH);
-			
+					.toString()
+					+ "/"
+					+ contextName
+					+ "/"
+					+ DouiContentProvider.TODO_PATH);
+
 		}
 		i.putExtra(DouiTodoListActivity.STR_TODO_LIST_URI_EXT, todoUri);
 		startActivity(i);
+	}
+
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.main_menu, menu);
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case R.id.main_menu_categories:
+			Intent i = new Intent(DouiMainActivity.this,
+					DouiTodoCategoriesManagerActivity.class);
+			startActivity(i);
+			return true;
+		default:
+			return super.onOptionsItemSelected(item);
+		}
 	}
 
 	/*

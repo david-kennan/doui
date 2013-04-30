@@ -12,6 +12,8 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -145,7 +147,6 @@ public class DouiTodoListActivity extends ListActivity {
 		super.onRestart();
 	}
 
-	// TODO What must be displayed if we come from context?
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		super.onListItemClick(l, v, position, id);
 
@@ -210,6 +211,17 @@ public class DouiTodoListActivity extends ListActivity {
 		return result;
 	}
 
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.todo_list_activity_menu, menu);
+		int uriMatchId = DouiContentProvider.sURIMatcher.match(todoListUri);
+		if(DouiContentProvider.TODO_CONTEXT_LIST_URI_ID==uriMatchId) {
+			menu.findItem(R.id.todo_list_activity_meny_add_item).setVisible(false);
+		}
+		return true;
+	}
+
+	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
@@ -217,6 +229,12 @@ public class DouiTodoListActivity extends ListActivity {
 			Intent intent = new Intent(this, DouiMainActivity.class);
 			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			startActivity(intent);
+			return true;
+		case R.id.todo_list_activity_meny_add_item:
+			Intent i = new Intent(DouiTodoListActivity.this, DouiTodoItemEditActivity.class);
+			i.putExtra(DouiTodoItemEditActivity.STR_TODO_ITEM_URI_EXT,
+					todoListUri);
+			startActivity(i);
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
