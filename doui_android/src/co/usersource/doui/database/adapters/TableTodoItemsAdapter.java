@@ -88,16 +88,17 @@ public class TableTodoItemsAdapter implements ITableAdapter {
 		int result = database.update(TABLE_TODO_ITEMS, values, selection,
 				selectionArgs);
 		if (result > 0) {
-			String columns[] = { TABLE_TODO_ITEMS_ID, TABLE_TODO_ITEMS_BODY,
+			String columns[] = { TABLE_TODO_ITEMS_ID, TABLE_TODO_ITEMS_TITLE, TABLE_TODO_ITEMS_BODY,
 					TABLE_TODO_ITEMS_FK_STATUS };
 			Cursor cursor = database.query(TABLE_TODO_ITEMS, columns,
 					selection, selectionArgs, null, null, null);
 			while (cursor.moveToNext()) {
 				ContentValues todoItemValues = new ContentValues();
-				todoItemValues.put(TABLE_TODO_ITEMS_ID, cursor.getString(0));
-				todoItemValues.put(TABLE_TODO_ITEMS_BODY, cursor.getString(1));
+				todoItemValues.put(TABLE_TODO_ITEMS_ID, cursor.getString(cursor.getColumnIndex(TABLE_TODO_ITEMS_ID)));
+				todoItemValues.put(TABLE_TODO_ITEMS_TITLE, cursor.getString(cursor.getColumnIndex(TABLE_TODO_ITEMS_TITLE)));
+				todoItemValues.put(TABLE_TODO_ITEMS_BODY, cursor.getString(cursor.getColumnIndex(TABLE_TODO_ITEMS_BODY)));
 				todoItemValues.put(TABLE_TODO_ITEMS_FK_STATUS,
-						cursor.getString(2));
+						cursor.getString(cursor.getColumnIndex(TABLE_TODO_ITEMS_FK_STATUS)));
 				updateContexts(todoItemValues);
 			}
 			cursor.close();
@@ -121,15 +122,24 @@ public class TableTodoItemsAdapter implements ITableAdapter {
 	 *            item data.
 	 * @return List of parsed contexts.
 	 * */
-	private List<String> getItemContextsFromBody(ContentValues values) {
+	private List<String> getItemContextsFromItemValues(ContentValues values) {
 		List<String> result = new ArrayList<String>();
+		String itemTitle = values.getAsString(TABLE_TODO_ITEMS_TITLE);
 		String itemBody = values.getAsString(TABLE_TODO_ITEMS_BODY);
+		
 		Pattern contextPattern = Pattern.compile("@(\\w*)");
-		Matcher contextMatcher = contextPattern.matcher(itemBody);
+		Matcher contextMatcher = contextPattern.matcher(itemTitle);
 		while (contextMatcher.find()) {
 			String contextName =contextMatcher.group(0).substring(1); 
 			result.add(contextName);
 		}
+		
+		contextMatcher = contextPattern.matcher(itemBody);
+		while (contextMatcher.find()) {
+			String contextName =contextMatcher.group(0).substring(1); 
+			result.add(contextName);
+		}
+		
 		return result;
 	}
 
@@ -144,7 +154,7 @@ public class TableTodoItemsAdapter implements ITableAdapter {
 		{
 
 			List<String> itemContexts = this
-					.getItemContextsFromBody(todoItemData);
+					.getItemContextsFromItemValues(todoItemData);
 			for (String contextName : itemContexts) {
 				ContentValues contextData = sqliteOpenHelper
 						.getTableTodoContextsAdapter().getContextByName(

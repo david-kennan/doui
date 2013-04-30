@@ -394,11 +394,16 @@ public class DouiTodoItemEditActivity extends Activity {
 
 		tvTodoContexts = (TextView) findViewById(R.id.tvTodoContexts);
 		Pattern contextPattern = Pattern.compile("@(\\w*)");
-		Matcher contextMatcher = contextPattern.matcher(itemBody);
+		Matcher contextMatcher = contextPattern.matcher(itemTitle);
 		String strContexts = "";
 		while (contextMatcher.find()) {
 			strContexts += contextMatcher.group(0) + " ";
 		}
+		contextMatcher = contextPattern.matcher(itemBody);
+		while (contextMatcher.find()) {
+			strContexts += contextMatcher.group(0) + " ";
+		}
+		
 		if (!strContexts.equals("")) {
 			tvTodoContexts.setText(strContexts);
 			tvTodoContexts.setVisibility(View.VISIBLE);
