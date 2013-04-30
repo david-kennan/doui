@@ -16,5 +16,6 @@
     <string name="item_body_hint">Optional description</string>
     <string name="item_edit_bt_save">Save</string>
     <string name="item_edit_bt_cancel">Cancel</string>
+    <string name="helpActivityTitle">Help</string>
 
 </resources>

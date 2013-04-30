@@ -151,6 +151,11 @@ public class DouiMainActivity extends ListActivity {
 					DouiTodoCategoriesManagerActivity.class);
 			startActivity(i);
 			return true;
+		case R.id.main_menu_help:
+			Intent helpIntent = new Intent(DouiMainActivity.this,
+					DouiHelpActivity.class);
+			startActivity(helpIntent);
+			return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}

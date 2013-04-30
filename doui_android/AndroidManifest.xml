@@ -37,8 +37,9 @@
         </activity>
         <activity
             android:name=".gui.DouiTodoCategoriesManagerActivity"
-            android:label="Categories" >
+            android:label="@string/todoCategoriesManagerTitle" >
         </activity>
+        <activity android:name=".gui.DouiHelpActivity" android:label="@string/helpActivityTitle"></activity>
     </application>
 
 </manifest>
