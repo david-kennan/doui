@@ -7,10 +7,12 @@ import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.LinearLayout;
@@ -39,7 +41,7 @@ public class DouiTodoCategoriesManagerActivity extends Activity {
 		llItems = (LinearLayout) findViewById(R.id.llItems);
 		inflater = (LayoutInflater) getApplicationContext().getSystemService(
 				Context.LAYOUT_INFLATER_SERVICE);
-
+		getActionBar().setDisplayHomeAsUpEnabled(true);
 		fillList();
 
 	}
@@ -228,5 +230,17 @@ public class DouiTodoCategoriesManagerActivity extends Activity {
 				.setTextColor(getResources().getColor(android.R.color.darker_gray));
 
 		llItems.addView(addCategoriesView);
+	}
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case android.R.id.home:
+			Intent intent = new Intent(this, DouiMainActivity.class);
+			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			startActivity(intent);
+			return true;
+		default:
+			return super.onOptionsItemSelected(item);
+		}
 	}
 }

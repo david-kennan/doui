@@ -6,11 +6,6 @@
     android:layout_height="match_parent"
     android:orientation="vertical" >
 
-    <View
-        android:layout_width="fill_parent"
-        android:layout_height="1dp"
-        android:background="@android:color/white" />
-
     <EditText
         android:id="@+id/etTodoItemTitle"
         android:layout_width="match_parent"
@@ -53,11 +48,6 @@
         android:id="@+id/tvTodoContexts"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
-
-    <View
-        android:layout_width="fill_parent"
-        android:layout_height="1dp"
-        android:background="@android:color/darker_gray" />
 
     <View
         android:layout_width="fill_parent"

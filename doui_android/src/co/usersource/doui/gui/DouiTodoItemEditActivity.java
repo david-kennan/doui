@@ -21,7 +21,6 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.view.ActionMode;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
@@ -31,7 +30,6 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnFocusChangeListener;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -139,7 +137,7 @@ public class DouiTodoItemEditActivity extends Activity {
 
 	private ActionBar actionBar;
 
-	private boolean showActionBarTop = false;
+	private boolean showSaveCancelMenu = false;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -310,8 +308,8 @@ public class DouiTodoItemEditActivity extends Activity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 	    MenuInflater inflater = getMenuInflater();
 	    inflater.inflate(R.menu.item_edit_menu, menu);
-	    menu.findItem(R.id.menu_cancel).setVisible(showActionBarTop);
-	    menu.findItem(R.id.menu_save).setVisible(showActionBarTop);
+	    menu.findItem(R.id.menu_cancel).setVisible(showSaveCancelMenu);
+	    menu.findItem(R.id.menu_save).setVisible(showSaveCancelMenu);
 	    return true;
 	}
 	
@@ -340,7 +338,7 @@ public class DouiTodoItemEditActivity extends Activity {
 
 			public void afterTextChanged(Editable s) {
 				itemTitle = etTodoItemTitle.getText().toString();
-				DouiTodoItemEditActivity.this.setShowActionBarTop(true);
+				DouiTodoItemEditActivity.this.setShowSaveCancelMenu(true);
 			}
 		});
 
@@ -359,7 +357,7 @@ public class DouiTodoItemEditActivity extends Activity {
 
 			public void afterTextChanged(Editable s) {
 				itemBody = etTodoItemBody.getText().toString();
-				DouiTodoItemEditActivity.this.setShowActionBarTop(true);
+				DouiTodoItemEditActivity.this.setShowSaveCancelMenu(true);
 			}
 		});
 
@@ -466,15 +464,17 @@ public class DouiTodoItemEditActivity extends Activity {
 	public boolean onContextItemSelected(MenuItem item) {
 		loadCategoryById("" + item.getItemId());
 		tvSecondListName.setText("#" + itemCategoryName);
-		setShowActionBarTop(true);
+		setShowSaveCancelMenu(true);
 		return super.onContextItemSelected(item);
 	}
 
-	private void setShowActionBarTop(boolean isVisible) {
-		this.showActionBarTop = isVisible;
+	/** Show or hide Save and Cancel buttons at the top of the screen. */
+	private void setShowSaveCancelMenu(boolean isVisible) {
+		this.showSaveCancelMenu = isVisible;
 		this.invalidateOptionsMenu();
 	}
 
+	/** This function save current item values to the database. */
 	private void saveToDoItem(){
 		if (!itemTitle.equals("")) {
 			ContentValues values = new ContentValues();

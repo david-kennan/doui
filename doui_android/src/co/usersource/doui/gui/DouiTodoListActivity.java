@@ -12,6 +12,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageButton;
@@ -63,6 +64,8 @@ public class DouiTodoListActivity extends ListActivity {
 		});
 
 		String listId;
+		getActionBar().setDisplayHomeAsUpEnabled(true);
+		
 		int uriMatchId = DouiContentProvider.sURIMatcher.match(todoListUri);
 		switch (uriMatchId) {
 		case DouiContentProvider.TODO_CATEGORY_LIST_URI_ID:
@@ -74,7 +77,7 @@ public class DouiTodoListActivity extends ListActivity {
 			Cursor cursorCategory = getContentResolver().query(uriCategory,
 					listCategoryProperties, null, null, null);
 			cursorCategory.moveToFirst();
-			this.setCaption(cursorCategory.getString(0));
+			getActionBar().setTitle(cursorCategory.getString(0));
 			imbtAddTodoItem.setVisibility(View.VISIBLE);
 			break;
 		case DouiContentProvider.TODO_STATUS_LIST_URI_ID:
@@ -86,12 +89,12 @@ public class DouiTodoListActivity extends ListActivity {
 			Cursor cursorStatus = getContentResolver().query(uriStatus,
 					listStatusProperties, null, null, null);
 			cursorStatus.moveToFirst();
-			this.setCaption(cursorStatus.getString(0));
+			getActionBar().setTitle(cursorStatus.getString(0));
 			imbtAddTodoItem.setVisibility(View.VISIBLE);
 			break;
 		case DouiContentProvider.TODO_CONTEXT_LIST_URI_ID:
 			imbtAddTodoItem.setVisibility(View.GONE);
-			this.setCaption(todoListUri.getPathSegments().get(todoListUri.getPathSegments().size()-2));
+			getActionBar().setTitle(todoListUri.getPathSegments().get(todoListUri.getPathSegments().size()-2));
 			break;
 		default:
 			Log.e(this.getClass().getName(),
@@ -107,12 +110,6 @@ public class DouiTodoListActivity extends ListActivity {
 	private String getListIdFromPath() {
 		List<String> pathSegments = todoListUri.getPathSegments();
 		return pathSegments.get(pathSegments.size() - 2);
-	}
-
-	/** Utility function to set activity caption. */
-	private void setCaption(String caption) {
-		TextView tvCaption = (TextView) findViewById(R.id.tvListName);
-		tvCaption.setText(caption);
 	}
 
 	private void fillList() {
@@ -213,4 +210,16 @@ public class DouiTodoListActivity extends ListActivity {
 		return result;
 	}
 
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case android.R.id.home:
+			Intent intent = new Intent(this, DouiMainActivity.class);
+			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			startActivity(intent);
+			return true;
+		default:
+			return super.onOptionsItemSelected(item);
+		}
+	}
 }
