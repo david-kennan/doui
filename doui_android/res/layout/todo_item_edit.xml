@@ -10,11 +10,14 @@
         android:id="@+id/etTodoItemTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
         android:ems="10"
         android:focusable="true"
         android:focusableInTouchMode="true"
         android:hint="@string/item_title_hint"
-        android:inputType="textCapSentences" >
+        android:inputType="textCapSentences"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textColor="@android:color/primary_text_light" >
 
         <requestFocus />
     </EditText>
@@ -23,31 +26,40 @@
         android:id="@+id/etTodoItemBody"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
         android:ems="10"
         android:focusable="true"
         android:focusableInTouchMode="true"
         android:hint="@string/item_body_hint"
         android:imeOptions="actionNone"
         android:inputType="textCapSentences"
-        android:maxLines="4" />
+        android:maxLines="4"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textColor="@android:color/secondary_text_light" />
 
     <View
         android:layout_width="fill_parent"
         android:layout_height="1dp"
+        android:layout_marginTop="10dp"
         android:background="@android:color/darker_gray" />
 
     <TextView
         android:id="@+id/tvSecondListName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="15dp"
+        android:layout_marginTop="20dp"
         android:text="Medium Text"
-        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textAppearance="?android:attr/textAppearanceSmall"
         tools:ignore="HardcodedText" />
 
     <TextView
         android:id="@+id/tvTodoContexts"
+        android:textAppearance="?android:attr/textAppearanceSmall"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="15dp"
+        android:layout_marginTop="20dp" />
 
     <View
         android:layout_width="fill_parent"
