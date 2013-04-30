@@ -7,9 +7,11 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.TypedArray;
 import android.database.Cursor;
 import android.graphics.Color;
@@ -19,8 +21,11 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.ActionMode;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -63,8 +68,6 @@ public class DouiTodoItemEditActivity extends Activity {
 			R.drawable.ic_status_done, R.drawable.ic_status_someday };
 
 	private Uri itemUri;
-	private Button btCancel;
-	private Button btSave;
 	private String itemId;
 
 	private String itemTitle = "";
@@ -76,6 +79,7 @@ public class DouiTodoItemEditActivity extends Activity {
 	// Context id which was used to access item from Context list
 	private String itemPrimaryContextId;
 	private String itemPrimaryContextName;
+
 
 	/**
 	 * @return the itemTitle
@@ -122,7 +126,6 @@ public class DouiTodoItemEditActivity extends Activity {
 		this.itemCategoryId = itemCategoryId;
 	}
 
-	private TextView tvTodoListName;
 	private EditText etTodoItemTitle;
 	private EditText etTodoItemBody;
 
@@ -133,6 +136,10 @@ public class DouiTodoItemEditActivity extends Activity {
 	private TextView tvSecondListName;
 
 	private LinearLayout llStatuses;
+
+	private ActionBar actionBar;
+
+	private boolean showActionBarTop = false;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -175,27 +182,33 @@ public class DouiTodoItemEditActivity extends Activity {
 	}
 
 	/**
-	 * If item accessed from context list, load it's properties. Otherwise do nothing.
+	 * If item accessed from context list, load it's properties. Otherwise do
+	 * nothing.
 	 * */
-	private void loadItemPrimaryContext()
-	{
-		if(DouiContentProvider.TODO_CONTEXT_ITEM_URI_ID==uriMatch)
-		{
+	private void loadItemPrimaryContext() {
+		if (DouiContentProvider.TODO_CONTEXT_ITEM_URI_ID == uriMatch) {
 			List<String> uriComponents = itemUri.getPathSegments();
 			Uri contextUri = DouiContentProvider.AUTHORITY_URI;
-			for(int i = 0; i<uriComponents.size()-2;i++)
-			{
-				contextUri = Uri.withAppendedPath(contextUri, uriComponents.get(i));
+			for (int i = 0; i < uriComponents.size() - 2; i++) {
+				contextUri = Uri.withAppendedPath(contextUri,
+						uriComponents.get(i));
 			}
-			String[] contextProps = {TableTodoContextsAdapter.TABLE_TODO_CONTEXTS_ID,TableTodoContextsAdapter.TABLE_TODO_CONTEXTS_NAME};
-			Cursor cursor = getContentResolver().query(contextUri, contextProps,
-					null, null, null);
+			String[] contextProps = {
+					TableTodoContextsAdapter.TABLE_TODO_CONTEXTS_ID,
+					TableTodoContextsAdapter.TABLE_TODO_CONTEXTS_NAME };
+			Cursor cursor = getContentResolver().query(contextUri,
+					contextProps, null, null, null);
 			cursor.moveToFirst();
-			this.itemPrimaryContextId = cursor.getString(cursor.getColumnIndex(TableTodoContextsAdapter.TABLE_TODO_CONTEXTS_ID));
-			this.itemPrimaryContextName = cursor.getString(cursor.getColumnIndex(TableTodoContextsAdapter.TABLE_TODO_CONTEXTS_NAME));
+			this.itemPrimaryContextId = cursor
+					.getString(cursor
+							.getColumnIndex(TableTodoContextsAdapter.TABLE_TODO_CONTEXTS_ID));
+			this.itemPrimaryContextName = cursor
+					.getString(cursor
+							.getColumnIndex(TableTodoContextsAdapter.TABLE_TODO_CONTEXTS_NAME));
 			cursor.close();
 		}
 	}
+
 	/**
 	 * Utility function to load Category properties by existing id. Updates
 	 * local category fields.
@@ -294,14 +307,24 @@ public class DouiTodoItemEditActivity extends Activity {
 
 	}
 
+	public boolean onCreateOptionsMenu(Menu menu) {
+	    MenuInflater inflater = getMenuInflater();
+	    inflater.inflate(R.menu.item_edit_menu, menu);
+	    menu.findItem(R.id.menu_cancel).setVisible(showActionBarTop);
+	    menu.findItem(R.id.menu_save).setVisible(showActionBarTop);
+	    return true;
+	}
+	
 	/**
 	 * Utility function to set control values with values retrieved from current
 	 * URI.
 	 * */
 	private void initUiControls() {
+		actionBar = getActionBar();
+		actionBar.setDisplayHomeAsUpEnabled(true);
+
 		etTodoItemTitle = (EditText) findViewById(R.id.etTodoItemTitle);
 		etTodoItemBody = (EditText) findViewById(R.id.etTodoItemBody);
-		tvTodoListName = (TextView) findViewById(R.id.tvListName);
 		etTodoItemTitle.setText(itemTitle);
 		etTodoItemTitle.addTextChangedListener(new TextWatcher() {
 
@@ -317,7 +340,7 @@ public class DouiTodoItemEditActivity extends Activity {
 
 			public void afterTextChanged(Editable s) {
 				itemTitle = etTodoItemTitle.getText().toString();
-				DouiTodoItemEditActivity.this.showActionBarTop(true);
+				DouiTodoItemEditActivity.this.setShowActionBarTop(true);
 			}
 		});
 
@@ -336,7 +359,7 @@ public class DouiTodoItemEditActivity extends Activity {
 
 			public void afterTextChanged(Editable s) {
 				itemBody = etTodoItemBody.getText().toString();
-				DouiTodoItemEditActivity.this.showActionBarTop(true);
+				DouiTodoItemEditActivity.this.setShowActionBarTop(true);
 			}
 		});
 
@@ -344,27 +367,27 @@ public class DouiTodoItemEditActivity extends Activity {
 
 		switch (uriMatch) {
 		case DouiContentProvider.TODO_CATEGORIES_ITEM_URI_ID:
-			tvTodoListName.setText(itemCategoryName);
+			actionBar.setTitle(itemCategoryName);
 			tvSecondListName.setVisibility(View.GONE);
 			break;
 		case DouiContentProvider.TODO_STATUS_ITEM_URI_ID:
-			tvTodoListName.setText(itemStatusName);
+			actionBar.setTitle(itemStatusName);
 			tvSecondListName.setVisibility(View.VISIBLE);
-			tvSecondListName.setText("#"+itemCategoryName);
+			tvSecondListName.setText("#" + itemCategoryName);
 			break;
 		case DouiContentProvider.TODO_CONTEXT_ITEM_URI_ID:
-			tvTodoListName.setText(itemPrimaryContextName);
+			actionBar.setTitle(itemPrimaryContextName);
 			tvSecondListName.setVisibility(View.VISIBLE);
-			tvSecondListName.setText("#"+itemCategoryName);
+			tvSecondListName.setText("#" + itemCategoryName);
 			break;
 		case DouiContentProvider.TODO_CATEGORY_LIST_URI_ID:
-			tvTodoListName.setText(itemCategoryName);
+			actionBar.setTitle(itemCategoryName);
 			tvSecondListName.setVisibility(View.GONE);
 			break;
 		case DouiContentProvider.TODO_STATUS_LIST_URI_ID:
-			tvTodoListName.setText(itemStatusName);
+			actionBar.setTitle(itemStatusName);
 			tvSecondListName.setVisibility(View.VISIBLE);
-			tvSecondListName.setText("#"+itemCategoryName);
+			tvSecondListName.setText("#" + itemCategoryName);
 			break;
 		default:
 			Log.e(this.getClass().getName(), "Unknown URI for edit Activity: "
@@ -385,10 +408,10 @@ public class DouiTodoItemEditActivity extends Activity {
 			tvTodoContexts.setVisibility(View.GONE);
 		}
 
-		this.createActionBarTop();
 		if (null != itemId) {
 			this.createStatusActionBar();
 		}
+
 	}
 
 	/**
@@ -431,7 +454,7 @@ public class DouiTodoItemEditActivity extends Activity {
 			String itemName = cursor.getString(0);
 			menu.add(0, itemId, position + 1, itemName);
 		}
-		menu.setHeaderTitle("Set category");
+		menu.setHeaderTitle("Set category"); // TODO make this resource
 	}
 
 	/*
@@ -442,75 +465,52 @@ public class DouiTodoItemEditActivity extends Activity {
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
 		loadCategoryById("" + item.getItemId());
-		tvSecondListName.setText("#"+itemCategoryName);
-		showActionBarTop(true);
+		tvSecondListName.setText("#" + itemCategoryName);
+		setShowActionBarTop(true);
 		return super.onContextItemSelected(item);
 	}
 
-	private void showActionBarTop(boolean isVisible) {
-		LinearLayout llActionBarTop = (LinearLayout) findViewById(R.id.llActionBarTop);
-		if (isVisible) {
-			llActionBarTop.setVisibility(View.VISIBLE);
+	private void setShowActionBarTop(boolean isVisible) {
+		this.showActionBarTop = isVisible;
+		this.invalidateOptionsMenu();
+	}
+
+	private void saveToDoItem(){
+		if (!itemTitle.equals("")) {
+			ContentValues values = new ContentValues();
+			values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_TITLE,
+					itemTitle);
+			values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_BODY,
+					itemBody);
+
+			values.put(
+					TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY,
+					itemCategoryId);
+			values.put(
+					TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_STATUS,
+					itemStatusId);
+
+			if (null == itemId) {
+				itemUri = getContentResolver().insert(itemUri, values);
+			} else {
+				String selection = TableTodoItemsAdapter.TABLE_TODO_ITEMS_ID
+						+ "=?";
+				String selectionArgs[] = { itemId };
+				getContentResolver().update(itemUri, values, selection,
+						selectionArgs);
+			}
+			Toast toast = Toast.makeText(getApplicationContext(),
+					"Item saved", Toast.LENGTH_SHORT);
+			toast.show();
+			goToParentList();
 		} else {
-			llActionBarTop.setVisibility(View.GONE);
+			Toast toast = Toast.makeText(getApplicationContext(),
+					"Can't save item without title!",
+					Toast.LENGTH_SHORT);
+			toast.show();
+
 		}
 	}
-
-	/**
-	 * Utility function to create action bar at the top of the screen.
-	 * */
-	private void createActionBarTop() {
-		this.showActionBarTop(false);
-		// Actionbar buttons.
-		btCancel = (Button) findViewById(R.id.imbtCancel);
-		btCancel.setOnClickListener(new OnClickListener() {
-
-			public void onClick(View v) {
-				finish();
-			}
-		});
-		btSave = (Button) findViewById(R.id.imbtSave);
-		btSave.setOnClickListener(new OnClickListener() {
-
-			public void onClick(View v) {
-				if (!itemTitle.equals("")) {
-					ContentValues values = new ContentValues();
-					values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_TITLE,
-							itemTitle);
-					values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_BODY,
-							itemBody);
-
-					values.put(
-							TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY,
-							itemCategoryId);
-					values.put(
-							TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_STATUS,
-							itemStatusId);
-
-					if (null == itemId) {
-						itemUri = getContentResolver().insert(itemUri, values);
-					} else {
-						String selection = TableTodoItemsAdapter.TABLE_TODO_ITEMS_ID
-								+ "=?";
-						String selectionArgs[] = { itemId };
-						getContentResolver().update(itemUri, values, selection,
-								selectionArgs);
-					}
-					Toast toast = Toast.makeText(getApplicationContext(),
-							"Item saved", Toast.LENGTH_SHORT);
-					toast.show();
-					finish();
-				} else {
-					Toast toast = Toast.makeText(getApplicationContext(),
-							"Can't save item without title!",
-							Toast.LENGTH_SHORT);
-					toast.show();
-
-				}
-			}
-		});
-	}
-
 	/**
 	 * Utility function to create Action bar with "Done" and
 	 * "Set status buttons".
@@ -540,7 +540,7 @@ public class DouiTodoItemEditActivity extends Activity {
 
 					public void onClick(View v) {
 						setItemStatus(statusId);
-						finish();
+						goToParentList();
 					}
 				});
 			} else {
@@ -602,4 +602,32 @@ public class DouiTodoItemEditActivity extends Activity {
 		}
 	}
 
+	/** Function to return to list activity. */
+	private void goToParentList() {
+		Intent intent = new Intent(this, DouiTodoListActivity.class);
+		intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		List<String> uriComponents = itemUri.getPathSegments();
+		Uri parentUri = DouiContentProvider.AUTHORITY_URI;
+		for (int i = 0; i < uriComponents.size() - 1; i++) {
+			parentUri = Uri.withAppendedPath(parentUri, uriComponents.get(i));
+		}
+		intent.putExtra(DouiTodoListActivity.STR_TODO_LIST_URI_EXT, parentUri);
+		startActivity(intent);
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case android.R.id.home:
+			this.goToParentList();
+			return true;
+		case R.id.menu_cancel:
+			this.goToParentList();
+			return true;
+		case R.id.menu_save:
+			this.saveToDoItem();
+		default:
+			return super.onOptionsItemSelected(item);
+		}
+	}
 }
