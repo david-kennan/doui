@@ -55,11 +55,11 @@
 
     <TextView
         android:id="@+id/tvTodoContexts"
-        android:textAppearance="?android:attr/textAppearanceSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="15dp"
-        android:layout_marginTop="20dp" />
+        android:layout_marginTop="20dp"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
 
     <View
         android:layout_width="fill_parent"
@@ -72,8 +72,15 @@
         <requestFocus />
     </View>
 
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="10dp"
+        android:background="@android:color/darker_gray" />
+
     <LinearLayout
         android:id="@+id/llStatuses"
+        style="@android:style/Widget.Holo.Light.ActionBar.Solid"
         android:layout_width="match_parent"
         android:layout_height="48sp"
         android:gravity="bottom" >

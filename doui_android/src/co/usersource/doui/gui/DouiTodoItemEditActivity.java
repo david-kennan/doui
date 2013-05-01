@@ -535,7 +535,7 @@ public class DouiTodoItemEditActivity extends Activity {
 			cursor.moveToNext();
 			final String statusId = cursor.getString(0);
 			ImageButton imbtStatus = new ImageButton(getApplicationContext());
-
+			imbtStatus.setBackgroundDrawable(getResources().getDrawable(android.R.drawable.menuitem_background));
 			if (itemCounter < IDS_STATUS_IMAGES.length) {
 				imbtStatus.setImageDrawable(getResources().getDrawable(
 						IDS_STATUS_IMAGES[itemCounter]));
@@ -553,7 +553,7 @@ public class DouiTodoItemEditActivity extends Activity {
 						new int[] { android.R.attr.colorPressedHighlight });
 				int backgroundColor = array.getColor(0, Color.GREEN);
 				array.recycle();
-
+				imbtStatus.setBackgroundColor(backgroundColor);
 				imbtStatus.getBackground().setColorFilter(backgroundColor,
 						PorterDuff.Mode.SRC_ATOP);
 			}
