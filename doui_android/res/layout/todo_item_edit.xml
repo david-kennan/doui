@@ -32,9 +32,9 @@
         android:focusableInTouchMode="true"
         android:hint="@string/item_body_hint"
         android:imeOptions="actionNone"
-        android:inputType="textCapSentences"
+        android:inputType="textCapSentences|textMultiLine"
         android:maxLines="4"
-        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textAppearance="?android:attr/textAppearanceMedium"
         android:textColor="@android:color/secondary_text_light" />
 
     <View
