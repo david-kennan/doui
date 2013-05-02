@@ -9,14 +9,37 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1" >
-
     </ListView>
 
-    <ImageButton
-        android:id="@+id/imbtCategories"
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="10dp"
+        android:background="@android:color/darker_gray" />
+
+    <LinearLayout
+        android:id="@+id/llStatuses"
+        style="@android:style/Widget.Holo.Light.ActionBar.Solid"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:src="@android:drawable/ic_menu_manage" 
-        android:background="@android:color/transparent"/>
+        android:layout_height="48sp"
+        android:gravity="bottom"
+        android:orientation="horizontal" >
+
+        <ImageButton
+            android:id="@+id/imbtCategories"
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:src="@drawable/ic_category" />
+
+        <ImageButton
+            android:id="@+id/imbtHelp"
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:src="@drawable/ic_menu_help" />
+    </LinearLayout>
 
 </LinearLayout>

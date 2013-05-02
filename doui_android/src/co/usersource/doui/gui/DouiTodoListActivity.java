@@ -211,17 +211,6 @@ public class DouiTodoListActivity extends ListActivity {
 		return result;
 	}
 
-	public boolean onCreateOptionsMenu(Menu menu) {
-		MenuInflater inflater = getMenuInflater();
-		inflater.inflate(R.menu.todo_list_activity_menu, menu);
-		int uriMatchId = DouiContentProvider.sURIMatcher.match(todoListUri);
-		if(DouiContentProvider.TODO_CONTEXT_LIST_URI_ID==uriMatchId) {
-			menu.findItem(R.id.todo_list_activity_meny_add_item).setVisible(false);
-		}
-		return true;
-	}
-
-	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
@@ -229,12 +218,6 @@ public class DouiTodoListActivity extends ListActivity {
 			Intent intent = new Intent(this, DouiMainActivity.class);
 			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			startActivity(intent);
-			return true;
-		case R.id.todo_list_activity_meny_add_item:
-			Intent i = new Intent(DouiTodoListActivity.this, DouiTodoItemEditActivity.class);
-			i.putExtra(DouiTodoItemEditActivity.STR_TODO_ITEM_URI_EXT,
-					todoListUri);
-			startActivity(i);
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);

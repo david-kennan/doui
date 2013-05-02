@@ -8,18 +8,25 @@
         android:layout_width="fill_parent"
         android:layout_height="1dp"
         android:background="@android:color/white" />
+
     <ListView
         android:id="@android:id/list"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" 
-        android:layout_weight="1">
-        
+        android:layout_height="match_parent"
+        android:layout_weight="1" >
     </ListView>
-
+    
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="10dp"
+        android:background="@android:color/darker_gray" />
     <LinearLayout
+        style="@android:style/Widget.Holo.Light.ActionBar.Solid"
         android:layout_width="match_parent"
         android:layout_height="48sp"
-         >
+        android:gravity="bottom"
+        android:orientation="horizontal" >
 
         <ImageButton
             android:id="@+id/imbtAddTodoItem"
@@ -28,8 +35,7 @@
             android:layout_weight="1"
             android:background="@android:color/transparent"
             android:scaleType="fitCenter"
-            android:src="@android:drawable/ic_menu_add" />
-
+            android:src="@drawable/ic_add_item" />
     </LinearLayout>
 
 </LinearLayout>

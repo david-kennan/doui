@@ -28,6 +28,7 @@ public class DouiMainActivity extends ListActivity {
 	private Cursor cursorContexts;
 	private ImageButton imbtCategories;
 	private MergeCursor mergeCursor;
+	private ImageButton imbtHelp;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -42,6 +43,16 @@ public class DouiMainActivity extends ListActivity {
 				Intent i = new Intent(DouiMainActivity.this,
 						DouiTodoCategoriesManagerActivity.class);
 				startActivity(i);
+			}
+		});
+		
+		imbtHelp = (ImageButton) findViewById(R.id.imbtHelp);
+		imbtHelp.setOnClickListener(new OnClickListener() {
+
+			public void onClick(View v) {
+				Intent helpIntent = new Intent(DouiMainActivity.this,
+						DouiHelpActivity.class);
+				startActivity(helpIntent);
 			}
 		});
 	}
@@ -135,30 +146,6 @@ public class DouiMainActivity extends ListActivity {
 		}
 		i.putExtra(DouiTodoListActivity.STR_TODO_LIST_URI_EXT, todoUri);
 		startActivity(i);
-	}
-
-	public boolean onCreateOptionsMenu(Menu menu) {
-		MenuInflater inflater = getMenuInflater();
-		inflater.inflate(R.menu.main_menu, menu);
-		return true;
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case R.id.main_menu_categories:
-			Intent i = new Intent(DouiMainActivity.this,
-					DouiTodoCategoriesManagerActivity.class);
-			startActivity(i);
-			return true;
-		case R.id.main_menu_help:
-			Intent helpIntent = new Intent(DouiMainActivity.this,
-					DouiHelpActivity.class);
-			startActivity(helpIntent);
-			return true;
-		default:
-			return super.onOptionsItemSelected(item);
-		}
 	}
 
 	/*
