@@ -3,4 +3,7 @@ from google.appengine.ext import db
 
 class DouiTodoItem(db.Model):
     title = db.StringProperty(required = True)
-    bdy = db.TextProperty
+    body = db.TextProperty()
+    updateTimestamp = db.DateTimeProperty()
+    user = db.UserProperty()
+    userId = db.StringProperty(required = True)

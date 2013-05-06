@@ -1,5 +1,6 @@
 """ This module intended to provide Web GUI to access data from the Doui 
 application cloud storage"""
+import logging
 import jinja2
 import os
 import doui_model
