@@ -6,6 +6,7 @@ import webapp2
 import doui_model
 from google.appengine.ext import db
 from google.appengine.api import users
+import datetime
 
 class Sync(webapp2.RequestHandler):
 
@@ -32,23 +33,56 @@ class Sync(webapp2.RequestHandler):
         self.response.out.write(self.proceedRequest(self.request))
         
     def proceedRequest(self, request):
+        """This method used to proceed request for update. Obtained HTTP request must contain JSON with data to be updated.
+        Received objects will be sync with server database.
+        This method will send back a JSON with objects to be updated on the client side. """
         strJsonData = request.get(Sync.JSON_REQUEST_PARAM_NAME)
         logging.debug("Received JSON string: " + strJsonData)
         if((None != strJsonData) and (strJsonData != '')):
             requestObject = json.loads(strJsonData)
-            return self.proceedRequestObject(requestObject)
+        else:
+            requestObject = {}
+            requestObject[Sync.JSON_LAST_UPDATE_TIMESTAMP] = datetime.datetime(2000, 01, 01, 0, 0)
+            requestObject[Sync.JSON_UPDATED_OBJECTS] = []
+        return self.proceedRequestObject(requestObject)
 
     def proceedRequestObject(self, requestObject):
-        requestObject[Sync.JSON_LAST_UPDATE_TIMESTAMP] = 12
+        logging.debug("proceedRequestObject( requestObject )")
+        lastUpdateTimestamp = requestObject[Sync.JSON_LAST_UPDATE_TIMESTAMP]
+        serverObjects = self.getServerObjectsAfterLastUpdate(lastUpdateTimestamp)
         for updateObject in requestObject[Sync.JSON_UPDATED_OBJECTS]:
             if (None == updateObject[Sync.JSON_UPDATED_OBJECT_KEY]):
-                if(updateObject[Sync.JSON_UPDATED_OBJECT_TYPE] == "DouiTodoItem"):
-                    dbObject = doui_model.DouiTodoItem(
-                                                       title = updateObject[Sync.JSON_UPDATED_OBJECT_VALUES]["title"],
-                                                       body = updateObject[Sync.JSON_UPDATED_OBJECT_VALUES]["body"],
-                                                       user = users.get_current_user(),
-                                                       userId = users.get_current_user().user_id()
-                                                       )
-                    db.put(dbObject)
-        return json.dumps(requestObject)
+                objectModel = Sync.SYNC_OBJECTS_DICT[updateObject[Sync.JSON_UPDATED_OBJECT_TYPE]]
+                dbObject = objectModel(
+                                       user = users.get_current_user(),
+                                       userId = users.get_current_user().user_id()
+                                       )
+                dbObject.loadAttrFromDict(updateObject[Sync.JSON_UPDATED_OBJECT_VALUES])
+                # TODO: compare it with datastore object if it is exists.
+                db.put(dbObject)
+        for objectType in serverObjects.keys():
+            for objectValue in serverObjects[objectType].values():
+                requestObject[Sync.JSON_UPDATED_OBJECTS].append(objectValue);
+        return json.dumps(requestObject, cls = doui_model.jsonEncoder)
+    
+    def getServerObjectsAfterLastUpdate(self, lastUpdateTimestamp):
+        """This method return a dictionary of objects which was updated after last device update time"""
+        logging.debug("getServerObjectsAfterLastUpdate( lastUpdateTimestamp )")
+        result = {};
+        for objectType in Sync.SYNC_OBJECTS_DICT.keys():
+            result[objectType] = self.getServerObjectsAfterLastUpdateByType(lastUpdateTimestamp, Sync.SYNC_OBJECTS_DICT[objectType])
+        return result
+            
+    def getServerObjectsAfterLastUpdateByType(self, lastUpdateTimestamp, objectModel):
+        """ This method returns a dictionary with objects for concrete type, which was updated after last update"""
+        result = {}
+        objectModelQuery = objectModel.all()
+        objectModelQuery.filter("updateTimestamp > ", lastUpdateTimestamp)
+        objectModelQuery.filter("userId = ", users.get_current_user().user_id())
+        for datastoreObject in objectModelQuery.run(): 
+            result[datastoreObject.key().id_or_name()] = db.to_dict(datastoreObject)
+            result[datastoreObject.key().id_or_name()]["key"] = datastoreObject.key().id_or_name()
+        return result
+        
+        
         
