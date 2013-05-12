@@ -25,7 +25,7 @@ class TestSyncRequests(unittest.TestCase):
         cookiejar = cookielib.CookieJar()
         self.opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookiejar))
         urllib2.install_opener(self.opener)       
-        authreq_data = urllib.urlencode({'email': 'test@example.com',
+        authreq_data = urllib.urlencode({'email': 'test2@example.com',
                                          'action': 'Login'})
         auth_req = urllib2.Request(TestSyncRequests.LOGIN_URL + "?" + authreq_data)
         self.opener.open(auth_req)
