@@ -17,5 +17,16 @@
     <string name="item_edit_bt_save">Save</string>
     <string name="item_edit_bt_cancel">Cancel</string>
     <string name="helpActivityTitle">Help</string>
+    <string name="login_activity_username_label">Username</string>
+    <!-- Label above password EditText -->
+    <string name="login_activity_password_label">Password</string>
+    <!-- Button to sign in after entering username and password -->
+    <string name="login_activity_ok_button">Sign in</string>
+    <!-- Message for Login activity -->
+    <string name="login_activity_message">Plese, enter your login and password</string>
+    <!-- Login failed message -->
+    <string name="login_activity_loginfail_message">Please enter a valid username/password.</string>
+    <!-- Pwd failed message -->
+    <string name="login_activity_pwfail_message">Please enter a valid password.</string>
 
 </resources>
