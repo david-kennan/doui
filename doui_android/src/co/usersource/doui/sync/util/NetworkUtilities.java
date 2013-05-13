@@ -11,6 +11,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
+import org.apache.http.ParseException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
@@ -19,6 +20,9 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -39,10 +43,10 @@ public class NetworkUtilities
     public static final String PARAM_UPDATED = "timestamp";
     public static final String USER_AGENT = "AuthenticationService/1.0";
     public static final int REGISTRATION_TIMEOUT = 30 * 1000; // ms
-    public static final String BASE_URL = "http://192.168.1.101:8080";
+    public static final String BASE_URL = "http://192.168.1.102:8080";
     public static final String AUTH_URI = BASE_URL + "/auth";
     
-     private static HttpClient mHttpClient;
+    private static HttpClient mHttpClient;
 
     /**
      * Configures the httpClient to connect to the URL provided.
@@ -186,6 +190,49 @@ public class NetworkUtilities
         };
         // run on background thread.
         return NetworkUtilities.performOnBackgroundThread(runnable);
+    }
+    
+    /**
+     * 
+     * @param URI - URI for request.
+     * @param params - parameters which must send to the server. 
+     * @return - answer from server in JSON format.
+     * @throws IOException 
+     * @throws ParseException 
+     */
+    public static JSONArray SendRequest(String URI, ArrayList<NameValuePair> params) throws ParseException, IOException
+    {
+    	Log.v(TAG, "Send request to the " + BASE_URL + URI);
+    	
+    	final HttpPost postRequest = new HttpPost(BASE_URL + URI);
+    	HttpEntity entity = null;
+    	JSONArray result = null;
+    	
+  		entity = new UrlEncodedFormEntity(params);
+   		postRequest.addHeader(entity.getContentType());
+   		postRequest.setEntity(entity);
+   		maybeCreateHttpClient();
+    		
+   		final HttpResponse response = mHttpClient.execute(postRequest);
+        final String data = EntityUtils.toString(response.getEntity());
+            
+        if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK)
+        {
+            try 
+            {
+				result = new JSONArray(data);
+				for (int i = 0; i < result.length(); i++) 
+				{
+					Log.v(TAG, result.getJSONObject(i).toString());
+		        }
+			} 
+            catch (JSONException e) 
+			{
+				Log.v(TAG, "Cannot parse json from server!!!");
+				e.printStackTrace();
+            }
+        }
+    	return result;
     }
 
 }

@@ -16,7 +16,7 @@ import co.usersource.doui.sync.util.NetworkUtilities;
  * 
  * @author Sergey Gadzhilov
  */
-class Authenticator extends AbstractAccountAuthenticator 
+public class Authenticator extends AbstractAccountAuthenticator 
 {
 	/**
      * Account type string.

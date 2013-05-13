@@ -3,11 +3,9 @@ package co.usersource.doui.sync.authentification;
 import android.accounts.Account;
 import android.accounts.AccountAuthenticatorActivity;
 import android.accounts.AccountManager;
-import android.content.ContentResolver;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.provider.ContactsContract;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -147,8 +145,6 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity
         if (mRequestNewAccount)
         {
             mAccountManager.addAccountExplicitly(account, mPassword, null);
-            // Set contacts sync for this account.
-            ContentResolver.setSyncAutomatically(account, ContactsContract.AUTHORITY, true);
         } 
         else 
         {

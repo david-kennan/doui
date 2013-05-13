@@ -4,8 +4,7 @@
 <!-- for the SyncAdapter. -->
 
 <sync-adapter xmlns:android="http://schemas.android.com/apk/res/android"
-    android:contentAuthority="DouiSyncAdapter"
+    android:contentAuthority="co.usersource.doui.contentprovider"
     android:accountType="co.usersource.doui.sync"
-    android:userVisible="true"
-    android:supportsUploading="false"
+    android:isAlwaysSyncable="true"
 />
