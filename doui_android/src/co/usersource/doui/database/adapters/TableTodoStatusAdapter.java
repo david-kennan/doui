@@ -25,11 +25,15 @@ public class TableTodoStatusAdapter implements ITableAdapter {
 	public static final String TABLE_TODO_STATUSES_ID = "_id";
 	/** Table with status items. Name. */
 	public static final String TABLE_TODO_STATUSES_NAME = "name";
+	/** Table with status items. Last update. */
+	public static final String TABLE_TODO_STATUSES_LAST_UPDATE = "last_update";
 	/** Table with status items. Create statement. */
 	public static final String STR_CREATE_TABLE_TODO_STATUSES = "create table "
 			+ TABLE_TODO_STATUSES + "(" + TABLE_TODO_STATUSES_ID
 			+ " integer primary key autoincrement, " + TABLE_TODO_STATUSES_NAME
-			+ " TEXT" + ");";
+			+ " TEXT,"
+			+ TABLE_TODO_STATUSES_LAST_UPDATE + " timestamp not null default current_timestamp "
+			+ ");";
 
 	/** Pre-defined array of Statuses. */
 	public static final String STR_ARRAY_STATUSES[] = { "Next", "Calendar",

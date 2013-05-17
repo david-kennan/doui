@@ -14,7 +14,9 @@ import org.apache.http.NameValuePair;
 import org.apache.http.ParseException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.conn.params.ConnManagerParams;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
@@ -23,6 +25,7 @@ import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -43,8 +46,8 @@ public class NetworkUtilities
     public static final String PARAM_UPDATED = "timestamp";
     public static final String USER_AGENT = "AuthenticationService/1.0";
     public static final int REGISTRATION_TIMEOUT = 30 * 1000; // ms
-    public static final String BASE_URL = "http://192.168.1.102:8080";
-    public static final String AUTH_URI = BASE_URL + "/auth";
+    public static final String BASE_URL = "http://192.168.1.100:8080";
+    public static final String AUTH_URI = BASE_URL + "/_ah/login";
     
     private static HttpClient mHttpClient;
 
@@ -102,8 +105,22 @@ public class NetworkUtilities
     	final HttpResponse resp;
 
         final ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
-        params.add(new BasicNameValuePair(PARAM_USERNAME, username));
-        params.add(new BasicNameValuePair(PARAM_PASSWORD, password));
+        /*params.add(new BasicNameValuePair(PARAM_USERNAME, username));
+        params.add(new BasicNameValuePair(PARAM_PASSWORD, password));*/
+        
+        JSONObject request = new JSONObject();
+        try {
+			request.put("email", "test2@example.com");
+			request.put("action", "Login");
+		} catch (JSONException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+        
+        params.add(new BasicNameValuePair("email", "test2@example.com"));
+        params.add(new BasicNameValuePair("action", "login"));
+        
+        
         HttpEntity entity = null;
         
         try 
@@ -117,16 +134,19 @@ public class NetworkUtilities
         }
         
         final HttpPost post = new HttpPost(AUTH_URI);
+        final HttpGet get = new HttpGet(AUTH_URI);
+        
         post.addHeader(entity.getContentType());
         post.setEntity(entity);
         maybeCreateHttpClient();
 
         try 
         {
-            resp = mHttpClient.execute(post);
+            resp = mHttpClient.execute(get);
+            Log.v(TAG, resp.toString());
             if (resp.getStatusLine().getStatusCode() == HttpStatus.SC_OK) 
             {
-                Log.v(TAG, "Successful authentication");
+                Log.v(TAG, "Successful authentication   " + resp.getStatusLine().toString());
                 bRet = true;
             } 
             else 
@@ -200,13 +220,13 @@ public class NetworkUtilities
      * @throws IOException 
      * @throws ParseException 
      */
-    public static JSONArray SendRequest(String URI, ArrayList<NameValuePair> params) throws ParseException, IOException
+    public static JSONObject SendRequest(String URI, ArrayList<NameValuePair> params) throws ParseException, IOException
     {
     	Log.v(TAG, "Send request to the " + BASE_URL + URI);
     	
     	final HttpPost postRequest = new HttpPost(BASE_URL + URI);
     	HttpEntity entity = null;
-    	JSONArray result = null;
+    	JSONObject result = null;
     	
   		entity = new UrlEncodedFormEntity(params);
    		postRequest.addHeader(entity.getContentType());
@@ -214,17 +234,14 @@ public class NetworkUtilities
    		maybeCreateHttpClient();
     		
    		final HttpResponse response = mHttpClient.execute(postRequest);
+   		
         final String data = EntityUtils.toString(response.getEntity());
-            
         if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK)
         {
             try 
             {
-				result = new JSONArray(data);
-				for (int i = 0; i < result.length(); i++) 
-				{
-					Log.v(TAG, result.getJSONObject(i).toString());
-		        }
+				result = new JSONObject(data);
+				Log.v(TAG, result.toString());
 			} 
             catch (JSONException e) 
 			{

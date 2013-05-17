@@ -46,4 +46,12 @@ class DouiTodoItem(DouiSyncEntity):
     """Datastorage entity for Doui todo item"""
     title = db.StringProperty()
     body = db.TextProperty()
+    
+class DouiTodoCategories(DouiSyncEntity):
+    """Datastorage entity for Doui todo categories"""
+    name = db.StringProperty()
+    
+class DouiTodoStatuses(DouiSyncEntity):
+    """Datastorage entity for Doui todo categories"""
+    name = db.StringProperty()
 

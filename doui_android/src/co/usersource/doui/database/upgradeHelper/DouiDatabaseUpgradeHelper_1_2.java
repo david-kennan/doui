@@ -25,11 +25,15 @@ public class DouiDatabaseUpgradeHelper_1_2 implements
 	public static final String TABLE_TODO_STATUSES_ID = "_id";
 	/** Table with status items. Name. */
 	public static final String TABLE_TODO_STATUSES_NAME = "name";
+	/** Table with status items. LastUpdate. */
+	public static final String TABLE_TODO_STATUSES_LAST_UPDATE = "last_update";
 	/** Table with status items. Create statement. */
 	public static final String STR_CREATE_TABLE_TODO_STATUSES = "create table "
 			+ TABLE_TODO_STATUSES+ "(" + TABLE_TODO_STATUSES_ID
 			+ " integer primary key autoincrement, " + TABLE_TODO_STATUSES_NAME
-			+ " TEXT" + ");";
+			+ " TEXT, " 
+			+  TABLE_TODO_STATUSES_LAST_UPDATE + "timestamp not null default current_timestamp " 
+			+ ");";
 
 	/** Pre-defined array of Statuses. */
 	public static final String STR_ARRAY_STATUSES[] = { "Next",
@@ -44,12 +48,16 @@ public class DouiDatabaseUpgradeHelper_1_2 implements
 	private static final String TABLE_TODO_CATEGORIES_ID = "_id";
 	/** Table with lists of the todo. Name of the list. */
 	private static final String TABLE_TODO_CATEGORIES_NAME = "name";
+	/** Table with lists of the todo. Last update of the list. */
+	private static final String TABLE_TODO_CATEGORIES_LAST_UPDATE = "last_update";
 	
 	/** Table with lists of the todo. Create statement. */
 	private static final String STR_CREATE_TABLE_TODO_CATEGORIES = "create table "
 			+ TABLE_TODO_CATEGORIES + "(" + TABLE_TODO_CATEGORIES_ID
 			+ " integer primary key autoincrement, " + TABLE_TODO_CATEGORIES_NAME
-			+ " TEXT" + ");";
+			+ " TEXT," 
+			+ TABLE_TODO_CATEGORIES_LAST_UPDATE + "timestamp not null default current_timestamp "
+			+ ");";
 	private static final String STR_ARRAY_CATEGORIES[] = { "-None-", "Finance and admin", "Health"};
 	
 	/*-----------------------------------------------------------*/
@@ -63,6 +71,8 @@ public class DouiDatabaseUpgradeHelper_1_2 implements
 	private static final String TABLE_TODO_ITEMS_TITLE = "title";
 	/** Table where todo items stored. Text of the todo. */
 	private static final String TABLE_TODO_ITEMS_BODY = "body";
+	/** Table where todo items stored. Last update of the todo. */
+	private static final String TABLE_TODO_ITEMS_LAST_UPDATE = "last_update";
 	/** Table where todo items stored. Foreign key to current item status. */
 	private static final String TABLE_TODO_ITEMS_FK_STATUS = "fk_status";
 	/** Table where todo items stored. Reference to the primary list item. */
@@ -74,6 +84,7 @@ public class DouiDatabaseUpgradeHelper_1_2 implements
 			+ STR_TABLE_TODO_ITEMS_TMP + "(" + TABLE_TODO_ITEMS_ID
 			+ " integer primary key autoincrement, " + TABLE_TODO_ITEMS_TITLE
 			+ " TEXT, " + TABLE_TODO_ITEMS_BODY + " TEXT, "
+			+ TABLE_TODO_ITEMS_LAST_UPDATE + "timestamp not null default current_timestamp, " 
 			+ TABLE_TODO_ITEMS_FK_STATUS + " INTEGER DEFAULT NULL, "
 			+ TABLE_TODO_ITEMS_FK_LIST + " INTEGER, " + "FOREIGN KEY("
 			+ TABLE_TODO_ITEMS_FK_STATUS + ") REFERENCES "

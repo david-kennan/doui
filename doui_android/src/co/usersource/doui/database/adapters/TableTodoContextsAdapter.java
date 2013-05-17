@@ -20,11 +20,15 @@ public class TableTodoContextsAdapter implements ITableAdapter {
 	public static final String TABLE_TODO_CONTEXTS_ID = "_id";
 	/** Table with contexts (@NAME items). Name. */
 	public static final String TABLE_TODO_CONTEXTS_NAME = "name";
+	/** Table with contexts (@LAST_UPDATE items). Last update. */
+	public static final String TABLE_TODO_CONTEXTS_LAST_UPDTAE = "last_update";
 	/** Table with contexts (@NAME items). Create statement. */
 	public static final String STR_CREATE_TABLE_TODO_CONTEXTS = "create table "
 			+ TABLE_TODO_CONTEXTS + "(" + TABLE_TODO_CONTEXTS_ID
 			+ " integer primary key autoincrement, " + TABLE_TODO_CONTEXTS_NAME
-			+ " TEXT" + ");";
+			+ " TEXT,"
+			+ TABLE_TODO_CONTEXTS_LAST_UPDTAE + " timestamp not null default current_timestamp "
+			+ ");";
 
 	private SQLiteOpenHelper sqliteOpenHelper;
 

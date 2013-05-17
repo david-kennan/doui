@@ -19,11 +19,15 @@ public class TableTodoCategoriesAdapter implements ITableAdapter {
 	public static final String TABLE_TODO_CATEGORIES_ID = "_id";
 	/** Table with lists of the todo. Name of the list. */
 	public static final String TABLE_TODO_CATEGORIES_NAME = "name";
+	/** Table with lists of the todo. Last update of the list. */
+	public static final String TABLE_TODO_CATEGORIES_LAST_UPDATE = "last_update";
 	/** Table with lists of the todo. Create statement. */
 	public static final String STR_CREATE_TABLE_TODO_CATEGORIES = "create table "
 			+ TABLE_TODO_CATEGORIES + "(" + TABLE_TODO_CATEGORIES_ID
 			+ " integer primary key autoincrement, " + TABLE_TODO_CATEGORIES_NAME
-			+ " TEXT" + ");";
+			+ " TEXT,"
+			+ TABLE_TODO_CATEGORIES_LAST_UPDATE + " timestamp not null default current_timestamp "
+			+ ");";
 	/** Special category assigned to item if no category selected*/
 	public static final String STR_NONE_CATEGORY_NAME = "uncategorized";
 	/** Pre-defined array of Lists. */

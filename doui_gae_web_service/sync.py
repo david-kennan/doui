@@ -10,7 +10,9 @@ import datetime
 
 class Sync(webapp2.RequestHandler):
 
-    SYNC_OBJECTS_DICT = {"DouiTodoItem":doui_model.DouiTodoItem}
+    SYNC_OBJECTS_DICT = {"DouiTodoItem":doui_model.DouiTodoItem,
+                         "DouiTodoCategories": doui_model.DouiTodoCategories,
+                         "DouiTodoStatus": doui_model.DouiTodoStatuses}
 
     JSON_REQUEST_PARAM_NAME = "jsonData"
     
