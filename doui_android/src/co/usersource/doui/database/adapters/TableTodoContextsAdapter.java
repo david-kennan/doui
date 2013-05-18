@@ -22,12 +22,15 @@ public class TableTodoContextsAdapter implements ITableAdapter {
 	public static final String TABLE_TODO_CONTEXTS_NAME = "name";
 	/** Table with contexts (@LAST_UPDATE items). Last update. */
 	public static final String TABLE_TODO_CONTEXTS_LAST_UPDTAE = "last_update";
+	/** Table with contexts (@LAST_UPDATE items). Unique object key from server. */
+	public static final String TABLE_TODO_CONTEXTS_OBJECT_KEY = "object_key";
 	/** Table with contexts (@NAME items). Create statement. */
 	public static final String STR_CREATE_TABLE_TODO_CONTEXTS = "create table "
 			+ TABLE_TODO_CONTEXTS + "(" + TABLE_TODO_CONTEXTS_ID
 			+ " integer primary key autoincrement, " + TABLE_TODO_CONTEXTS_NAME
 			+ " TEXT,"
-			+ TABLE_TODO_CONTEXTS_LAST_UPDTAE + " timestamp not null default current_timestamp "
+			+ TABLE_TODO_CONTEXTS_LAST_UPDTAE + " timestamp not null default current_timestamp, "
+			+ TABLE_TODO_CONTEXTS_OBJECT_KEY + " TEXT "
 			+ ");";
 
 	/** Trigger for table with contexts to update timestamp (@NAME items). Create statement. */

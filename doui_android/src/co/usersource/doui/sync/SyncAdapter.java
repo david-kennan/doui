@@ -14,9 +14,11 @@ import org.json.JSONObject;
 import android.accounts.Account;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.SyncResult;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import co.usersource.doui.DouiContentProvider;
@@ -111,10 +113,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter
    				try{
    					updateObjectValues = new JSONObject();
    					currentObject = new JSONObject();
-   					currentObject.put(SyncAdapter.JSON_UPDATED_OBJECT_KEY, JSONObject.NULL);
+   					currentObject.put(SyncAdapter.JSON_UPDATED_OBJECT_KEY, answer.getString(3) != null ? answer.getString(3) : JSONObject.NULL);
     				currentObject.put(SyncAdapter.JSON_UPDATED_OBJECT_TYPE, SyncAdapter.JSON_UPDATED_TYPE_STATUS);
     				currentObject.put(SyncAdapter.JSON_LAST_UPDATE_TIMESTAMP, answer.getString(2));
     				updateObjectValues.put(TableTodoStatusAdapter.TABLE_TODO_STATUSES_NAME, answer.getString(1));
+    				updateObjectValues.put("client"+TableTodoStatusAdapter.TABLE_TODO_STATUSES_ID, answer.getString(0));
     				currentObject.put(SyncAdapter.JSON_UPDATED_OBJECT_VALUES, updateObjectValues);
     				updatedObjects.put(updatedObjects.length(), currentObject);
   				
@@ -135,7 +138,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter
     	if(mLastUpdateDate != null)
     	{
     		selection =  TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_LAST_UPDATE + " >= '" + mLastUpdateDate + "'";
-    		Log.v(TAG, "Selection = " + selection);
     	}
     	else{
     		selection = null;
@@ -145,15 +147,16 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter
     	{
     		for(boolean flag = answer.moveToFirst(); flag; flag = answer.moveToNext())
     		{
-    			Log.v(TAG, "Iter categories field name =  " + answer.getColumnName(2) + " = " + answer.getString(2));
    				try{
    					updateObjectValues = new JSONObject();
    					currentObject = new JSONObject();
-   					currentObject.put(SyncAdapter.JSON_UPDATED_OBJECT_KEY, JSONObject.NULL);
+
+   					currentObject.put(SyncAdapter.JSON_UPDATED_OBJECT_KEY, answer.getString(3) != null ? answer.getString(3) : JSONObject.NULL);
     				currentObject.put(SyncAdapter.JSON_UPDATED_OBJECT_TYPE, SyncAdapter.JSON_UPDATED_TYPE_CATEGORIES);
     				currentObject.put(SyncAdapter.JSON_LAST_UPDATE_TIMESTAMP, answer.getString(2));
-    					
+
     				updateObjectValues.put(TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME, answer.getString(1));
+    				updateObjectValues.put("client"+TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_ID, answer.getString(0));
     				currentObject.put(SyncAdapter.JSON_UPDATED_OBJECT_VALUES, updateObjectValues);
     				updatedObjects.put(updatedObjects.length(), currentObject);
   				
@@ -188,6 +191,33 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter
     
     private void updateLocalDatabase(JSONObject data)
     {
-    	//TODO: Update local database.
+    	if(data != null)
+    	{
+    		//Update synch object with server key
+    		String keyForUpdate = "";
+    		ContentValues valuesForUpdate = new ContentValues();
+    		Uri uriForUpdate;
+    		String idForUpdate = "";
+
+    		try {
+    			JSONArray dataFromServer = data.getJSONArray(JSON_UPDATED_OBJECTS);
+
+    			for(int i = 0; i < dataFromServer.length(); ++i)
+    			{
+    				if(dataFromServer.getJSONObject(i).get(JSON_UPDATED_OBJECT_TYPE).equals(SyncAdapter.JSON_UPDATED_TYPE_CATEGORIES))
+    				{
+    					keyForUpdate = dataFromServer.getJSONObject(i).getString(JSON_UPDATED_OBJECT_KEY);
+    					idForUpdate  = dataFromServer.getJSONObject(i).getJSONObject(JSON_UPDATED_OBJECT_VALUES).getString("client_id");
+    					uriForUpdate = Uri.parse(DouiContentProvider.TODO_CATEGORIES_URI.toString() + "/" + idForUpdate);
+
+    					valuesForUpdate.put(TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_OBJECT_KEY, keyForUpdate);
+    					getContext().getContentResolver().update(uriForUpdate, valuesForUpdate, keyForUpdate, null);
+    				}
+    			}
+    		} catch (JSONException e) {
+    			Log.v(TAG,"Data from server is not valid!!");
+    			e.printStackTrace();
+    		}
+    	}
     }
 }

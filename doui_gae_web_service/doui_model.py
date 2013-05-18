@@ -44,14 +44,17 @@ class DouiSyncEntity(db.Model):
         
 class DouiTodoItem(DouiSyncEntity):
     """Datastorage entity for Doui todo item"""
+    client_id = db.StringProperty()
     title = db.StringProperty()
     body = db.TextProperty()
     
 class DouiTodoCategories(DouiSyncEntity):
     """Datastorage entity for Doui todo categories"""
+    client_id = db.StringProperty()
     name = db.StringProperty()
     
 class DouiTodoStatuses(DouiSyncEntity):
     """Datastorage entity for Doui todo categories"""
+    client_id = db.StringProperty()
     name = db.StringProperty()
 

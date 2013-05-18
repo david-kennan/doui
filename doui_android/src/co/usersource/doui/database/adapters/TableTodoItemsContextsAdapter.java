@@ -23,6 +23,8 @@ public class TableTodoItemsContextsAdapter implements ITableAdapter {
 	public static final String TABLE_TODO_ITEMS_CONTEXTS_FK_TODO_CONTEXTS = "fk_todo_contexts";
 	/** Table with links between todo_item and context. Last update. */
 	public static final String TABLE_TODO_ITEMS_CONTEXTS_LAST_UPDATE = "last_update";
+	/** Table with links between todo_item and context. Unique object key from server. */
+	public static final String TABLE_TODO_ITEMS_CONTEXTS_OBJECT_KEY = "object_key";
 	
 	/** Table with links between todo_item and context. Create statement. */
 	public static final String STR_CREATE_TABLE_TODO_ITEMS_CONTEXTS = 
@@ -31,6 +33,7 @@ public class TableTodoItemsContextsAdapter implements ITableAdapter {
 			+ TABLE_TODO_ITEMS_CONTEXTS_FK_TODO_ITEMS + " INTEGER, "
 			+ TABLE_TODO_ITEMS_CONTEXTS_FK_TODO_CONTEXTS + " INTEGER, "
 			+ TABLE_TODO_ITEMS_CONTEXTS_LAST_UPDATE + " timestamp not null default current_timestamp, "
+			+ TABLE_TODO_ITEMS_CONTEXTS_OBJECT_KEY + " TEXT, "
 			+ "FOREIGN KEY("+ TABLE_TODO_ITEMS_CONTEXTS_FK_TODO_ITEMS
 			+ ") REFERENCES "+ TableTodoItemsAdapter.TABLE_TODO_ITEMS	+ "(" + TableTodoItemsAdapter.TABLE_TODO_ITEMS_ID	+ "),"
 			+ "FOREIGN KEY(" + TABLE_TODO_ITEMS_CONTEXTS_FK_TODO_CONTEXTS

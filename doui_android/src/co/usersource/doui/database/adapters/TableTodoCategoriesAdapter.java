@@ -21,13 +21,16 @@ public class TableTodoCategoriesAdapter implements ITableAdapter {
 	public static final String TABLE_TODO_CATEGORIES_NAME = "name";
 	/** Table with lists of the todo. Last update of the list. */
 	public static final String TABLE_TODO_CATEGORIES_LAST_UPDATE = "last_update";
+	/** Table with lists of the todo. Unique object key from server. */
+	public static final String TABLE_TODO_CATEGORIES_OBJECT_KEY = "object_key";
 	/** Table with lists of the todo. Create statement. */
 	public static final String STR_CREATE_TABLE_TODO_CATEGORIES = "create table "
 			+ TABLE_TODO_CATEGORIES + "(" + TABLE_TODO_CATEGORIES_ID
 			+ " integer primary key autoincrement, " + TABLE_TODO_CATEGORIES_NAME
 			+ " TEXT,"
-			+ TABLE_TODO_CATEGORIES_LAST_UPDATE + " timestamp not null default current_timestamp "
-			+ ");";
+			+ TABLE_TODO_CATEGORIES_LAST_UPDATE + " timestamp not null default current_timestamp, "
+			+ TABLE_TODO_CATEGORIES_OBJECT_KEY  + " TEXT "
+			+");";
 
 	/** Table with lists of the todo. Create upodate trigger for update timestamp. */
 	public static final String STR_CREATE_TRIGGER_TODO_CATEGORIES = "CREATE TRIGGER UPDATE_" + TABLE_TODO_CATEGORIES + " BEFORE UPDATE ON " + TABLE_TODO_CATEGORIES + 
