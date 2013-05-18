@@ -4,30 +4,21 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
-
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import android.R.bool;
 import android.accounts.Account;
-import android.accounts.AccountManager;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
-import android.content.ContentResolver;
 import android.content.Context;
-import android.content.SyncInfo;
 import android.content.SyncResult;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.text.format.DateUtils;
 import android.util.Log;
-
 import co.usersource.doui.DouiContentProvider;
 import co.usersource.doui.database.adapters.TableTodoCategoriesAdapter;
 import co.usersource.doui.database.adapters.TableTodoStatusAdapter;
@@ -55,8 +46,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter
     
 	
 	private static final String TAG = "DouiSyncAdapter";
-    
-    private AccountManager mAcountManager;
     private String mLastUpdateDate;
     
     
@@ -66,7 +55,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter
     public SyncAdapter(Context context, boolean autoInitialize) 
     {
         super(context, autoInitialize);
-        mAcountManager = AccountManager.get(context);
     }
     
     /**

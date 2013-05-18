@@ -37,6 +37,11 @@ public class TableTodoItemsContextsAdapter implements ITableAdapter {
 			+ ") REFERENCES " + TableTodoContextsAdapter.TABLE_TODO_CONTEXTS
 			+ "("+ TableTodoContextsAdapter.TABLE_TODO_CONTEXTS_ID + ")" + ");";
 
+	/** Trigger for table with links between todo_item and context to update timestamp. Create statement. */
+	public static final String STR_CREATE_TRIGGER_TODO_ITEMS_CONTEXTS = "CREATE TRIGGER UPDATE_" + TABLE_TODO_ITEMS_CONTEXTS + " BEFORE UPDATE ON " + TABLE_TODO_ITEMS_CONTEXTS + 
+			  " BEGIN UPDATE " + TABLE_TODO_ITEMS_CONTEXTS + " SET " + TABLE_TODO_ITEMS_CONTEXTS_LAST_UPDATE + " = current_timestamp " + 
+		      " WHERE rowid = new.rowid;  END";
+
 	private SQLiteOpenHelper sqliteOpenHelper;
 
 	public TableTodoItemsContextsAdapter(SQLiteOpenHelper sqliteOpenHelper) {
@@ -48,6 +53,7 @@ public class TableTodoItemsContextsAdapter implements ITableAdapter {
 	 */
 	public void onCreate(SQLiteDatabase database) {
 		database.execSQL(STR_CREATE_TABLE_TODO_ITEMS_CONTEXTS);
+		database.execSQL(STR_CREATE_TRIGGER_TODO_ITEMS_CONTEXTS);
 	}
 
 	/* (non-Javadoc)

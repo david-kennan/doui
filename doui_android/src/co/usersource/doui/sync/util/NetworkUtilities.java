@@ -34,7 +34,7 @@ public class NetworkUtilities
     private static final String TAG = "NetworkUtilities";
     
     public static final String PARAM_EMAIL = "email";
-    public static final String PARAM_ACTION = "login";
+    public static final String PARAM_ACTION = "action";
     public static final String PARAM_UPDATED = "timestamp";
     public static final String USER_AGENT = "AuthenticationService/1.0";
     public static final int REGISTRATION_TIMEOUT = 30 * 1000; // ms
@@ -96,8 +96,7 @@ public class NetworkUtilities
         boolean bRet = false;
     	final HttpResponse resp;
         
-        final HttpGet get = new HttpGet(AUTH_URI + "?" + PARAM_EMAIL + "=" + username + 
-        		                                   "&" + PARAM_ACTION + " =login");
+        final HttpGet get = new HttpGet(AUTH_URI + "?"+PARAM_EMAIL+"=" + username + "&"+PARAM_ACTION+"=login");
         maybeCreateHttpClient();
 
         try 

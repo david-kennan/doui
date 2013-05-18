@@ -28,6 +28,12 @@ public class TableTodoCategoriesAdapter implements ITableAdapter {
 			+ " TEXT,"
 			+ TABLE_TODO_CATEGORIES_LAST_UPDATE + " timestamp not null default current_timestamp "
 			+ ");";
+
+	/** Table with lists of the todo. Create upodate trigger for update timestamp. */
+	public static final String STR_CREATE_TRIGGER_TODO_CATEGORIES = "CREATE TRIGGER UPDATE_" + TABLE_TODO_CATEGORIES + " BEFORE UPDATE ON " + TABLE_TODO_CATEGORIES + 
+			  " BEGIN UPDATE " + TABLE_TODO_CATEGORIES + " SET " + TABLE_TODO_CATEGORIES_LAST_UPDATE + " = current_timestamp " + 
+		      " WHERE rowid = new.rowid;  END";
+
 	/** Special category assigned to item if no category selected*/
 	public static final String STR_NONE_CATEGORY_NAME = "uncategorized";
 	/** Pre-defined array of Lists. */
@@ -44,6 +50,7 @@ public class TableTodoCategoriesAdapter implements ITableAdapter {
 	 */
 	public void onCreate(SQLiteDatabase database) {
 		database.execSQL(STR_CREATE_TABLE_TODO_CATEGORIES);
+		database.execSQL(STR_CREATE_TRIGGER_TODO_CATEGORIES);
 		for (int i = 0; i < STR_ARRAY_CATEGORIES.length; i++) {
 			database.execSQL("insert or replace into " + TABLE_TODO_CATEGORIES + "("
 					+ TABLE_TODO_CATEGORIES_ID + "," + TABLE_TODO_CATEGORIES_NAME

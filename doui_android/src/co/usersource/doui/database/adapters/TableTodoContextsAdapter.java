@@ -30,6 +30,11 @@ public class TableTodoContextsAdapter implements ITableAdapter {
 			+ TABLE_TODO_CONTEXTS_LAST_UPDTAE + " timestamp not null default current_timestamp "
 			+ ");";
 
+	/** Trigger for table with contexts to update timestamp (@NAME items). Create statement. */
+	public static final String STR_CREATE_TRIGGER_TODO_CONTEXTS = "CREATE TRIGGER UPDATE_" + TABLE_TODO_CONTEXTS + " BEFORE UPDATE ON " + TABLE_TODO_CONTEXTS + 
+			  " BEGIN UPDATE " + TABLE_TODO_CONTEXTS + " SET " + TABLE_TODO_CONTEXTS_LAST_UPDTAE + " = current_timestamp " + 
+		      " WHERE rowid = new.rowid;  END";
+
 	private SQLiteOpenHelper sqliteOpenHelper;
 
 	public TableTodoContextsAdapter(SQLiteOpenHelper sqliteOpenHelper) {
@@ -45,6 +50,7 @@ public class TableTodoContextsAdapter implements ITableAdapter {
 	 */
 	public void onCreate(SQLiteDatabase database) {
 		database.execSQL(STR_CREATE_TABLE_TODO_CONTEXTS);
+		database.execSQL(STR_CREATE_TRIGGER_TODO_CONTEXTS);
 	}
 
 	/*

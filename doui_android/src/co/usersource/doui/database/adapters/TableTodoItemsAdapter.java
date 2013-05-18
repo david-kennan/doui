@@ -52,6 +52,11 @@ public class TableTodoItemsAdapter implements ITableAdapter {
 			+ TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_ID
 			+ ") ON DELETE RESTRICT" + ");";
 
+	/** Trigger for table where todo items stored to update timestamp. Create statement. */
+	public static final String STR_CREATE_TRIGGER_TODO_ITEMS = "CREATE TRIGGER UPDATE_" + TABLE_TODO_ITEMS + " BEFORE UPDATE ON " + TABLE_TODO_ITEMS + 
+			  " BEGIN UPDATE " + TABLE_TODO_ITEMS + " SET " + TABLE_TODO_ITEMS_LAST_UPDATE + " = current_timestamp " + 
+		      " WHERE rowid = new.rowid;  END";
+
 	private DouiSQLiteOpenHelper sqliteOpenHelper;
 
 	public TableTodoItemsAdapter(DouiSQLiteOpenHelper sqliteOpenHelper) {
@@ -60,6 +65,7 @@ public class TableTodoItemsAdapter implements ITableAdapter {
 
 	public void onCreate(SQLiteDatabase database) {
 		database.execSQL(STR_CREATE_TABLE_TODO_ITEMS);
+		database.execSQL(STR_CREATE_TRIGGER_TODO_ITEMS);
 	}
 
 	public long insert(ContentValues values) {

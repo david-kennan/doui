@@ -35,6 +35,11 @@ public class TableTodoStatusAdapter implements ITableAdapter {
 			+ TABLE_TODO_STATUSES_LAST_UPDATE + " timestamp not null default current_timestamp "
 			+ ");";
 
+	/** Trigger for table with status items to update timestamp. Create statement. */
+	public static final String STR_CREATE_TRIGGER_TODO_STATUSES = "CREATE TRIGGER UPDATE_" + TABLE_TODO_STATUSES + " BEFORE UPDATE ON " + TABLE_TODO_STATUSES + 
+			  " BEGIN UPDATE " + TABLE_TODO_STATUSES + " SET " + TABLE_TODO_STATUSES_LAST_UPDATE + " = current_timestamp " + 
+		      " WHERE rowid = new.rowid;  END";
+	
 	/** Pre-defined array of Statuses. */
 	public static final String STR_ARRAY_STATUSES[] = { "Next", "Calendar",
 			"Waiting", "Done", "Someday" };
@@ -54,13 +59,13 @@ public class TableTodoStatusAdapter implements ITableAdapter {
 	 */
 	public void onCreate(SQLiteDatabase database) {
 		database.execSQL(STR_CREATE_TABLE_TODO_STATUSES);
+		database.execSQL(STR_CREATE_TRIGGER_TODO_STATUSES);
 		for (int i = 0; i < STR_ARRAY_STATUSES.length; i++) {
 			database.execSQL("insert or replace into " + TABLE_TODO_STATUSES
 					+ "(" + TABLE_TODO_STATUSES_ID + ","
 					+ TABLE_TODO_STATUSES_NAME + ") values (" + i + ",'"
 					+ STR_ARRAY_STATUSES[i] + "');");
 		}
-
 	}
 
 	/*
