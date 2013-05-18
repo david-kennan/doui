@@ -194,10 +194,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter
     	if(data != null)
     	{
     		//Update synch object with server key
-    		String keyForUpdate = "";
-    		ContentValues valuesForUpdate = new ContentValues();
     		Uri uriForUpdate;
+    		String keyForUpdate = "";
     		String idForUpdate = "";
+    		String nameForUpdate = "";
+    		ContentValues valuesForUpdate = new ContentValues();
 
     		try {
     			JSONArray dataFromServer = data.getJSONArray(JSON_UPDATED_OBJECTS);
@@ -208,8 +209,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter
     				{
     					keyForUpdate = dataFromServer.getJSONObject(i).getString(JSON_UPDATED_OBJECT_KEY);
     					idForUpdate  = dataFromServer.getJSONObject(i).getJSONObject(JSON_UPDATED_OBJECT_VALUES).getString("client_id");
+    					nameForUpdate = dataFromServer.getJSONObject(i).getJSONObject(JSON_UPDATED_OBJECT_VALUES).getString("name");
     					uriForUpdate = Uri.parse(DouiContentProvider.TODO_CATEGORIES_URI.toString() + "/" + idForUpdate);
-
+    					valuesForUpdate.put(TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME, nameForUpdate);
     					valuesForUpdate.put(TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_OBJECT_KEY, keyForUpdate);
     					getContext().getContentResolver().update(uriForUpdate, valuesForUpdate, keyForUpdate, null);
     				}

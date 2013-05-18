@@ -8,6 +8,7 @@ from google.appengine.ext import db
 from google.appengine.api import users
 import datetime
 
+
 class Sync(webapp2.RequestHandler):
 
     SYNC_OBJECTS_DICT = {"DouiTodoItem":doui_model.DouiTodoItem,
@@ -62,6 +63,10 @@ class Sync(webapp2.RequestHandler):
                 dbObject.loadAttrFromDict(updateObject[Sync.JSON_UPDATED_OBJECT_VALUES])
                 # TODO: compare it with datastore object if it is exists.
                 updateObject[Sync.JSON_UPDATED_OBJECT_KEY] = str(db.put(dbObject))
+            else:
+                KeyForUpdate = db.get(updateObject[Sync.JSON_UPDATED_OBJECT_KEY])
+                KeyForUpdate.name = updateObject[Sync.JSON_UPDATED_OBJECT_VALUES]["name"]
+                KeyForUpdate.put()
 
         for objectType in serverObjects.keys():
             for objectValue in serverObjects[objectType].values():
