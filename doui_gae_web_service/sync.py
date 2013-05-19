@@ -5,7 +5,6 @@ import webapp2
 
 import doui_model
 from google.appengine.ext import db
-from google.appengine.api import users
 import datetime
 
 
@@ -40,7 +39,7 @@ class Sync(webapp2.RequestHandler):
         Received objects will be sync with server database.
         This method will send back a JSON with objects to be updated on the client side. """
         strJsonData = request.get(Sync.JSON_REQUEST_PARAM_NAME)
-        logging.debug("Received JSON string: " + strJsonData)
+        logging.info("Received JSON string: " + strJsonData)
         if((None != strJsonData) and (strJsonData != '')):
             requestObject = json.loads(strJsonData)
         else:
@@ -56,10 +55,7 @@ class Sync(webapp2.RequestHandler):
         for updateObject in requestObject[Sync.JSON_UPDATED_OBJECTS]:
             if (None == updateObject[Sync.JSON_UPDATED_OBJECT_KEY]):
                 objectModel = Sync.SYNC_OBJECTS_DICT[updateObject[Sync.JSON_UPDATED_OBJECT_TYPE]]
-                dbObject = objectModel(
-                                       user = users.get_current_user(),
-                                       userId = users.get_current_user().user_id()
-                                       )
+                dbObject = objectModel()
                 dbObject.loadAttrFromDict(updateObject[Sync.JSON_UPDATED_OBJECT_VALUES])
                 # TODO: compare it with datastore object if it is exists.
                 updateObject[Sync.JSON_UPDATED_OBJECT_KEY] = str(db.put(dbObject))
@@ -86,7 +82,7 @@ class Sync(webapp2.RequestHandler):
         result = {}
         objectModelQuery = objectModel.all()
         objectModelQuery.filter("updateTimestamp > ", lastUpdateTimestamp)
-        objectModelQuery.filter("userId = ", users.get_current_user().user_id())
+        """objectModelQuery.filter("userId = ", users.get_current_user().user_id())"""
         for datastoreObject in objectModelQuery.run(): 
             result[datastoreObject.key().id_or_name()] = db.to_dict(datastoreObject)
             result[datastoreObject.key().id_or_name()]["key"] = datastoreObject.key().id_or_name()

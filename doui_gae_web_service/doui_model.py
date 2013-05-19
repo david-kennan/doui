@@ -1,6 +1,5 @@
 """ This module contains routines for Doui data model"""
 from google.appengine.ext import db
-from google.appengine.api import users
 import json
 import datetime
 
@@ -33,8 +32,6 @@ class jsonEncoder(json.JSONEncoder):
 class DouiSyncEntity(db.Model):
     """ Class which represent common parent for all entities stored to the Doui datastorage."""
     updateTimestamp = db.DateTimeProperty(auto_now = True)
-    user = db.UserProperty()
-    userId = db.StringProperty(required = True)
     def loadAttrFromDict(self, dictAttrs):
         for a, b in dictAttrs.items():
             if isinstance(b, (list, tuple)):
