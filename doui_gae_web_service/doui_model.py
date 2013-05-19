@@ -44,6 +44,8 @@ class DouiTodoItem(DouiSyncEntity):
     client_id = db.StringProperty()
     title = db.StringProperty()
     body = db.TextProperty()
+    fk_category = db.StringProperty()
+    fk_status = db.StringProperty()
     
 class DouiTodoCategories(DouiSyncEntity):
     """Datastorage entity for Doui todo categories"""

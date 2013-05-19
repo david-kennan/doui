@@ -23,6 +23,7 @@ import android.os.Bundle;
 import android.util.Log;
 import co.usersource.doui.DouiContentProvider;
 import co.usersource.doui.database.adapters.TableTodoCategoriesAdapter;
+import co.usersource.doui.database.adapters.TableTodoItemsAdapter;
 import co.usersource.doui.database.adapters.TableTodoStatusAdapter;
 import co.usersource.doui.sync.util.NetworkUtilities;
 
@@ -45,6 +46,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter
     
     public static final String JSON_UPDATED_TYPE_STATUS = "DouiTodoStatus";
     public static final String JSON_UPDATED_TYPE_CATEGORIES = "DouiTodoCategories";
+    public static final String JSON_UPDATED_TYPE_ITEMS = "DouiTodoItem";
     
 	private static final String TAG = "DouiSyncAdapter";
     private String mLastUpdateDate;
@@ -115,6 +117,16 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter
     	answer = getContext().getContentResolver().query(DouiContentProvider.TODO_CATEGORIES_URI, null, selection, null, null);
     	updatedObjects = createJSONData(answer, SyncAdapter.JSON_UPDATED_TYPE_CATEGORIES,  updatedObjects);
     	///////////////////////////////////////////////////////////////////////////////////////////
+    	//Generate update data for todo items
+    	if(mLastUpdateDate != null){
+    		selection =  TableTodoItemsAdapter.TABLE_TODO_ITEMS_LAST_UPDATE + " >= '" + mLastUpdateDate + "'";
+    	}
+    	else{
+    		selection = null;
+    	}
+    	answer = getContext().getContentResolver().query(DouiContentProvider.TODO_ITEMS_URI, null, selection, null, null);
+    	updatedObjects = createJSONData(answer, SyncAdapter.JSON_UPDATED_TYPE_ITEMS,  updatedObjects);
+    	///////////////////////////////////////////////////////////////////////////////////////////
     	
     	try{
     		if(mLastUpdateDate != null){
@@ -167,6 +179,33 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter
         				currentObject.put(SyncAdapter.JSON_LAST_UPDATE_TIMESTAMP, data.getString(data.getColumnIndex(TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_LAST_UPDATE)));
 						updateObjectValues.put(TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME, data.getString(data.getColumnIndex(TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME)));
 						updateObjectValues.put("client"+TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_ID, data.getString(data.getColumnIndex(TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_ID)));
+        			}
+        			
+        			if(type.equals(SyncAdapter.JSON_UPDATED_TYPE_ITEMS))
+        			{
+        				currentObject.put(SyncAdapter.JSON_UPDATED_OBJECT_KEY, 
+						          data.getString(data.getColumnIndex(TableTodoItemsAdapter.TABLE_TODO_ITEMS_OBJECT_KEY)) != null ? 
+						          data.getString(data.getColumnIndex(TableTodoItemsAdapter.TABLE_TODO_ITEMS_OBJECT_KEY)) : JSONObject.NULL);
+        				currentObject.put(SyncAdapter.JSON_LAST_UPDATE_TIMESTAMP, data.getString(data.getColumnIndex(TableTodoItemsAdapter.TABLE_TODO_ITEMS_LAST_UPDATE)));
+        				updateObjectValues.put("client"+TableTodoItemsAdapter.TABLE_TODO_ITEMS_ID, data.getString(data.getColumnIndex(TableTodoItemsAdapter.TABLE_TODO_ITEMS_ID)));
+        				updateObjectValues.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_BODY, data.getString(data.getColumnIndex(TableTodoItemsAdapter.TABLE_TODO_ITEMS_BODY)));
+        				updateObjectValues.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_TITLE, data.getString(data.getColumnIndex(TableTodoItemsAdapter.TABLE_TODO_ITEMS_TITLE)));
+        				
+        				if(data.getString(data.getColumnIndex(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY)) == null){
+        					updateObjectValues.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY, JSONObject.NULL);
+        				}
+        				else{
+        					updateObjectValues.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY, data.getString(data.getColumnIndex(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY)));
+        				}
+        				
+        				
+        				if(data.getString(data.getColumnIndex(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_STATUS)) == null){
+        					updateObjectValues.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_STATUS, JSONObject.NULL);
+        				}
+        				else{
+        					updateObjectValues.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_STATUS, data.getString(data.getColumnIndex(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_STATUS)));
+        				}
+        				
         			}
 					
 

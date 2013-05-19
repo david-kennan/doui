@@ -84,6 +84,14 @@ public class DouiContentProvider extends ContentProvider {
 	public static final int TODO_STATUS_URI_ID = 80;
 	/** Id for URI which match a list of items for concrete status. */
 	public static final int TODO_STATUS_LIST_URI_ID = 81;
+	
+	/** Suffix used to construct URI to access todo-items array. */
+	public static final String TODO_ITEMS_PATH = "todo_items";
+	/** Full URI to access todo-items array. */
+	public static final Uri TODO_ITEMS_URI = Uri.parse("content://"
+			+ AUTHORITY + "/" + TODO_ITEMS_PATH);
+	/** Id for uri that match set of categories of TODOs. */
+	public static final int TODO_ITEMS_URI_ID = 90;
 
 	/** Member responsible to determinate what kind of the URI passed. */
 	public static final UriMatcher sURIMatcher = new UriMatcher(
@@ -115,6 +123,8 @@ public class DouiContentProvider extends ContentProvider {
 				+ "/#", TODO_STATUS_ITEM_URI_ID);
 		sURIMatcher.addURI(AUTHORITY, TODO_CONTEXTS_PATH + "/*/" + TODO_PATH
 				+ "/#", TODO_CONTEXT_ITEM_URI_ID);
+		sURIMatcher.addURI(AUTHORITY, TODO_ITEMS_PATH,
+				TODO_ITEMS_URI_ID);
 	}
 
 	private DouiSQLiteOpenHelper douiSQLiteOpenHelper;
@@ -348,7 +358,11 @@ public class DouiContentProvider extends ContentProvider {
 		}
 			break;
 
-
+		//All items query
+		case TODO_ITEMS_URI_ID:
+			result = douiSQLiteOpenHelper.getTableTodoItemsAdapter().query(
+					projection, selection, selectionArgs, sortOrder);
+			break;
 		default:
 			Log.e(this.getClass().getName(),
 					"Unknown URI type passed to query(...): " + uriType);
