@@ -61,7 +61,13 @@ class Sync(webapp2.RequestHandler):
                 updateObject[Sync.JSON_UPDATED_OBJECT_KEY] = str(db.put(dbObject))
             else:
                 KeyForUpdate = db.get(updateObject[Sync.JSON_UPDATED_OBJECT_KEY])
-                KeyForUpdate.name = updateObject[Sync.JSON_UPDATED_OBJECT_VALUES]["name"]
+                if (updateObject[Sync.JSON_UPDATED_OBJECT_TYPE] == "DouiTodoItem"):
+                    KeyForUpdate.title = updateObject[Sync.JSON_UPDATED_OBJECT_VALUES]["title"]
+                    KeyForUpdate.body = updateObject[Sync.JSON_UPDATED_OBJECT_VALUES]["body"]
+                    KeyForUpdate.fk_category = updateObject[Sync.JSON_UPDATED_OBJECT_VALUES]["fk_category"]
+                    KeyForUpdate.fk_status = updateObject[Sync.JSON_UPDATED_OBJECT_VALUES]["fk_status"]
+                else:
+                    KeyForUpdate.name = updateObject[Sync.JSON_UPDATED_OBJECT_VALUES]["name"]
                 KeyForUpdate.put()
 
         for objectType in serverObjects.keys():

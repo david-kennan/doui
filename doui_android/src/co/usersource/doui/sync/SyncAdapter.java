@@ -50,6 +50,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter
     
 	private static final String TAG = "DouiSyncAdapter";
     private String mLastUpdateDate;
+    private ContentValues m_valuesForUpdate;
     
     
     /**
@@ -58,6 +59,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter
     public SyncAdapter(Context context, boolean autoInitialize) 
     {
         super(context, autoInitialize);
+        m_valuesForUpdate = new ContentValues();
     }
     
     /**
@@ -146,6 +148,13 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter
     }
     
     
+    /**
+     * Generate json object from cursor
+     * @param data - cursor with data
+     * @param type - type of object witch should be generated
+     * @param updatedObjects -
+     * @return - json data for object
+     */
     public JSONArray createJSONData(Cursor data, String type, JSONArray updatedObjects)
     {
     	JSONArray result = updatedObjects;
@@ -208,7 +217,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter
         				
         			}
 					
-
     				currentObject.put(SyncAdapter.JSON_UPDATED_OBJECT_VALUES, updateObjectValues);
     				result.put(updatedObjects.length(), currentObject);
 					
@@ -221,31 +229,42 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter
     	return result;
     }
     
+    /**
+     * Update local database with data from server
+     * @param data - json object with data from server
+     */
     private void updateLocalDatabase(JSONObject data)
     {
     	if(data != null)
     	{
     		//Update synch object with server key
     		Uri uriForUpdate;
-    		String keyForUpdate  = "";
-    		String idForUpdate   = "";
-    		String nameForUpdate = "";
-    		ContentValues valuesForUpdate = new ContentValues();
+    		JSONObject currentValues;
+    		
 
     		try {
     			JSONArray dataFromServer = data.getJSONArray(JSON_UPDATED_OBJECTS);
 
     			for(int i = 0; i < dataFromServer.length(); ++i)
     			{
+    				m_valuesForUpdate.clear();
+    				currentValues = dataFromServer.getJSONObject(i).getJSONObject(JSON_UPDATED_OBJECT_VALUES);
     				if(dataFromServer.getJSONObject(i).get(JSON_UPDATED_OBJECT_TYPE).equals(SyncAdapter.JSON_UPDATED_TYPE_CATEGORIES))
     				{
-    					keyForUpdate = dataFromServer.getJSONObject(i).getString(JSON_UPDATED_OBJECT_KEY);
-    					idForUpdate  = dataFromServer.getJSONObject(i).getJSONObject(JSON_UPDATED_OBJECT_VALUES).getString("client_id");
-    					nameForUpdate = dataFromServer.getJSONObject(i).getJSONObject(JSON_UPDATED_OBJECT_VALUES).getString("name");
-    					uriForUpdate = Uri.parse(DouiContentProvider.TODO_CATEGORIES_URI.toString() + "/" + idForUpdate);
-    					valuesForUpdate.put(TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME, nameForUpdate);
-    					valuesForUpdate.put(TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_OBJECT_KEY, keyForUpdate);
-    					getContext().getContentResolver().update(uriForUpdate, valuesForUpdate, keyForUpdate, null);
+    					addFieldToUpdate(TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_OBJECT_KEY, dataFromServer.getJSONObject(i), JSON_UPDATED_OBJECT_KEY);
+    					addFieldToUpdate(TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME, currentValues, null);
+    					uriForUpdate = Uri.parse(DouiContentProvider.TODO_CATEGORIES_URI.toString() + "/" + currentValues.getString("client_id"));
+    					getContext().getContentResolver().update(uriForUpdate, m_valuesForUpdate, null, null);
+    				}
+    				
+    				if(dataFromServer.getJSONObject(i).get(JSON_UPDATED_OBJECT_TYPE).equals(SyncAdapter.JSON_UPDATED_TYPE_ITEMS)){
+    					addFieldToUpdate(TableTodoItemsAdapter.TABLE_TODO_ITEMS_BODY, currentValues, null);
+    					addFieldToUpdate(TableTodoItemsAdapter.TABLE_TODO_ITEMS_TITLE, currentValues, null);
+    					addFieldToUpdate(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY, currentValues, null);
+    					addFieldToUpdate(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_STATUS, currentValues, null);
+    					addFieldToUpdate(TableTodoItemsAdapter.TABLE_TODO_ITEMS_OBJECT_KEY, dataFromServer.getJSONObject(i), JSON_UPDATED_OBJECT_KEY);
+    					uriForUpdate = Uri.parse(DouiContentProvider.TODO_ITEMS_URI.toString() + "/" + currentValues.getString("client_id"));
+    					getContext().getContentResolver().update(uriForUpdate, m_valuesForUpdate, null, null);
     				}
     			}
     		} catch (JSONException e) {
@@ -253,5 +272,30 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter
     			e.printStackTrace();
     		}
     	}
+    }
+    
+    /**
+     * Add field to set for update local database
+     * @param fieldName - name of field in db
+     * @param value     - JSON object with values
+     * @param valueName - value name in json object. 
+     * If null then fieldName will be use as name in json object  
+     */
+    private void addFieldToUpdate(String fieldName, JSONObject value,  String valueName)
+    {
+    	String data;
+		try {
+			if(valueName != null){
+				data = value.getString(valueName);
+			}
+			else{
+				data = value.getString(fieldName);
+			}
+			m_valuesForUpdate.put(fieldName, data);
+		} catch (JSONException e) {
+			Log.v(TAG, "Cannot add value for field " + fieldName);
+			e.printStackTrace();
+		}
+    	
     }
 }
