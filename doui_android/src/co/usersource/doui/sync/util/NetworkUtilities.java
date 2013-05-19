@@ -11,7 +11,6 @@ import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
 import org.apache.http.ParseException;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.params.ConnManagerParams;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -38,8 +37,9 @@ public class NetworkUtilities
     public static final String PARAM_UPDATED = "timestamp";
     public static final String USER_AGENT = "AuthenticationService/1.0";
     public static final int REGISTRATION_TIMEOUT = 30 * 1000; // ms
-    public static final String BASE_URL = "http://192.168.1.100:8080";
+    public static final String BASE_URL = "http://douiserver.appspot.com";
     public static final String AUTH_URI = BASE_URL + "/_ah/login";
+
     
     private static DefaultHttpClient mHttpClient;
 
@@ -93,14 +93,16 @@ public class NetworkUtilities
      */
     public static boolean authenticate(String username, String password, Handler handler, final Context context) 
     {
-        boolean bRet = false;
-    	final HttpResponse resp;
+        boolean bRet = true;
+        //TODO: Authentification should be implemented here.
+    	/*final HttpResponse resp;
         
         final HttpGet get = new HttpGet(AUTH_URI + "?"+PARAM_EMAIL+"=" + username + "&"+PARAM_ACTION+"=login");
         maybeCreateHttpClient();
 
         try 
         {
+        	Log.v(TAG, "Send request = " + AUTH_URI + "?"+PARAM_EMAIL+"=" + username + "&"+PARAM_ACTION+"=login");
         	resp = mHttpClient.execute(get);
             if (resp.getStatusLine().getStatusCode() == HttpStatus.SC_OK) 
             {
@@ -111,15 +113,16 @@ public class NetworkUtilities
             {
                 Log.v(TAG, "Error authenticating" + resp.getStatusLine());
             }
-        } 
-        catch (final IOException e) 
+        	
+        }*/ 
+        /*catch (final IOException e) 
         {
         	Log.v(TAG, "IOException when getting authtoken", e);
         } 
         finally
         {
         	Log.v(TAG, "Uncknown exception in authenticate!!!");
-        }
+        }*/
         
         sendResult(bRet, handler, context);
         return bRet;
