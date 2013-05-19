@@ -46,7 +46,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter
     public static final String JSON_UPDATED_TYPE_STATUS = "DouiTodoStatus";
     public static final String JSON_UPDATED_TYPE_CATEGORIES = "DouiTodoCategories";
     
-	
 	private static final String TAG = "DouiSyncAdapter";
     private String mLastUpdateDate;
     
@@ -91,95 +90,41 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter
     private JSONObject getLocalData()
     {
     	Cursor answer;
-    	JSONObject request = new JSONObject();
-    	JSONObject currentObject;
-    	JSONArray updatedObjects = new JSONArray();
-    	JSONObject updateObjectValues;
     	String selection;
+    	JSONObject request = new JSONObject();
+    	JSONArray updatedObjects = new JSONArray();
     	
     	//Generate update data for statuses
-    	if(mLastUpdateDate != null)
-    	{
+    	if(mLastUpdateDate != null)	{
     		selection = TableTodoStatusAdapter.TABLE_TODO_STATUSES_LAST_UPDATE + " >= '" + mLastUpdateDate + "'";
     	}
     	else{
     		selection = null;
     	}
     	answer = getContext().getContentResolver().query(DouiContentProvider.TODO_STATUSES_URI, null, selection, null, null);
-    	if(answer != null)
-    	{
-    		for(boolean flag = answer.moveToFirst(); flag; flag = answer.moveToNext())
-    		{
-   				try{
-   					updateObjectValues = new JSONObject();
-   					currentObject = new JSONObject();
-   					currentObject.put(SyncAdapter.JSON_UPDATED_OBJECT_KEY, answer.getString(3) != null ? answer.getString(3) : JSONObject.NULL);
-    				currentObject.put(SyncAdapter.JSON_UPDATED_OBJECT_TYPE, SyncAdapter.JSON_UPDATED_TYPE_STATUS);
-    				currentObject.put(SyncAdapter.JSON_LAST_UPDATE_TIMESTAMP, answer.getString(2));
-    				updateObjectValues.put(TableTodoStatusAdapter.TABLE_TODO_STATUSES_NAME, answer.getString(1));
-    				updateObjectValues.put("client"+TableTodoStatusAdapter.TABLE_TODO_STATUSES_ID, answer.getString(0));
-    				currentObject.put(SyncAdapter.JSON_UPDATED_OBJECT_VALUES, updateObjectValues);
-    				updatedObjects.put(updatedObjects.length(), currentObject);
-  				
-   				} catch (JSONException e) {
-    					Log.v(TAG, "JSON for update statuses is not valid!!!");
-    					e.printStackTrace();
-    			}
-    		}
-    		
-    	}
-    	else
-    	{
-    		Log.v(TAG, "Data for update statuses is not present in the database!!!");
-    	}
+    	updatedObjects = createJSONData(answer, SyncAdapter.JSON_UPDATED_TYPE_STATUS,  updatedObjects);
     	/////////////////////////////////////////////////////////////////////////////////////////////
 
     	//Generate update data for categories
-    	if(mLastUpdateDate != null)
-    	{
+    	if(mLastUpdateDate != null){
     		selection =  TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_LAST_UPDATE + " >= '" + mLastUpdateDate + "'";
     	}
     	else{
     		selection = null;
     	}
-    	answer = getContext().getContentResolver().query(DouiContentProvider.TODO_CATEGORIES_URI, null, selection, null, null);	
-    	if(answer != null)
-    	{
-    		for(boolean flag = answer.moveToFirst(); flag; flag = answer.moveToNext())
-    		{
-   				try{
-   					updateObjectValues = new JSONObject();
-   					currentObject = new JSONObject();
-
-   					currentObject.put(SyncAdapter.JSON_UPDATED_OBJECT_KEY, answer.getString(3) != null ? answer.getString(3) : JSONObject.NULL);
-    				currentObject.put(SyncAdapter.JSON_UPDATED_OBJECT_TYPE, SyncAdapter.JSON_UPDATED_TYPE_CATEGORIES);
-    				currentObject.put(SyncAdapter.JSON_LAST_UPDATE_TIMESTAMP, answer.getString(2));
-
-    				updateObjectValues.put(TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME, answer.getString(1));
-    				updateObjectValues.put("client"+TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_ID, answer.getString(0));
-    				currentObject.put(SyncAdapter.JSON_UPDATED_OBJECT_VALUES, updateObjectValues);
-    				updatedObjects.put(updatedObjects.length(), currentObject);
-  				
-   				} catch (JSONException e) {
-    					Log.v(TAG, "JSON for update statuses is not valid!!!");
-    					e.printStackTrace();
-    			}
-    		}
-    	}
-    	else
-    	{
-    		Log.v(TAG, "Data for update categories is not present in the database!!!");
-    	}
-    	/////////////////////////////////////////////////////////////////////////////////////////////
+    	answer = getContext().getContentResolver().query(DouiContentProvider.TODO_CATEGORIES_URI, null, selection, null, null);
+    	updatedObjects = createJSONData(answer, SyncAdapter.JSON_UPDATED_TYPE_CATEGORIES,  updatedObjects);
+    	///////////////////////////////////////////////////////////////////////////////////////////
     	
     	try{
     		if(mLastUpdateDate != null){
-    			request.put("lastUpdateTimestamp", mLastUpdateDate);
+    			request.put(SyncAdapter.JSON_LAST_UPDATE_TIMESTAMP, mLastUpdateDate);
     		}
     		else{
-    			request.put("lastUpdateTimestamp", new Date().toString());
+    			request.put(SyncAdapter.JSON_LAST_UPDATE_TIMESTAMP, new Date().toString());
     		}
-    		request.put("updatedObjects", updatedObjects);
+    		request.put(SyncAdapter.JSON_UPDATED_OBJECTS, updatedObjects);
+    		
     	}catch (JSONException e) {
     		Log.v(TAG, "JSON for request to the server is not valid!!!");
     		e.printStackTrace();
@@ -189,14 +134,62 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter
     }
     
     
+    public JSONArray createJSONData(Cursor data, String type, JSONArray updatedObjects)
+    {
+    	JSONArray result = updatedObjects;
+    	JSONObject currentObject = new JSONObject();
+    	JSONObject updateObjectValues = new JSONObject();
+    	
+    	if(data != null)
+    	{
+    		for(boolean flag = data.moveToFirst(); flag; flag = data.moveToNext())
+    		{
+    			try {
+    				updateObjectValues = new JSONObject();
+        			currentObject = new JSONObject();
+        			
+        			currentObject.put(SyncAdapter.JSON_UPDATED_OBJECT_TYPE, type);
+        			if(type.equals(SyncAdapter.JSON_UPDATED_TYPE_STATUS))
+        			{
+        				currentObject.put(SyncAdapter.JSON_UPDATED_OBJECT_KEY, 
+        						          data.getString(data.getColumnIndex(TableTodoStatusAdapter.TABLE_TODO_STATUSES_OBJECT_KEY)) != null ? 
+        						          data.getString(data.getColumnIndex(TableTodoStatusAdapter.TABLE_TODO_STATUSES_OBJECT_KEY)) : JSONObject.NULL);
+    					currentObject.put(SyncAdapter.JSON_LAST_UPDATE_TIMESTAMP, data.getString(data.getColumnIndex(TableTodoStatusAdapter.TABLE_TODO_STATUSES_LAST_UPDATE)));
+    					updateObjectValues.put(TableTodoStatusAdapter.TABLE_TODO_STATUSES_NAME, data.getString(data.getColumnIndex(TableTodoStatusAdapter.TABLE_TODO_STATUSES_NAME)));
+        				updateObjectValues.put("client"+TableTodoStatusAdapter.TABLE_TODO_STATUSES_ID, data.getString(data.getColumnIndex(TableTodoStatusAdapter.TABLE_TODO_STATUSES_ID)));
+        			}
+        			
+        			if(type.equals(SyncAdapter.JSON_UPDATED_TYPE_CATEGORIES))
+        			{
+        				currentObject.put(SyncAdapter.JSON_UPDATED_OBJECT_KEY, 
+						          data.getString(data.getColumnIndex(TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_OBJECT_KEY)) != null ? 
+						          data.getString(data.getColumnIndex(TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_OBJECT_KEY)) : JSONObject.NULL);
+        				currentObject.put(SyncAdapter.JSON_LAST_UPDATE_TIMESTAMP, data.getString(data.getColumnIndex(TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_LAST_UPDATE)));
+						updateObjectValues.put(TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME, data.getString(data.getColumnIndex(TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME)));
+						updateObjectValues.put("client"+TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_ID, data.getString(data.getColumnIndex(TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_ID)));
+        			}
+					
+
+    				currentObject.put(SyncAdapter.JSON_UPDATED_OBJECT_VALUES, updateObjectValues);
+    				result.put(updatedObjects.length(), currentObject);
+					
+				} catch (JSONException e) {
+					Log.v(TAG, "createJSONDataForServer failed");
+					e.printStackTrace();
+				}
+    		}
+    	}
+    	return result;
+    }
+    
     private void updateLocalDatabase(JSONObject data)
     {
     	if(data != null)
     	{
     		//Update synch object with server key
     		Uri uriForUpdate;
-    		String keyForUpdate = "";
-    		String idForUpdate = "";
+    		String keyForUpdate  = "";
+    		String idForUpdate   = "";
     		String nameForUpdate = "";
     		ContentValues valuesForUpdate = new ContentValues();
 
