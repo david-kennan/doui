@@ -5,7 +5,7 @@ import webapp2
 
 import doui_model
 from google.appengine.ext import db
-import datetime
+from datetime import datetime
 
 
 class Sync(webapp2.RequestHandler):
@@ -53,26 +53,31 @@ class Sync(webapp2.RequestHandler):
         lastUpdateTimestamp = requestObject[Sync.JSON_LAST_UPDATE_TIMESTAMP]
         serverObjects = self.getServerObjectsAfterLastUpdate(lastUpdateTimestamp)
         for updateObject in requestObject[Sync.JSON_UPDATED_OBJECTS]:
-            if (None == updateObject[Sync.JSON_UPDATED_OBJECT_KEY]):
-                objectModel = Sync.SYNC_OBJECTS_DICT[updateObject[Sync.JSON_UPDATED_OBJECT_TYPE]]
-                dbObject = objectModel()
-                dbObject.loadAttrFromDict(updateObject[Sync.JSON_UPDATED_OBJECT_VALUES])
-                # TODO: compare it with datastore object if it is exists.
-                updateObject[Sync.JSON_UPDATED_OBJECT_KEY] = str(db.put(dbObject))
-            else:
-                KeyForUpdate = db.get(updateObject[Sync.JSON_UPDATED_OBJECT_KEY])
-                if (updateObject[Sync.JSON_UPDATED_OBJECT_TYPE] == "DouiTodoItem"):
-                    KeyForUpdate.title = updateObject[Sync.JSON_UPDATED_OBJECT_VALUES]["title"]
-                    KeyForUpdate.body = updateObject[Sync.JSON_UPDATED_OBJECT_VALUES]["body"]
-                    KeyForUpdate.fk_category = updateObject[Sync.JSON_UPDATED_OBJECT_VALUES]["fk_category"]
-                    KeyForUpdate.fk_status = updateObject[Sync.JSON_UPDATED_OBJECT_VALUES]["fk_status"]
+            for updateValues in updateObject[Sync.JSON_UPDATED_OBJECT_VALUES]: 
+                if (None == updateValues[Sync.JSON_UPDATED_OBJECT_KEY]):
+                    objectModel = Sync.SYNC_OBJECTS_DICT[updateObject[Sync.JSON_UPDATED_OBJECT_TYPE]]
+                    dbObject = objectModel()
+                    dbObject.loadAttrFromDict(updateValues)
+                    # TODO: compare it with datastore object if it is exists.
+                    updateValues[Sync.JSON_UPDATED_OBJECT_KEY] = str(db.put(dbObject))
                 else:
-                    KeyForUpdate.name = updateObject[Sync.JSON_UPDATED_OBJECT_VALUES]["name"]
-                KeyForUpdate.put()
+                    KeyForUpdate = db.get(updateValues[Sync.JSON_UPDATED_OBJECT_KEY])
+                    if (updateObject[Sync.JSON_UPDATED_OBJECT_TYPE] == "DouiTodoItem"):
+                        KeyForUpdate.title = updateValues["title"]
+                        KeyForUpdate.body = updateValues["body"]
+                        KeyForUpdate.fk_category = updateValues["fk_category"]
+                        KeyForUpdate.fk_status = updateValues["fk_status"]
+                    else:
+                        KeyForUpdate.name = updateValues["name"]
+                    KeyForUpdate.put()
 
+        values = {}
+        values[Sync.JSON_UPDATED_OBJECT_VALUES] = []
         for objectType in serverObjects.keys():
             for objectValue in serverObjects[objectType].values():
-                requestObject[Sync.JSON_UPDATED_OBJECTS].append(objectValue);
+                values[Sync.JSON_UPDATED_OBJECT_TYPE] = objectType
+                values[Sync.JSON_UPDATED_OBJECT_VALUES].append(objectValue)
+        requestObject[Sync.JSON_UPDATED_OBJECTS].append(values);
         return json.dumps(requestObject, cls = doui_model.jsonEncoder)
     
     def getServerObjectsAfterLastUpdate(self, lastUpdateTimestamp):
@@ -87,11 +92,11 @@ class Sync(webapp2.RequestHandler):
         """ This method returns a dictionary with objects for concrete type, which was updated after last update"""
         result = {}
         objectModelQuery = objectModel.all()
-        objectModelQuery.filter("updateTimestamp > ", lastUpdateTimestamp)
+        objectModelQuery.filter("updateTimestamp > ", datetime.strptime(lastUpdateTimestamp, "%Y-%m-%d %H:%M:%S"))
         """objectModelQuery.filter("userId = ", users.get_current_user().user_id())"""
-        for datastoreObject in objectModelQuery.run(): 
+        for datastoreObject in objectModelQuery.run():
             result[datastoreObject.key().id_or_name()] = db.to_dict(datastoreObject)
-            result[datastoreObject.key().id_or_name()]["key"] = datastoreObject.key().id_or_name()
+            result[datastoreObject.key().id_or_name()][Sync.JSON_UPDATED_OBJECT_KEY] = str(datastoreObject.key())
         return result
         
         
