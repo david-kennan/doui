@@ -28,6 +28,8 @@ class Sync(webapp2.RequestHandler):
     
     JSON_UPDATED_OBJECTS = "updatedObjects"
     
+    JSON_UPDATE_OBJECT_CLIENT_ID = "client_id"
+    
     def get(self):
         self.response.out.write(self.proceedRequest(self.request))
     
@@ -74,10 +76,12 @@ class Sync(webapp2.RequestHandler):
         values = {}
         values[Sync.JSON_UPDATED_OBJECT_VALUES] = []
         for objectType in serverObjects.keys():
+            values[Sync.JSON_UPDATED_OBJECT_VALUES] = []
+            values[Sync.JSON_UPDATED_OBJECT_TYPE] = objectType
             for objectValue in serverObjects[objectType].values():
-                values[Sync.JSON_UPDATED_OBJECT_TYPE] = objectType
                 values[Sync.JSON_UPDATED_OBJECT_VALUES].append(objectValue)
-        requestObject[Sync.JSON_UPDATED_OBJECTS].append(values);
+            requestObject[Sync.JSON_UPDATED_OBJECTS].append(values.copy())
+        logging.info(json.dumps(requestObject, cls = doui_model.jsonEncoder))
         return json.dumps(requestObject, cls = doui_model.jsonEncoder)
     
     def getServerObjectsAfterLastUpdate(self, lastUpdateTimestamp):
@@ -97,6 +101,7 @@ class Sync(webapp2.RequestHandler):
         for datastoreObject in objectModelQuery.run():
             result[datastoreObject.key().id_or_name()] = db.to_dict(datastoreObject)
             result[datastoreObject.key().id_or_name()][Sync.JSON_UPDATED_OBJECT_KEY] = str(datastoreObject.key())
+            result[datastoreObject.key().id_or_name()][Sync.JSON_UPDATE_OBJECT_CLIENT_ID] = "null"
         return result
         
         
