@@ -44,7 +44,7 @@ class Sync(webapp2.RequestHandler):
             requestObject = json.loads(strJsonData)
         else:
             requestObject = {}
-            requestObject[Sync.JSON_LAST_UPDATE_TIMESTAMP] = datetime.datetime(2000, 01, 01, 0, 0)
+            requestObject[Sync.JSON_LAST_UPDATE_TIMESTAMP] = "2000-01-01 00:00:00"
             requestObject[Sync.JSON_UPDATED_OBJECTS] = []
         return self.proceedRequestObject(requestObject)
 
