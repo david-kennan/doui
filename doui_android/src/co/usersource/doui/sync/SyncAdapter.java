@@ -73,8 +73,20 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter
     	JSONObject response;
     	try
     	{
-    		request = getLocalData();
+    		request = getLocalData(TableTodoStatusAdapter.TABLE_TODO_STATUSES_LAST_UPDATE, DouiContentProvider.TODO_STATUSES_URI, SyncAdapter.JSON_UPDATED_TYPE_STATUS);
     		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+    		params.add(new BasicNameValuePair(SyncAdapter.JSON_REQUEST_PARAM_NAME, request.toString()));
+    		response = NetworkUtilities.SendRequest("/sync", params);
+    		updateLocalDatabase(response);
+    		
+    		params.clear();
+    		request = getLocalData(TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_LAST_UPDATE, DouiContentProvider.TODO_CATEGORIES_URI, SyncAdapter.JSON_UPDATED_TYPE_CATEGORIES);
+    		params.add(new BasicNameValuePair(SyncAdapter.JSON_REQUEST_PARAM_NAME, request.toString()));
+    		response = NetworkUtilities.SendRequest("/sync", params);
+    		updateLocalDatabase(response);
+    		
+    		params.clear();
+    		request = getLocalData(TableTodoItemsAdapter.TABLE_TODO_ITEMS_LAST_UPDATE, DouiContentProvider.TODO_ITEMS_URI, SyncAdapter.JSON_UPDATED_TYPE_ITEMS);
     		params.add(new BasicNameValuePair(SyncAdapter.JSON_REQUEST_PARAM_NAME, request.toString()));
     		response = NetworkUtilities.SendRequest("/sync", params);
     		updateLocalDatabase(response);
@@ -93,7 +105,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter
     /**
      * This function reads information from local database.
      */
-    private JSONObject getLocalData()
+    private JSONObject getLocalData(String strFieldName, Uri uri, String strType)
     {
     	Cursor answer;
     	String selection;
@@ -101,32 +113,13 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter
     	JSONArray updatedObjects = new JSONArray();
     	
     	if(mLastUpdateDate != null)	{
-    		selection = TableTodoStatusAdapter.TABLE_TODO_STATUSES_LAST_UPDATE + " > '" + mLastUpdateDate + "'";
+    		selection = strFieldName + " > '" + mLastUpdateDate + "'";
     	}
     	else{
     		selection = null;
     	}
-    	answer = getContext().getContentResolver().query(DouiContentProvider.TODO_STATUSES_URI, null, selection, null, null);
-    	updatedObjects = createJSONData(answer, SyncAdapter.JSON_UPDATED_TYPE_STATUS,  updatedObjects);
-    	/////////////////////////////////////////////////////////////////////////////////////////////
-    	if(mLastUpdateDate != null)	{
-    		selection = TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_LAST_UPDATE + " > '" + mLastUpdateDate + "'";
-    	}
-    	else{
-    		selection = null;
-    	}
-    	answer = getContext().getContentResolver().query(DouiContentProvider.TODO_CATEGORIES_URI, null, selection, null, null);
-    	updatedObjects = createJSONData(answer, SyncAdapter.JSON_UPDATED_TYPE_CATEGORIES,  updatedObjects);
-    	/////////////////////////////////////////////////////////////////////////////////////////////
-    	
-    	if(mLastUpdateDate != null)	{
-    		selection = TableTodoItemsAdapter.TABLE_TODO_ITEMS_LAST_UPDATE + " > '" + mLastUpdateDate + "'";
-    	}
-    	else{
-    		selection = null;
-    	}
-    	answer = getContext().getContentResolver().query(DouiContentProvider.TODO_ITEMS_URI, null, selection, null, null);
-    	updatedObjects = createJSONData(answer, SyncAdapter.JSON_UPDATED_TYPE_ITEMS,  updatedObjects);
+    	answer = getContext().getContentResolver().query(uri, null, selection, null, null);
+    	updatedObjects = createJSONData(answer, strType,  updatedObjects);
     	/////////////////////////////////////////////////////////////////////////////////////////////
     	
     	try{
