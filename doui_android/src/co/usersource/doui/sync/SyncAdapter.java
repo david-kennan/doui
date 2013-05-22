@@ -73,24 +73,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter
     	JSONObject response;
     	try
     	{
-    		request = getLocalData(TableTodoStatusAdapter.TABLE_TODO_STATUSES_LAST_UPDATE, DouiContentProvider.TODO_STATUSES_URI, SyncAdapter.JSON_UPDATED_TYPE_STATUS);
+    		request = getLocalData();
     		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
     		params.add(new BasicNameValuePair(SyncAdapter.JSON_REQUEST_PARAM_NAME, request.toString()));
     		response = NetworkUtilities.SendRequest("/sync", params);
     		updateLocalDatabase(response);
-    		
-    		params.clear();
-    		request = getLocalData(TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_LAST_UPDATE, DouiContentProvider.TODO_CATEGORIES_URI, SyncAdapter.JSON_UPDATED_TYPE_CATEGORIES);
-    		params.add(new BasicNameValuePair(SyncAdapter.JSON_REQUEST_PARAM_NAME, request.toString()));
-    		response = NetworkUtilities.SendRequest("/sync", params);
-    		updateLocalDatabase(response);
-    		
-    		params.clear();
-    		request = getLocalData(TableTodoItemsAdapter.TABLE_TODO_ITEMS_LAST_UPDATE, DouiContentProvider.TODO_ITEMS_URI, SyncAdapter.JSON_UPDATED_TYPE_ITEMS);
-    		params.add(new BasicNameValuePair(SyncAdapter.JSON_REQUEST_PARAM_NAME, request.toString()));
-    		response = NetworkUtilities.SendRequest("/sync", params);
-    		updateLocalDatabase(response);
-    		
     		
     		SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
     		formater.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -106,7 +93,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter
     /**
      * This function reads information from local database.
      */
-    private JSONObject getLocalData(String strFieldName, Uri uri, String strType)
+    private JSONObject getLocalData()
     {
     	Cursor answer;
     	String selection;
@@ -114,15 +101,34 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter
     	JSONArray updatedObjects = new JSONArray();
     	
     	if(mLastUpdateDate != null)	{
-    		selection = strFieldName + " > '" + mLastUpdateDate + "'";
+    		selection = TableTodoStatusAdapter.TABLE_TODO_STATUSES_LAST_UPDATE + " > '" + mLastUpdateDate + "'";
     	}
     	else{
     		selection = null;
     	}
-    	answer = getContext().getContentResolver().query(uri, null, selection, null, null);
-    	updatedObjects = createJSONData(answer, strType,  updatedObjects);
+    	answer = getContext().getContentResolver().query(DouiContentProvider.TODO_STATUSES_URI, null, selection, null, null);
+    	updatedObjects = createJSONData(answer, SyncAdapter.JSON_UPDATED_TYPE_STATUS,  updatedObjects);
     	/////////////////////////////////////////////////////////////////////////////////////////////
-
+    	if(mLastUpdateDate != null)	{
+    		selection = TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_LAST_UPDATE + " > '" + mLastUpdateDate + "'";
+    	}
+    	else{
+    		selection = null;
+    	}
+    	answer = getContext().getContentResolver().query(DouiContentProvider.TODO_CATEGORIES_URI, null, selection, null, null);
+    	updatedObjects = createJSONData(answer, SyncAdapter.JSON_UPDATED_TYPE_CATEGORIES,  updatedObjects);
+    	/////////////////////////////////////////////////////////////////////////////////////////////
+    	
+    	if(mLastUpdateDate != null)	{
+    		selection = TableTodoItemsAdapter.TABLE_TODO_ITEMS_LAST_UPDATE + " > '" + mLastUpdateDate + "'";
+    	}
+    	else{
+    		selection = null;
+    	}
+    	answer = getContext().getContentResolver().query(DouiContentProvider.TODO_ITEMS_URI, null, selection, null, null);
+    	updatedObjects = createJSONData(answer, SyncAdapter.JSON_UPDATED_TYPE_ITEMS,  updatedObjects);
+    	/////////////////////////////////////////////////////////////////////////////////////////////
+    	
     	try{
     		if(mLastUpdateDate == null){
     			SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
@@ -280,12 +286,26 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter
     					}
     					
     					if(dataFromServer.getJSONObject(i).get(JSON_UPDATED_OBJECT_TYPE).equals(SyncAdapter.JSON_UPDATED_TYPE_ITEMS)){
-    						int nCategoryId = getCategoryIDByObjectKey(currentValues.getJSONObject(j).getString(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY));
-    						int nStatusId = getStatusIDByObjectKey(currentValues.getJSONObject(j).getString(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_STATUS));
+    						 
     						addFieldToUpdate(TableTodoItemsAdapter.TABLE_TODO_ITEMS_BODY, currentValues.getJSONObject(j), null);
         					addFieldToUpdate(TableTodoItemsAdapter.TABLE_TODO_ITEMS_TITLE, currentValues.getJSONObject(j), null);
-        					//m_valuesForUpdate.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY, nCategoryId);
-        					//m_valuesForUpdate.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_STATUS, nStatusId);
+        					
+        					if(!currentValues.getJSONObject(j).getString(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY).equals("null"))
+        					{
+        						int nCategoryId = getCategoryIDByObjectKey(currentValues.getJSONObject(j).getString(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY));
+        						if(nCategoryId != -1)
+        						{
+        							m_valuesForUpdate.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY, nCategoryId );
+        						}
+        					}
+        					if(!currentValues.getJSONObject(j).getString(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_STATUS).equals("null"))
+        					{
+        						int nStatusId = getStatusIDByObjectKey(currentValues.getJSONObject(j).getString(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_STATUS));
+        						if(nStatusId != -1)
+        						{
+        							m_valuesForUpdate.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_STATUS, nStatusId );
+        						}
+        					}
         					addFieldToUpdate(TableTodoItemsAdapter.TABLE_TODO_ITEMS_OBJECT_KEY, currentValues.getJSONObject(j), JSON_UPDATED_OBJECT_KEY);
         					if(currentValues.getJSONObject(j).getString("client_id").equals("null"))
         					{
