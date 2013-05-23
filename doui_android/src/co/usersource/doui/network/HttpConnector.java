@@ -4,7 +4,7 @@
 package co.usersource.doui.network;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -36,11 +36,10 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Toast;
 
 /**
- * @author rsh
- * 
+ * @author rsh This class intended to provide HTTP transport for sync routines.
+ *         This class perform authentication against doui GAE service.
  */
 public class HttpConnector {
 
@@ -54,8 +53,52 @@ public class HttpConnector {
 	private DefaultHttpClient httpClient;
 	private Context applicationContext;
 	private String auth_token;
+	private IHttpConnectorAuthHandler httpConnectorAuthHandler;
+	private List<NameValuePair> params;
+	private IHttpRequestHandler httpRequestHandler;
 
-	public DefaultHttpClient getHttpClient() {
+	/**
+	 * @return the httpConnectorAuthHandler
+	 */
+	public synchronized IHttpConnectorAuthHandler getHttpConnectorAuthHandler() {
+		return httpConnectorAuthHandler;
+	}
+
+	/**
+	 * @param httpConnectorAuthHandler
+	 *            the httpConnectorAuthHandler to set
+	 */
+	public synchronized void setHttpConnectorAuthHandler(
+			IHttpConnectorAuthHandler httpConnectorAuthHandler) {
+		this.httpConnectorAuthHandler = httpConnectorAuthHandler;
+	}
+
+	/**
+	 * Check whether current instance of the connector has required cookies for
+	 * authentication.
+	 * 
+	 * @return the isAuthenticated
+	 */
+	public synchronized boolean isAuthenticated() {
+		boolean result = false;
+		for (Cookie cookie : getHttpClient().getCookieStore().getCookies()) {
+			Log.i(this.getClass().getName(),
+					"Found cookie: " + cookie.getName());
+			if (cookie.getName().equals("SACSID")
+					|| cookie.getName().equals("ACSID")) {
+				result = true;
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * Returns HTTP client used for transport routines. Creates new instance if
+	 * required.
+	 * 
+	 * @return HTTP client.
+	 */
+	private DefaultHttpClient getHttpClient() {
 		if (null == httpClient) {
 			httpClient = new DefaultHttpClient();
 		}
@@ -63,70 +106,57 @@ public class HttpConnector {
 	}
 
 	/**
+	 * Sends request for given URI with given parameters.
 	 * 
 	 * @param URI
 	 *            - URI for request.
 	 * @param params
 	 *            - parameters which must send to the server.
+	 * 
+	 * @param handler
+	 *            - handler to be used against response. This handler is
+	 *            responsible to parse returned JSON and perform some routines
+	 *            on it.
 	 * @return - answer from server in JSON format.
 	 * @throws IOException
 	 * @throws ParseException
 	 */
-	public JSONObject SendRequest(String URI, ArrayList<NameValuePair> params)
+	synchronized public void SendRequest(String URI,
+			List<NameValuePair> params, IHttpRequestHandler handler)
 			throws ParseException, IOException {
-		String URL = BASE_URL + URI + "?auth="
-				+ auth_token;
-		final HttpPost postRequest = new HttpPost(BASE_URL + URI + "?auth="
-				+ auth_token);
-		HttpEntity entity = null;
-		JSONObject result = null;
-
-		entity = new UrlEncodedFormEntity(params);
-		postRequest.addHeader(entity.getContentType());
-		postRequest.setEntity(entity);
-
-		final HttpParams HttpClientParams = getHttpClient().getParams();
-		HttpConnectionParams.setConnectionTimeout(HttpClientParams,
-				REGISTRATION_TIMEOUT);
-		HttpConnectionParams.setSoTimeout(HttpClientParams,
-				REGISTRATION_TIMEOUT);
-		ConnManagerParams.setTimeout(HttpClientParams, REGISTRATION_TIMEOUT);
-
-		final HttpResponse response = getHttpClient().execute(postRequest);
-
-		final String data = EntityUtils.toString(response.getEntity());
-		if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
-			try {
-				result = new JSONObject(data);
-			} catch (JSONException e) {
-				Log.v(this.getClass().getName(),
-						"Cannot parse json from server!!!");
-				e.printStackTrace();
-			}
-		}
-		return result;
+		this.params = params;
+		this.httpRequestHandler = handler;
+		new PerformRequestTask().execute(URI);
 	}
 
-	public boolean authenticate(Context applicationContext, Account account) {
-		boolean result = false;
+	/**
+	 * Performs authentication routines for this connector.
+	 * @param applicationContext context where this connector executed.
+	 * @param account any account from AccountManager (now only google accounts supported).
+	 * */
+	public void authenticate(Context applicationContext, Account account) {
 		this.applicationContext = applicationContext;
 		AccountManager accountManager = AccountManager.get(applicationContext);
 		accountManager.getAuthToken(account, "ah", null, false,
 				new GetAuthTokenCallback(), null);
-		return result;
 	}
 
-	private boolean onGetAuthToken(Bundle bundle) {
-		this.auth_token = bundle.getString(AccountManager.KEY_AUTHTOKEN);
 
-		new GetCookieTask().execute(auth_token);
-		return false;
-	}
-
-	private class GetCookieTask extends AsyncTask<String, Integer, Boolean> {
-		protected Boolean doInBackground(String... tokens) {
+	/**
+	 * This class intended to be used as separate thread to perform request to server.
+	 * */
+	private class PerformRequestTask extends
+			AsyncTask<String, Integer, JSONObject> {
+		protected JSONObject doInBackground(String... uri) {
+			JSONObject result = null;
 			try {
-				// Don't follow redirects
+				final HttpPost postRequest = new HttpPost(BASE_URL + uri[0]);
+				HttpEntity entity = null;
+
+				entity = new UrlEncodedFormEntity(params);
+				postRequest.addHeader(entity.getContentType());
+				postRequest.setEntity(entity);
+
 				final HttpParams HttpClientParams = getHttpClient().getParams();
 				HttpConnectionParams.setConnectionTimeout(HttpClientParams,
 						REGISTRATION_TIMEOUT);
@@ -134,23 +164,56 @@ public class HttpConnector {
 						REGISTRATION_TIMEOUT);
 				ConnManagerParams.setTimeout(HttpClientParams,
 						REGISTRATION_TIMEOUT);
+
+				final HttpResponse response = getHttpClient().execute(
+						postRequest);
+
+				final String data = EntityUtils.toString(response.getEntity());
+				if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+					try {
+						result = new JSONObject(data);
+					} catch (JSONException e) {
+						Log.v(this.getClass().getName(),
+								"Cannot parse json from server!!!");
+						e.printStackTrace();
+					}
+				}
+			} catch (ClientProtocolException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			} finally {
+				getHttpClient().getParams().setBooleanParameter(
+						ClientPNames.HANDLE_REDIRECTS, true);
+			}
+			return result;
+		}
+
+		protected void onPostExecute(JSONObject result) {
+			if (httpRequestHandler != null) {
+				httpRequestHandler.onRequest(result);
+			}
+		}
+	}
+
+	/** This class intended to be used to obtain auth cookies for current instance. */
+	private class GetCookieTask extends AsyncTask<String, Integer, Boolean> {
+		protected Boolean doInBackground(String... tokens) {
+			try {
+				// Don't follow redirects
 				getHttpClient().getParams().setBooleanParameter(
 						ClientPNames.HANDLE_REDIRECTS, false);
 
-				HttpGet http_get = new HttpGet(AUTH_URI + "/?continue="
+				HttpGet http_get = new HttpGet(AUTH_URI + "?continue="
 						+ BASE_URL + "&auth=" + tokens[0]);
 				HttpResponse response;
 				response = getHttpClient().execute(http_get);
 				if (response.getStatusLine().getStatusCode() != 302) {
 					// Response should be a redirect
-					Log.e(this.getClass().getName(),
-							"response.getStatusLine().getStatusCode() != 302");
 					return false;
 				}
-				for (Cookie cookie : getHttpClient().getCookieStore()
-						.getCookies()) {
-					if (cookie.getName().equals("ACSID"))
-						return true;
+				if (isAuthenticated()) {
+					return true;
 				}
 			} catch (ClientProtocolException e) {
 				e.printStackTrace();
@@ -164,11 +227,17 @@ public class HttpConnector {
 		}
 
 		protected void onPostExecute(Boolean result) {
-			Toast.makeText(applicationContext, "Auth result: " + result,
-					Toast.LENGTH_LONG).show();
+			if (httpConnectorAuthHandler != null) {
+				if (isAuthenticated()) {
+					httpConnectorAuthHandler.onAuthSuccess();
+				} else {
+					httpConnectorAuthHandler.onAuthFail();
+				}
+			}
 		}
 	}
 
+	/** This class used to obtain auth data from AccountManager. */
 	private class GetAuthTokenCallback implements
 			AccountManagerCallback<Bundle> {
 		public void run(AccountManagerFuture<Bundle> result) {
@@ -179,7 +248,8 @@ public class HttpConnector {
 				if (null != intent) {
 					applicationContext.startActivity(intent);
 				} else {
-					onGetAuthToken(bundle);
+					String auth_token = bundle.getString(AccountManager.KEY_AUTHTOKEN);
+					new GetCookieTask().execute(auth_token);
 				}
 			} catch (OperationCanceledException e) {
 				e.printStackTrace();
