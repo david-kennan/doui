@@ -52,7 +52,6 @@ public class HttpConnector {
 
 	private DefaultHttpClient httpClient;
 	private Context applicationContext;
-	private String auth_token;
 	private IHttpConnectorAuthHandler httpConnectorAuthHandler;
 	private List<NameValuePair> params;
 	private IHttpRequestHandler httpRequestHandler;

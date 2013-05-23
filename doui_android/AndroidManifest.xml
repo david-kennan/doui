@@ -50,23 +50,6 @@
         </activity>
         <activity android:name=".gui.DouiHelpActivity" android:label="@string/helpActivityTitle"></activity>
         
-        <activity
-            android:name=".sync.authentification.AuthenticatorActivity"
-            android:label="@string/login_activity_message"
-            android:theme="@android:style/Theme.Dialog"
-            android:excludeFromRecents="true"
-            >
-        </activity>
-        
-        <service android:name=".sync.authentification.AuthenticationService" android:exported="true">
-            <intent-filter>
-                <action android:name="android.accounts.AccountAuthenticator" />
-            </intent-filter>
-            <meta-data
-                android:name="android.accounts.AccountAuthenticator"
-                android:resource="@xml/authenticator" />
-        </service>
-        
         <service
             android:name=".sync.SyncService"
             android:exported="true">

@@ -25,7 +25,8 @@ import co.usersource.doui.DouiContentProvider;
 import co.usersource.doui.database.adapters.TableTodoCategoriesAdapter;
 import co.usersource.doui.database.adapters.TableTodoItemsAdapter;
 import co.usersource.doui.database.adapters.TableTodoStatusAdapter;
-import co.usersource.doui.sync.util.NetworkUtilities;
+import co.usersource.doui.network.HttpConnector;
+import co.usersource.doui.network.IHttpRequestHandler;
 
 
 /**
@@ -70,29 +71,37 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter
     {
     	Log.v(TAG, "Start synchronization (onPerformSync)");
     	JSONObject request = new JSONObject();
-    	JSONObject response;
     	try
     	{
     		HttpConnector httpConnector = new HttpConnector();
     		httpConnector.authenticate(getContext(), account);
-    		request = getLocalData();
+    		request = getLocalData(TableTodoStatusAdapter.TABLE_TODO_STATUSES_LAST_UPDATE, DouiContentProvider.TODO_STATUSES_URI, SyncAdapter.JSON_UPDATED_TYPE_STATUS);
     		final ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
     		params.add(new BasicNameValuePair(SyncAdapter.JSON_REQUEST_PARAM_NAME, request.toString()));
-    		Thread.sleep(1000);
-    		JSONObject response = httpConnector.SendRequest("/sync", params);
-    		updateLocalDatabase(response);
+    		httpConnector.SendRequest("/sync", params, new IHttpRequestHandler() {
+				public void onRequest(JSONObject response) {
+					updateLocalDatabase(response);
+				}
+			});
+    		
     		
     		params.clear();
     		request = getLocalData(TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_LAST_UPDATE, DouiContentProvider.TODO_CATEGORIES_URI, SyncAdapter.JSON_UPDATED_TYPE_CATEGORIES);
     		params.add(new BasicNameValuePair(SyncAdapter.JSON_REQUEST_PARAM_NAME, request.toString()));
-    		response = NetworkUtilities.SendRequest("/sync", params);
-    		updateLocalDatabase(response);
+    		httpConnector.SendRequest("/sync", params, new IHttpRequestHandler() {
+				public void onRequest(JSONObject response) {
+					updateLocalDatabase(response);
+				}
+			});
     		
     		params.clear();
     		request = getLocalData(TableTodoItemsAdapter.TABLE_TODO_ITEMS_LAST_UPDATE, DouiContentProvider.TODO_ITEMS_URI, SyncAdapter.JSON_UPDATED_TYPE_ITEMS);
     		params.add(new BasicNameValuePair(SyncAdapter.JSON_REQUEST_PARAM_NAME, request.toString()));
-    		response = NetworkUtilities.SendRequest("/sync", params);
-    		updateLocalDatabase(response);
+    		httpConnector.SendRequest("/sync", params, new IHttpRequestHandler() {
+				public void onRequest(JSONObject response) {
+					updateLocalDatabase(response);
+				}
+			});
     		
     		SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
     		formater.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -125,27 +134,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter
     	answer = getContext().getContentResolver().query(uri, null, selection, null, null);
     	updatedObjects = createJSONData(answer, strType,  updatedObjects);
     	/////////////////////////////////////////////////////////////////////////////////////////////
-
-    	//Generate update data for categories
-    	if(mLastUpdateDate != null){
-    		selection =  TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_LAST_UPDATE + " > '" + mLastUpdateDate + "'";
-    	}
-    	else{
-    		selection = null;
-    	}
-    	answer = getContext().getContentResolver().query(DouiContentProvider.TODO_CATEGORIES_URI, null, selection, null, null);
-    	updatedObjects = createJSONData(answer, SyncAdapter.JSON_UPDATED_TYPE_CATEGORIES,  updatedObjects);
-    	///////////////////////////////////////////////////////////////////////////////////////////
-    	//Generate update data for todo items
-    	if(mLastUpdateDate != null){
-    		selection =  TableTodoItemsAdapter.TABLE_TODO_ITEMS_LAST_UPDATE + " > '" + mLastUpdateDate + "'";
-    	}
-    	else{
-    		selection = null;
-    	}
-    	answer = getContext().getContentResolver().query(DouiContentProvider.TODO_ITEMS_URI, null, selection, null, null);
-    	updatedObjects = createJSONData(answer, SyncAdapter.JSON_UPDATED_TYPE_ITEMS,  updatedObjects);
-    	///////////////////////////////////////////////////////////////////////////////////////////
     	
     	try{
     		if(mLastUpdateDate == null){

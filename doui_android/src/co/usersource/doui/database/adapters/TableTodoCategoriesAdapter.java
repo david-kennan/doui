@@ -23,13 +23,16 @@ public class TableTodoCategoriesAdapter implements ITableAdapter {
 	public static final String TABLE_TODO_CATEGORIES_LAST_UPDATE = "last_update";
 	/** Table with lists of the todo. Unique object key from server. */
 	public static final String TABLE_TODO_CATEGORIES_OBJECT_KEY = "object_key";
+	/** Table with lists of the todo. Flag indicates that record was deleted by user.*/
+	public static final String TABLE_TODO_CATEGORIES_IS_DELETED = "is_deleted";
 	/** Table with lists of the todo. Create statement. */
 	public static final String STR_CREATE_TABLE_TODO_CATEGORIES = "create table "
 			+ TABLE_TODO_CATEGORIES + "(" + TABLE_TODO_CATEGORIES_ID
 			+ " integer primary key autoincrement, " + TABLE_TODO_CATEGORIES_NAME
 			+ " TEXT,"
 			+ TABLE_TODO_CATEGORIES_LAST_UPDATE + " timestamp not null default current_timestamp, "
-			+ TABLE_TODO_CATEGORIES_OBJECT_KEY  + " TEXT "
+			+ TABLE_TODO_CATEGORIES_OBJECT_KEY  + " TEXT, "
+			+ TABLE_TODO_CATEGORIES_IS_DELETED + " int not null default 0 "
 			+");";
 
 	/** Table with lists of the todo. Create upodate trigger for update timestamp. */
@@ -94,6 +97,12 @@ public class TableTodoCategoriesAdapter implements ITableAdapter {
 	public Cursor query(String[] projection, String selection,
 			String[] selectionArgs, String sortOrder) {
 		Cursor result = null;
+		if(selection != null){
+			selection += " AND " + TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_IS_DELETED + " = 0 ";
+		}
+		else{
+			selection = TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_IS_DELETED + " = 0 ";
+		}
 		SQLiteDatabase database = this.sqliteOpenHelper.getReadableDatabase();
 		result = database.query(TABLE_TODO_CATEGORIES, projection, selection,
 				selectionArgs, null, null, sortOrder);

@@ -54,7 +54,7 @@ public class DouiTodoCategoriesManagerActivity extends Activity {
 				TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_ID };
 
 		String selectCondition = TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME
-				+ "<>?";
+				+ "<>? and " + TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_IS_DELETED + "= 0";
 		String[] selectConditionArgs = { TableTodoCategoriesAdapter.STR_NONE_CATEGORY_NAME };
 		ContentResolver cr = getContentResolver();
 		cursorToDoCategories = cr.query(
@@ -136,7 +136,9 @@ public class DouiTodoCategoriesManagerActivity extends Activity {
 							Uri updateUri = Uri
 									.parse(DouiContentProvider.TODO_CATEGORIES_URI
 											.toString() + "/" + itemId);
-							getContentResolver().delete(updateUri, null, null);
+							ContentValues valueForUpdate = new ContentValues();
+							valueForUpdate.put(TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_IS_DELETED, 1);
+							getContentResolver().update(updateUri, valueForUpdate, null, null);
 							fillList();
 						} else {
 							Toast toast = Toast
