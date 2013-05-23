@@ -402,6 +402,15 @@ public class DouiContentProvider extends ContentProvider {
 					selectConditions, selectConditionsArgs);
 		}
 			break;
+			
+		case TODO_STATUS_URI_ID:{
+			String selectConditions = TableTodoStatusAdapter.TABLE_TODO_STATUSES_ID
+					+ "= ?";
+			String selectConditionsArgs[] = { uri.getLastPathSegment() };
+			douiSQLiteOpenHelper.getTableTodoStatusAdapter().update(values,
+					selectConditions, selectConditionsArgs);
+		}
+			break;
 
 		case TODO_CONTEXT_ITEM_URI_ID:
 		case TODO_CATEGORIES_ITEM_URI_ID:

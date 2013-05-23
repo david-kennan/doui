@@ -28,6 +28,8 @@ class Sync(webapp2.RequestHandler):
     
     JSON_UPDATED_OBJECTS = "updatedObjects"
     
+    JSON_UPDATE_OBJECT_CLIENT_ID = "client_id"
+    
     def get(self):
         self.response.out.write(self.proceedRequest(self.request))
     
@@ -44,60 +46,60 @@ class Sync(webapp2.RequestHandler):
             requestObject = json.loads(strJsonData)
         else:
             requestObject = {}
-            requestObject[Sync.JSON_LAST_UPDATE_TIMESTAMP] = datetime.datetime(2000, 01, 01, 0, 0)
+            requestObject[Sync.JSON_LAST_UPDATE_TIMESTAMP] = "2000-01-01 00:00:00"
             requestObject[Sync.JSON_UPDATED_OBJECTS] = []
         return self.proceedRequestObject(requestObject)
 
     def proceedRequestObject(self, requestObject):
         logging.debug("proceedRequestObject( requestObject )")
         lastUpdateTimestamp = requestObject[Sync.JSON_LAST_UPDATE_TIMESTAMP]
-        serverObjects = self.getServerObjectsAfterLastUpdate(lastUpdateTimestamp)
-        for updateObject in requestObject[Sync.JSON_UPDATED_OBJECTS]:
-            for updateValues in updateObject[Sync.JSON_UPDATED_OBJECT_VALUES]: 
-                if (None == updateValues[Sync.JSON_UPDATED_OBJECT_KEY]):
-                    objectModel = Sync.SYNC_OBJECTS_DICT[updateObject[Sync.JSON_UPDATED_OBJECT_TYPE]]
-                    dbObject = objectModel()
-                    dbObject.loadAttrFromDict(updateValues)
-                    # TODO: compare it with datastore object if it is exists.
-                    updateValues[Sync.JSON_UPDATED_OBJECT_KEY] = str(db.put(dbObject))
+        updateObject = requestObject[Sync.JSON_UPDATED_OBJECTS][0]
+        serverObjects = self.getServerObjectsAfterLastUpdate(lastUpdateTimestamp, updateObject[Sync.JSON_UPDATED_OBJECT_TYPE])
+        for updateValues in updateObject[Sync.JSON_UPDATED_OBJECT_VALUES]: 
+            if (None == updateValues[Sync.JSON_UPDATED_OBJECT_KEY]):
+                objectModel = Sync.SYNC_OBJECTS_DICT[updateObject[Sync.JSON_UPDATED_OBJECT_TYPE]]
+                dbObject = objectModel()
+                dbObject.loadAttrFromDict(updateValues)
+                # TODO: compare it with datastore object if it is exists.
+                updateValues[Sync.JSON_UPDATED_OBJECT_KEY] = str(db.put(dbObject))
+            else:
+                KeyForUpdate = db.get(updateValues[Sync.JSON_UPDATED_OBJECT_KEY])
+                if (updateObject[Sync.JSON_UPDATED_OBJECT_TYPE] == "DouiTodoItem"):
+                    KeyForUpdate.title = updateValues["title"]
+                    KeyForUpdate.body = updateValues["body"]
+                    KeyForUpdate.fk_category = updateValues["fk_category"]
+                    KeyForUpdate.fk_status = updateValues["fk_status"]
                 else:
-                    KeyForUpdate = db.get(updateValues[Sync.JSON_UPDATED_OBJECT_KEY])
-                    if (updateObject[Sync.JSON_UPDATED_OBJECT_TYPE] == "DouiTodoItem"):
-                        KeyForUpdate.title = updateValues["title"]
-                        KeyForUpdate.body = updateValues["body"]
-                        KeyForUpdate.fk_category = updateValues["fk_category"]
-                        KeyForUpdate.fk_status = updateValues["fk_status"]
-                    else:
-                        KeyForUpdate.name = updateValues["name"]
-                    KeyForUpdate.put()
+                    KeyForUpdate.name = updateValues["name"]
+                KeyForUpdate.put()
 
         values = {}
         values[Sync.JSON_UPDATED_OBJECT_VALUES] = []
-        for objectType in serverObjects.keys():
-            for objectValue in serverObjects[objectType].values():
-                values[Sync.JSON_UPDATED_OBJECT_TYPE] = objectType
-                values[Sync.JSON_UPDATED_OBJECT_VALUES].append(objectValue)
-        requestObject[Sync.JSON_UPDATED_OBJECTS].append(values);
+        values[Sync.JSON_UPDATED_OBJECT_TYPE] = updateObject[Sync.JSON_UPDATED_OBJECT_TYPE]
+        for objectValue in serverObjects.values():
+            values[Sync.JSON_UPDATED_OBJECT_VALUES].append(objectValue)
+        requestObject[Sync.JSON_UPDATED_OBJECTS].append(values.copy())
+        logging.info(json.dumps(requestObject, cls = doui_model.jsonEncoder))
         return json.dumps(requestObject, cls = doui_model.jsonEncoder)
     
-    def getServerObjectsAfterLastUpdate(self, lastUpdateTimestamp):
+    def getServerObjectsAfterLastUpdate(self, lastUpdateTimestamp, TypeOfObjects):
         """This method return a dictionary of objects which was updated after last device update time"""
         logging.debug("getServerObjectsAfterLastUpdate( lastUpdateTimestamp )")
         result = {};
-        for objectType in Sync.SYNC_OBJECTS_DICT.keys():
-            result[objectType] = self.getServerObjectsAfterLastUpdateByType(lastUpdateTimestamp, Sync.SYNC_OBJECTS_DICT[objectType])
-        return result
-            
-    def getServerObjectsAfterLastUpdateByType(self, lastUpdateTimestamp, objectModel):
-        """ This method returns a dictionary with objects for concrete type, which was updated after last update"""
-        result = {}
-        objectModelQuery = objectModel.all()
+        objectModelQuery = Sync.SYNC_OBJECTS_DICT[TypeOfObjects].all()
         objectModelQuery.filter("updateTimestamp > ", datetime.strptime(lastUpdateTimestamp, "%Y-%m-%d %H:%M:%S"))
         """objectModelQuery.filter("userId = ", users.get_current_user().user_id())"""
         for datastoreObject in objectModelQuery.run():
             result[datastoreObject.key().id_or_name()] = db.to_dict(datastoreObject)
             result[datastoreObject.key().id_or_name()][Sync.JSON_UPDATED_OBJECT_KEY] = str(datastoreObject.key())
+            result[datastoreObject.key().id_or_name()][Sync.JSON_UPDATE_OBJECT_CLIENT_ID] = "null"
         return result
+
+        
+        
+        
+        
+        
         
         
         
