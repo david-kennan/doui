@@ -10,7 +10,7 @@ handlers:
 
 - url: /.*
   script: web_gui.application
-
+  login: required
 
 libraries:
 - name: webapp2

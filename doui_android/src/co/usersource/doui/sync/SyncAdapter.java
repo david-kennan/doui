@@ -25,6 +25,7 @@ import co.usersource.doui.DouiContentProvider;
 import co.usersource.doui.database.adapters.TableTodoCategoriesAdapter;
 import co.usersource.doui.database.adapters.TableTodoItemsAdapter;
 import co.usersource.doui.database.adapters.TableTodoStatusAdapter;
+import co.usersource.doui.network.HttpConnector;
 import co.usersource.doui.sync.util.NetworkUtilities;
 
 
@@ -72,10 +73,13 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter
     	JSONObject request = new JSONObject();
     	try
     	{
+    		HttpConnector httpConnector = new HttpConnector();
+    		httpConnector.authenticate(getContext(), account);
     		request = getLocalData();
     		final ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
     		params.add(new BasicNameValuePair(SyncAdapter.JSON_REQUEST_PARAM_NAME, request.toString()));
-    		JSONObject response = NetworkUtilities.SendRequest("/sync", params);
+    		Thread.sleep(1000);
+    		JSONObject response = httpConnector.SendRequest("/sync", params);
     		updateLocalDatabase(response);
     		SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
     		formater.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -84,6 +88,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter
     	catch (IOException e) 
 		{
 			Log.v(TAG, "I/O excecption!!!");
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
     }
@@ -161,7 +168,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter
     	JSONObject updateObjectValues = new JSONObject();
     	JSONArray updateObjectItems = new JSONArray();
     	JSONObject currentObject = new JSONObject();
-    	
     	
     	if(data != null)
     	{

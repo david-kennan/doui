@@ -1,7 +1,14 @@
 
 package co.usersource.doui.sync.util;
 
+import android.accounts.AccountManager;
+import android.accounts.AccountManagerCallback;
+import android.accounts.AccountManagerFuture;
+import android.accounts.AuthenticatorException;
+import android.accounts.OperationCanceledException;
 import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import co.usersource.doui.sync.authentification.AuthenticatorActivity;
