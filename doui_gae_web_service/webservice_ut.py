@@ -6,10 +6,7 @@ Created on May 6, 2013
 import unittest
 import urllib
 from sync import Sync
-from datetime import datetime
-import doui_model
 import json
-import httplib
 import cookielib
 import urllib2
 
@@ -33,14 +30,13 @@ class TestSyncRequests(unittest.TestCase):
     def testSendNotExistenObjectsForUpdate(self):
             
         dictUpdateObjects = {}
-        dictUpdateObjects[Sync.JSON_LAST_UPDATE_TIMESTAMP] = "21/11/06 16:30"
+        dictUpdateObjects[Sync.JSON_LAST_UPDATE_TIMESTAMP] = "2011-06-21 16:30:00"
         dictUpdateObjects[Sync.JSON_UPDATED_OBJECTS] = []
         
         dictObjSync = {}
         dictObjSync[Sync.JSON_UPDATED_OBJECT_TYPE] = "DouiTodoItem"
-        dictObjSync[Sync.JSON_UPDATED_OBJECT_TIME] = "21/11/06 17:30"
-        dictObjSync[Sync.JSON_UPDATED_OBJECT_KEY] = None
-        dictObjSync[Sync.JSON_UPDATED_OBJECT_VALUES] = {"title":"someTitle", "body":"some text in description (body)"}
+        dictObjSync[Sync.JSON_UPDATED_OBJECT_VALUES] = [] 
+        dictObjSync[Sync.JSON_UPDATED_OBJECT_VALUES].append({"title":"someTitle", "body":"some text in description (body)", "updateObjectTime":"21/11/06 17:30", "updateObjectKey":None})
         
         dictUpdateObjects[Sync.JSON_UPDATED_OBJECTS].append(dictObjSync)
         
@@ -51,6 +47,12 @@ class TestSyncRequests(unittest.TestCase):
         data_req = urllib2.Request(TestSyncRequests.GAE_URL + "/sync")
         data_req.add_data(params)
         self.opener.open(data_req)
+        
+    def testCallSyncWithoutParametrs(self):
+        data_req = urllib2.Request(TestSyncRequests.GAE_URL + "/sync")
+        self.opener.open(data_req)
+        
+        
         
 
 if __name__ == "__main__":

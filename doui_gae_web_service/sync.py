@@ -44,11 +44,20 @@ class Sync(webapp2.RequestHandler):
         logging.info("Received JSON string: " + strJsonData)
         if((None != strJsonData) and (strJsonData != '')):
             requestObject = json.loads(strJsonData)
+            result = self.proceedRequestObject(requestObject)  
         else:
-            requestObject = {}
-            requestObject[Sync.JSON_LAST_UPDATE_TIMESTAMP] = "2000-01-01 00:00:00"
-            requestObject[Sync.JSON_UPDATED_OBJECTS] = []
-        return self.proceedRequestObject(requestObject)
+            values = {}
+            jsonAnswer = {}
+            jsonAnswer[Sync.JSON_UPDATED_OBJECTS] = []
+            for objectType in Sync.SYNC_OBJECTS_DICT.keys():
+                values[Sync.JSON_UPDATED_OBJECT_VALUES] = []
+                values[Sync.JSON_UPDATED_OBJECT_TYPE] = objectType 
+                serverObjects = self.getServerObjectsAfterLastUpdate("2000-01-01 00:00:00", objectType)
+                for objectValue in serverObjects.values(): 
+                    values[Sync.JSON_UPDATED_OBJECT_VALUES].append(objectValue)
+                jsonAnswer[Sync.JSON_UPDATED_OBJECTS].append(values.copy())
+                result = json.dumps(jsonAnswer, cls = doui_model.jsonEncoder)
+        return result
 
     def proceedRequestObject(self, requestObject):
         logging.debug("proceedRequestObject( requestObject )")
