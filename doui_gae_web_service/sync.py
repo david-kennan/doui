@@ -30,6 +30,9 @@ class Sync(webapp2.RequestHandler):
     
     JSON_UPDATE_OBJECT_CLIENT_ID = "client_id"
     
+    JSON_UPDATE_ITEM_FK_STATUS = "fk_status"
+    JSON_UPDATE_ITEM_FK_CATEGORY = "fk_category"
+    
     def get(self):
         self.response.out.write(self.proceedRequest(self.request))
     
@@ -52,33 +55,29 @@ class Sync(webapp2.RequestHandler):
 
     def proceedRequestObject(self, requestObject):
         logging.debug("proceedRequestObject( requestObject )")
-        lastUpdateTimestamp = requestObject[Sync.JSON_LAST_UPDATE_TIMESTAMP]
-        serverObjects = self.getServerObjectsAfterLastUpdate(lastUpdateTimestamp)
-        for updateObject in requestObject[Sync.JSON_UPDATED_OBJECTS]:
-            for updateValues in updateObject[Sync.JSON_UPDATED_OBJECT_VALUES]: 
-                if (None == updateValues[Sync.JSON_UPDATED_OBJECT_KEY]):
-                    objectModel = Sync.SYNC_OBJECTS_DICT[updateObject[Sync.JSON_UPDATED_OBJECT_TYPE]]
-                    dbObject = objectModel()
-                    dbObject.loadAttrFromDict(updateValues)
-                    # TODO: compare it with datastore object if it is exists.
-                    updateValues[Sync.JSON_UPDATED_OBJECT_KEY] = str(db.put(dbObject))
-                else:
-                    KeyForUpdate = db.get(updateValues[Sync.JSON_UPDATED_OBJECT_KEY])
-                    if (updateObject[Sync.JSON_UPDATED_OBJECT_TYPE] == "DouiTodoItem"):
-                        KeyForUpdate.title = updateValues["title"]
-                        KeyForUpdate.body = updateValues["body"]
-                        KeyForUpdate.fk_category = updateValues["fk_category"]
-                        KeyForUpdate.fk_status = updateValues["fk_status"]
-                    else:
-                        KeyForUpdate.name = updateValues["name"]
-                    KeyForUpdate.put()
-
+        serverObjects = self.getServerObjectsAfterLastUpdate(requestObject[Sync.JSON_LAST_UPDATE_TIMESTAMP])
+        
+        items = self.updateStatuses(requestObject)
+        for item in items:
+            serverObjects["DouiTodoStatus"].append(item.copy())
+        
+        items = self.updateCategories(requestObject)
+        for item in items:
+            serverObjects["DouiTodoCategories"].append(item.copy())
+        
+        items = self.updateItems(requestObject)
+        for item in items:
+            serverObjects["DouiTodoItem"].append(item.copy())
+        
+        
+        requestObject[Sync.JSON_UPDATED_OBJECTS] = []
+             
         values = {}
         values[Sync.JSON_UPDATED_OBJECT_VALUES] = []
         for objectType in serverObjects.keys():
             values[Sync.JSON_UPDATED_OBJECT_VALUES] = []
             values[Sync.JSON_UPDATED_OBJECT_TYPE] = objectType
-            for objectValue in serverObjects[objectType].values():
+            for objectValue in serverObjects[objectType]:
                 values[Sync.JSON_UPDATED_OBJECT_VALUES].append(objectValue)
             requestObject[Sync.JSON_UPDATED_OBJECTS].append(values.copy())
         logging.info(json.dumps(requestObject, cls = doui_model.jsonEncoder))
@@ -95,15 +94,81 @@ class Sync(webapp2.RequestHandler):
             
     def getServerObjectsAfterLastUpdateByType(self, lastUpdateTimestamp, objectModel):
         """ This method returns a dictionary with objects for concrete type, which was updated after last update"""
-        result = {}
+        result = []
+        item = {}
         objectModelQuery = objectModel.all()
         objectModelQuery.filter("updateTimestamp > ", datetime.strptime(lastUpdateTimestamp, "%Y-%m-%d %H:%M:%S:%f"))
         """objectModelQuery.filter("userId = ", users.get_current_user().user_id())"""
         for datastoreObject in objectModelQuery.run():
-            result[datastoreObject.key().id_or_name()] = db.to_dict(datastoreObject)
-            result[datastoreObject.key().id_or_name()][Sync.JSON_UPDATED_OBJECT_KEY] = str(datastoreObject.key())
-            result[datastoreObject.key().id_or_name()][Sync.JSON_UPDATE_OBJECT_CLIENT_ID] = "null"
+            item = db.to_dict(datastoreObject);
+            item[Sync.JSON_UPDATED_OBJECT_KEY] = str(datastoreObject.key())
+            item[Sync.JSON_UPDATE_OBJECT_CLIENT_ID] = "null"
+            result.append(item.copy())
         return result
         
+    def updateStatuses(self, requestObject):
+        result = []
+        valuesForUpdate = self.getObjectsByType(requestObject, "DouiTodoStatus")
+        for value in valuesForUpdate:
+            if(None == value[Sync.JSON_UPDATED_OBJECT_KEY]):
+                dbObject = Sync.SYNC_OBJECTS_DICT["DouiTodoStatus"]()
+                dbObject.loadAttrFromDict(value)
+                value[Sync.JSON_UPDATED_OBJECT_KEY] = str(db.put(dbObject))
+                result.append(value)
+                
+                requestItems = self.getObjectsByType(requestObject, "DouiTodoItem")
+                for item in requestItems:
+                    if(item[Sync.JSON_UPDATE_ITEM_FK_STATUS] == value[Sync.JSON_UPDATE_OBJECT_CLIENT_ID]):
+                        item[Sync.JSON_UPDATE_ITEM_FK_STATUS] = value[Sync.JSON_UPDATED_OBJECT_KEY]  
+            else:
+                KeyForUpdate = db.get(value[Sync.JSON_UPDATED_OBJECT_KEY])
+                KeyForUpdate.name = value["name"]
+                KeyForUpdate.put()
+                
+        requestObject[Sync.JSON_UPDATED_OBJECTS]
+        return result
+                
+    def updateCategories(self, requestObject):
+        result = []
+        valuesForUpdate = self.getObjectsByType(requestObject, "DouiTodoCategories")
+        for value in valuesForUpdate:
+            if(None == value[Sync.JSON_UPDATED_OBJECT_KEY]):
+                dbObject = Sync.SYNC_OBJECTS_DICT["DouiTodoCategories"]()
+                dbObject.loadAttrFromDict(value)
+                value[Sync.JSON_UPDATED_OBJECT_KEY] = str(db.put(dbObject))
+                result.append(value)
+                requestItems = self.getObjectsByType(requestObject, "DouiTodoItem")
+                for item in requestItems:
+                    if(item[Sync.JSON_UPDATE_ITEM_FK_CATEGORY] == value[Sync.JSON_UPDATE_OBJECT_CLIENT_ID]):
+                        item[Sync.JSON_UPDATE_ITEM_FK_CATEGORY] = value[Sync.JSON_UPDATED_OBJECT_KEY]
+            else:
+                KeyForUpdate = db.get(value[Sync.JSON_UPDATED_OBJECT_KEY])
+                KeyForUpdate.name = value["name"]
+                KeyForUpdate.put()
+        return result
         
+    def updateItems(self, requestObject):
+        result = []
+        valuesForUpdate = self.getObjectsByType(requestObject, "DouiTodoItem")
+        for value in valuesForUpdate:
+            if (None == value[Sync.JSON_UPDATED_OBJECT_KEY]):
+                dbObject = Sync.SYNC_OBJECTS_DICT["DouiTodoItem"]()
+                dbObject.loadAttrFromDict(value)
+                value[Sync.JSON_UPDATED_OBJECT_KEY] = str(db.put(dbObject))
+                result.append(value)
+            else:
+                KeyForUpdate = db.get(value[Sync.JSON_UPDATED_OBJECT_KEY])
+                KeyForUpdate.title = value["title"]
+                KeyForUpdate.body = value["body"]
+                KeyForUpdate.fk_category = value["fk_category"]
+                KeyForUpdate.fk_status = value["fk_status"]
+                KeyForUpdate.put()
+        return result
         
+    def getObjectsByType(self, requestObject, objectType):
+        result = []
+        for updateObject in requestObject[Sync.JSON_UPDATED_OBJECTS]:
+            if(updateObject[Sync.JSON_UPDATED_OBJECT_TYPE] == objectType):
+                result = updateObject[Sync.JSON_UPDATED_OBJECT_VALUES]
+                break
+        return result

@@ -295,11 +295,18 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 									.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY,
 											JSONObject.NULL);
 						} else {
-
-							currentObject
-									.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY,
-											getCategoryObjectKey(data.getInt(data
-													.getColumnIndex(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY))));
+							String categotyObjectKey = getCategoryObjectKey(data.getInt(data
+									.getColumnIndex(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY)));  
+							
+							if(categotyObjectKey != null && !categotyObjectKey.isEmpty())	{
+								currentObject
+								.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY, categotyObjectKey);
+							}else{
+								currentObject
+								.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY, data.getString(data
+									.getColumnIndex(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY)));
+							}
+							
 						}
 
 						if (data.getString(data
@@ -308,12 +315,20 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 									.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_STATUS,
 											JSONObject.NULL);
 						} else {
-							currentObject
-									.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_STATUS,
-											getStatusObjectKey(data.getInt(data
-													.getColumnIndex(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_STATUS))));
+							String statusObjectKey = getStatusObjectKey(data.getInt(data
+									.getColumnIndex(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_STATUS)));
+							
+							if(statusObjectKey != null && !statusObjectKey.isEmpty())
+							{
+								currentObject
+									.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_STATUS, statusObjectKey);
+							}else{
+								currentObject
+								.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_STATUS, data.getString(data
+									.getColumnIndex(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_STATUS)));
+							}
+							
 						}
-
 					}
 					updateObjectItems.put(currentObject);
 				}
