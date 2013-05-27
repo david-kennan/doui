@@ -131,8 +131,9 @@ class Sync(webapp2.RequestHandler):
                         item[Sync.JSON_UPDATE_ITEM_FK_STATUS] = value[Sync.JSON_UPDATED_OBJECT_KEY]  
             else:
                 KeyForUpdate = db.get(value[Sync.JSON_UPDATED_OBJECT_KEY])
-                KeyForUpdate.name = value["name"]
-                KeyForUpdate.put()
+                if(KeyForUpdate.lastUpdateTimestamp < datetime.strptime(value[Sync.JSON_LAST_UPDATE_TIMESTAMP], "%Y-%m-%d %H:%M:%S")):
+                    KeyForUpdate.name = value["name"]
+                    KeyForUpdate.put()
                 
         requestObject[Sync.JSON_UPDATED_OBJECTS]
         return result
@@ -163,10 +164,11 @@ class Sync(webapp2.RequestHandler):
                         item[Sync.JSON_UPDATE_ITEM_FK_CATEGORY] = value[Sync.JSON_UPDATED_OBJECT_KEY]
             else:
                 KeyForUpdate = db.get(value[Sync.JSON_UPDATED_OBJECT_KEY])
-                KeyForUpdate.name = value["name"]
-                KeyForUpdate.is_deleted = value["is_deleted"]
-                KeyForUpdate.put()
-                result.append(value)
+                if(KeyForUpdate.lastUpdateTimestamp < datetime.strptime(value[Sync.JSON_LAST_UPDATE_TIMESTAMP], "%Y-%m-%d %H:%M:%S")):
+                    KeyForUpdate.name = value["name"]
+                    KeyForUpdate.is_deleted = value["is_deleted"]
+                    KeyForUpdate.put()
+                    result.append(value)
         return result
         
     def updateItems(self, requestObject):
@@ -180,11 +182,12 @@ class Sync(webapp2.RequestHandler):
                 result.append(value)
             else:
                 KeyForUpdate = db.get(value[Sync.JSON_UPDATED_OBJECT_KEY])
-                KeyForUpdate.title = value["title"]
-                KeyForUpdate.body = value["body"]
-                KeyForUpdate.fk_category = value["fk_category"]
-                KeyForUpdate.fk_status = value["fk_status"]
-                KeyForUpdate.put()
+                if(KeyForUpdate.lastUpdateTimestamp < datetime.strptime(value[Sync.JSON_LAST_UPDATE_TIMESTAMP], "%Y-%m-%d %H:%M:%S")):
+                    KeyForUpdate.title = value["title"]
+                    KeyForUpdate.body = value["body"]
+                    KeyForUpdate.fk_category = value["fk_category"]
+                    KeyForUpdate.fk_status = value["fk_status"]
+                    KeyForUpdate.put()
         return result
         
     def getObjectsByType(self, requestObject, objectType):

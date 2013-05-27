@@ -37,7 +37,14 @@ class DouiSyncEntity(db.Model):
             if isinstance(b, (list, tuple)):
                 setattr(self, a, [DouiSyncEntity(x) if isinstance(x, dict) else x for x in b])
             else:
-                setattr(self, a, DouiSyncEntity(b) if isinstance(b, dict) else b)
+                if isinstance(b, dict):
+                    value =  DouiSyncEntity(b)
+                else:
+                    if(a == "lastUpdateTimestamp"):
+                        value = datetime.datetime.strptime(b, "%Y-%m-%d %H:%M:%S")
+                    else:
+                        value = b
+                setattr(self, a, value)
         
 class DouiTodoItem(DouiSyncEntity):
     """Datastorage entity for Doui todo item"""
@@ -45,13 +52,16 @@ class DouiTodoItem(DouiSyncEntity):
     body = db.TextProperty()
     fk_category = db.StringProperty()
     fk_status = db.StringProperty()
+    lastUpdateTimestamp = db.DateTimeProperty()
     
 class DouiTodoCategories(DouiSyncEntity):
     """Datastorage entity for Doui todo categories"""
     name = db.StringProperty()
     is_deleted = db.StringProperty()
+    lastUpdateTimestamp = db.DateTimeProperty()
     
 class DouiTodoStatuses(DouiSyncEntity):
     """Datastorage entity for Doui todo categories"""
     name = db.StringProperty()
+    lastUpdateTimestamp = db.DateTimeProperty()
 
