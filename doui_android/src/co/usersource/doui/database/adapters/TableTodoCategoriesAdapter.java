@@ -97,12 +97,6 @@ public class TableTodoCategoriesAdapter implements ITableAdapter {
 	public Cursor query(String[] projection, String selection,
 			String[] selectionArgs, String sortOrder) {
 		Cursor result = null;
-		if(selection != null){
-			selection += " AND " + TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_IS_DELETED + " = 0 ";
-		}
-		else{
-			selection = TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_IS_DELETED + " = 0 ";
-		}
 		SQLiteDatabase database = this.sqliteOpenHelper.getReadableDatabase();
 		result = database.query(TABLE_TODO_CATEGORIES, projection, selection,
 				selectionArgs, null, null, sortOrder);

@@ -49,7 +49,7 @@ class Sync(webapp2.RequestHandler):
             requestObject = json.loads(strJsonData)
         else:
             requestObject = {}
-            requestObject[Sync.JSON_LAST_UPDATE_TIMESTAMP] = "2000-01-01 00:00:00"
+            requestObject[Sync.JSON_LAST_UPDATE_TIMESTAMP] = "2000-01-01 00:00:00:00"
             requestObject[Sync.JSON_UPDATED_OBJECTS] = []
         return self.proceedRequestObject(requestObject)
 
@@ -144,7 +144,9 @@ class Sync(webapp2.RequestHandler):
             else:
                 KeyForUpdate = db.get(value[Sync.JSON_UPDATED_OBJECT_KEY])
                 KeyForUpdate.name = value["name"]
+                KeyForUpdate.is_deleted = value["is_deleted"]
                 KeyForUpdate.put()
+                result.append(value)
         return result
         
     def updateItems(self, requestObject):

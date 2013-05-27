@@ -78,7 +78,7 @@ public class DouiMainActivity extends ListActivity {
 						+ "' as TABLE_NAME",
 				TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_ID };
 		String selectCondition = TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME
-				+ "<>?";
+				+ "<>? and " + TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_IS_DELETED + " = 0 ";
 		String[] selectConditionArgs = { TableTodoCategoriesAdapter.STR_NONE_CATEGORY_NAME };
 
 		cursorToDoCategories = cr.query(

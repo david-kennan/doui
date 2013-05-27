@@ -262,6 +262,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 										+ TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_ID,
 										data.getString(data
 												.getColumnIndex(TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_ID)));
+						currentObject.put(TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_IS_DELETED, 
+								          data.getString(data.getColumnIndex(TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_IS_DELETED)));
 					}
 
 					if (type.equals(SyncAdapter.JSON_UPDATED_TYPE_ITEMS)) {
@@ -371,6 +373,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 								.getJSONObject(i)
 								.get(JSON_UPDATED_OBJECT_TYPE)
 								.equals(SyncAdapter.JSON_UPDATED_TYPE_CATEGORIES)) {
+							addFieldToUpdate(TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_IS_DELETED, 
+									         currentValues.getJSONObject(j), null);
 							addFieldToUpdate(
 									TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_OBJECT_KEY,
 									currentValues.getJSONObject(j),
@@ -550,6 +554,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 						}
 					}
 				}
+				cleanDeletedCategories();
 			} catch (JSONException e) {
 				Log.v(TAG, "Data from server is not valid!!");
 				e.printStackTrace();
@@ -585,6 +590,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
 	}
 
+	/**
+	 * This method gets status object key by his ID
+	 * @param nStatusID status ID
+	 * @return status object key or empty string if status not found
+	 */
 	private String getStatusObjectKey(int nStatusID) {
 		String strResult = "";
 		Cursor data;
@@ -601,6 +611,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
 	}
 
+	/**
+	 * This method gets category object key by his ID
+	 * @param nCategoryID category ID
+	 * @return category object key or empty string if category not found.
+	 */
 	private String getCategoryObjectKey(int nCategoryID) {
 		String strResult = "";
 		Cursor data;
@@ -616,6 +631,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 		return strResult;
 	}
 
+	/**
+	 * This method gets category id by his object key
+	 * @param strObjectKey category object key
+	 * @return category ID or -1 if category not found
+	 */
 	private int getCategoryIDByObjectKey(String strObjectKey) {
 		int nResult = -1;
 		Cursor data;
@@ -632,6 +652,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 		return nResult;
 	}
 
+	/**
+	 * This method gets status id by his object_key
+	 * @param strObjectKey  status object key 
+	 * @return status id or -1 if status not found
+	 */
 	private int getStatusIDByObjectKey(String strObjectKey) {
 		int nResult = -1;
 		Cursor data;
@@ -646,5 +671,14 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 							.getColumnIndex(TableTodoStatusAdapter.TABLE_TODO_STATUSES_ID));
 		}
 		return nResult;
+	}
+	
+	/**
+	 * This method cleans categories marked as deleted
+	 */
+	private void cleanDeletedCategories()
+	{
+		String where = TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_IS_DELETED + " = 1";
+		getContext().getContentResolver().delete(DouiContentProvider.TODO_CATEGORIES_URI, where, null);
 	}
 }

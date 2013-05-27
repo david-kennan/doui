@@ -49,6 +49,7 @@ class DouiTodoItem(DouiSyncEntity):
 class DouiTodoCategories(DouiSyncEntity):
     """Datastorage entity for Doui todo categories"""
     name = db.StringProperty()
+    is_deleted = db.StringProperty()
     
 class DouiTodoStatuses(DouiSyncEntity):
     """Datastorage entity for Doui todo categories"""

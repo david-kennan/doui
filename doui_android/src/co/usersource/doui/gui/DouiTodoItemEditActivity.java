@@ -242,7 +242,7 @@ public class DouiTodoItemEditActivity extends Activity {
 					TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_ID,
 					TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME };
 			String selection = TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME
-					+ "=?";
+					+ "=? ";
 			String selectionArgs[] = { itemCategoryName };
 			Cursor cursor = getContentResolver().query(uriList, listProperties,
 					selection, selectionArgs, null);
@@ -448,7 +448,8 @@ public class DouiTodoItemEditActivity extends Activity {
 		String[] projection = {
 				TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME,
 				TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_ID };
-		Cursor cursor = getContentResolver().query(uriList, projection, null,
+		String selectionCondition = TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_IS_DELETED + " = 0 ";
+		Cursor cursor = getContentResolver().query(uriList, projection, selectionCondition,
 				null, TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME);
 		while (!cursor.isLast()) {
 			cursor.moveToNext();
