@@ -5,6 +5,7 @@ import webapp2
 
 import doui_model
 from google.appengine.ext import db
+from google.appengine.api import users
 from datetime import datetime
 
 
@@ -98,7 +99,7 @@ class Sync(webapp2.RequestHandler):
         item = {}
         objectModelQuery = objectModel.all()
         objectModelQuery.filter("updateTimestamp > ", datetime.strptime(lastUpdateTimestamp, "%Y-%m-%d %H:%M:%S:%f"))
-        """objectModelQuery.filter("userId = ", users.get_current_user().user_id())"""
+        objectModelQuery.filter("userId = ", users.get_current_user().user_id())
         for datastoreObject in objectModelQuery.run():
             item = db.to_dict(datastoreObject);
             item[Sync.JSON_UPDATED_OBJECT_KEY] = str(datastoreObject.key())
@@ -116,11 +117,13 @@ class Sync(webapp2.RequestHandler):
                     if(len(entity) > 0):
                         value[Sync.JSON_UPDATED_OBJECT_KEY] = str(entity[0].key())
                     else:
-                        dbObject = Sync.SYNC_OBJECTS_DICT["DouiTodoStatus"]()
+                        dbObject = Sync.SYNC_OBJECTS_DICT["DouiTodoStatus"](user = users.get_current_user(),
+                                                                            userId = users.get_current_user().user_id())
                         dbObject.loadAttrFromDict(value)
                         value[Sync.JSON_UPDATED_OBJECT_KEY] = str(db.put(dbObject))
                 else:
-                    dbObject = Sync.SYNC_OBJECTS_DICT["DouiTodoStatus"]()
+                    dbObject = Sync.SYNC_OBJECTS_DICT["DouiTodoStatus"](user = users.get_current_user(),
+                                                                        userId = users.get_current_user().user_id())
                     dbObject.loadAttrFromDict(value)
                     value[Sync.JSON_UPDATED_OBJECT_KEY] = str(db.put(dbObject))
                 
@@ -149,11 +152,13 @@ class Sync(webapp2.RequestHandler):
                         value[Sync.JSON_UPDATED_OBJECT_KEY] = str(entity[0].key()) 
                         value["is_deleted"] = entity[0].is_deleted
                     else:
-                        dbObject = Sync.SYNC_OBJECTS_DICT["DouiTodoCategories"]()
+                        dbObject = Sync.SYNC_OBJECTS_DICT["DouiTodoCategories"](user = users.get_current_user(),
+                                                                                userId = users.get_current_user().user_id())
                         dbObject.loadAttrFromDict(value)
                         value[Sync.JSON_UPDATED_OBJECT_KEY] = str(db.put(dbObject))
                 else:
-                    dbObject = Sync.SYNC_OBJECTS_DICT["DouiTodoCategories"]()
+                    dbObject = Sync.SYNC_OBJECTS_DICT["DouiTodoCategories"](user = users.get_current_user(),
+                                                                            userId = users.get_current_user().user_id())
                     dbObject.loadAttrFromDict(value)
                     value[Sync.JSON_UPDATED_OBJECT_KEY] = str(db.put(dbObject))
                 
@@ -176,7 +181,8 @@ class Sync(webapp2.RequestHandler):
         valuesForUpdate = self.getObjectsByType(requestObject, "DouiTodoItem")
         for value in valuesForUpdate:
             if (None == value[Sync.JSON_UPDATED_OBJECT_KEY]):
-                dbObject = Sync.SYNC_OBJECTS_DICT["DouiTodoItem"]()
+                dbObject = Sync.SYNC_OBJECTS_DICT["DouiTodoItem"](user = users.get_current_user(),
+                                                                  userId = users.get_current_user().user_id())
                 dbObject.loadAttrFromDict(value)
                 value[Sync.JSON_UPDATED_OBJECT_KEY] = str(db.put(dbObject))
                 result.append(value)
@@ -206,8 +212,10 @@ class Sync(webapp2.RequestHandler):
         return (name in defObjects)
 
     def getObjectByName(self, objectType, name):
-        objectModel = Sync.SYNC_OBJECTS_DICT[objectType]().all()
+        objectModel = Sync.SYNC_OBJECTS_DICT[objectType](user = users.get_current_user(),
+                                                         userId = users.get_current_user().user_id()).all()
         objectModel.filter("name = ", name )
+        objectModel.filter("userId = ", users.get_current_user().user_id())
         entity = objectModel.fetch(1)
         return entity 
         
