@@ -3,17 +3,22 @@ import logging
 import json
 import webapp2
 
-import doui_model
 from google.appengine.ext import db
 from google.appengine.api import users
 from datetime import datetime
 
+'''local import'''
+import doui_model
+from DouiTodoStatuses import DouiTodoStatus
+from DouiTodoCategory import DouiTodoCategory
+from DouiTodoItem import DouiTodoItem
+
 
 class Sync(webapp2.RequestHandler):
 
-    SYNC_OBJECTS_DICT = {"DouiTodoItem":doui_model.DouiTodoItem,
-                         "DouiTodoCategories": doui_model.DouiTodoCategories,
-                         "DouiTodoStatus": doui_model.DouiTodoStatuses}
+    SYNC_OBJECTS_DICT = {"DouiTodoItem": DouiTodoItem,
+                         "DouiTodoCategories": DouiTodoCategory,
+                         "DouiTodoStatus": DouiTodoStatus}
 
     JSON_REQUEST_PARAM_NAME = "jsonData"
     
@@ -111,77 +116,47 @@ class Sync(webapp2.RequestHandler):
         result = []
         valuesForUpdate = self.getObjectsByType(requestObject, "DouiTodoStatus")
         for value in valuesForUpdate:
+            status = DouiTodoStatus(user = users.get_current_user(), userId = users.get_current_user().user_id())
             if(None == value[Sync.JSON_UPDATED_OBJECT_KEY]):
-                entity = self.getObjectByName("DouiTodoStatus", value["name"])
-                if(len(entity) > 0):
-                    value[Sync.JSON_UPDATED_OBJECT_KEY] = str(entity[0].key())
-                else:
-                    dbObject = Sync.SYNC_OBJECTS_DICT["DouiTodoStatus"](user = users.get_current_user(),
-                                                                        userId = users.get_current_user().user_id())
-                    dbObject.loadAttrFromDict(value)
-                    value[Sync.JSON_UPDATED_OBJECT_KEY] = str(db.put(dbObject))
-                
-                result.append(value)
+                status.createStatus(value)
                 requestItems = self.getObjectsByType(requestObject, "DouiTodoItem")
                 for item in requestItems:
                     if(item[Sync.JSON_UPDATE_ITEM_FK_STATUS] == value[Sync.JSON_UPDATE_OBJECT_CLIENT_ID]):
-                        item[Sync.JSON_UPDATE_ITEM_FK_STATUS] = value[Sync.JSON_UPDATED_OBJECT_KEY]  
+                        item[Sync.JSON_UPDATE_ITEM_FK_STATUS] = value[Sync.JSON_UPDATED_OBJECT_KEY]
             else:
-                KeyForUpdate = db.get(value[Sync.JSON_UPDATED_OBJECT_KEY])
-                if(KeyForUpdate.lastUpdateTimestamp < datetime.strptime(value[Sync.JSON_LAST_UPDATE_TIMESTAMP], "%Y-%m-%d %H:%M:%S")):
-                    KeyForUpdate.name = value["name"]
-                    KeyForUpdate.put()
-                
-        requestObject[Sync.JSON_UPDATED_OBJECTS]
+                status.updateStatus(value)
+            result.append(value)
+
         return result
                 
     def updateCategories(self, requestObject):
         result = []
         valuesForUpdate = self.getObjectsByType(requestObject, "DouiTodoCategories")
         for value in valuesForUpdate:
+            category = DouiTodoCategory(user = users.get_current_user(), 
+                                        userId = users.get_current_user().user_id())
             if(None == value[Sync.JSON_UPDATED_OBJECT_KEY]):
-                entity = self.getObjectByName("DouiTodoCategories", value["name"])
-                if(len(entity) > 0):
-                    value[Sync.JSON_UPDATED_OBJECT_KEY] = str(entity[0].key()) 
-                    value["is_deleted"] = entity[0].is_deleted
-                else:
-                    dbObject = Sync.SYNC_OBJECTS_DICT["DouiTodoCategories"](user = users.get_current_user(),
-                                                                            userId = users.get_current_user().user_id())
-                    dbObject.loadAttrFromDict(value)
-                    value[Sync.JSON_UPDATED_OBJECT_KEY] = str(db.put(dbObject))
-                
-                result.append(value)
+                category.createCategory(value)
                 requestItems = self.getObjectsByType(requestObject, "DouiTodoItem")
                 for item in requestItems:
                     if(item[Sync.JSON_UPDATE_ITEM_FK_CATEGORY] == value[Sync.JSON_UPDATE_OBJECT_CLIENT_ID]):
                         item[Sync.JSON_UPDATE_ITEM_FK_CATEGORY] = value[Sync.JSON_UPDATED_OBJECT_KEY]
             else:
-                KeyForUpdate = db.get(value[Sync.JSON_UPDATED_OBJECT_KEY])
-                if(KeyForUpdate.lastUpdateTimestamp < datetime.strptime(value[Sync.JSON_LAST_UPDATE_TIMESTAMP], "%Y-%m-%d %H:%M:%S")):
-                    KeyForUpdate.name = value["name"]
-                    KeyForUpdate.is_deleted = value["is_deleted"]
-                    KeyForUpdate.put()
-                    result.append(value)
+                category.updateCategory(value)
+            result.append(value)
+
         return result
         
     def updateItems(self, requestObject):
         result = []
         valuesForUpdate = self.getObjectsByType(requestObject, "DouiTodoItem")
         for value in valuesForUpdate:
+            item = DouiTodoItem(user = users.get_current_user(), userId = users.get_current_user().user_id())
             if (None == value[Sync.JSON_UPDATED_OBJECT_KEY]):
-                dbObject = Sync.SYNC_OBJECTS_DICT["DouiTodoItem"](user = users.get_current_user(),
-                                                                  userId = users.get_current_user().user_id())
-                dbObject.loadAttrFromDict(value)
-                value[Sync.JSON_UPDATED_OBJECT_KEY] = str(db.put(dbObject))
+                item.createItem(value)
                 result.append(value)
             else:
-                KeyForUpdate = db.get(value[Sync.JSON_UPDATED_OBJECT_KEY])
-                if(KeyForUpdate.lastUpdateTimestamp < datetime.strptime(value[Sync.JSON_LAST_UPDATE_TIMESTAMP], "%Y-%m-%d %H:%M:%S")):
-                    KeyForUpdate.title = value["title"]
-                    KeyForUpdate.body = value["body"]
-                    KeyForUpdate.fk_category = value["fk_category"]
-                    KeyForUpdate.fk_status = value["fk_status"]
-                    KeyForUpdate.put()
+                item.updateItem(value)
         return result
         
     def getObjectsByType(self, requestObject, objectType):
@@ -191,13 +166,5 @@ class Sync(webapp2.RequestHandler):
                 result = updateObject[Sync.JSON_UPDATED_OBJECT_VALUES]
                 break
         return result
-    
-    def getObjectByName(self, objectType, name):
-        objectModel = Sync.SYNC_OBJECTS_DICT[objectType](user = users.get_current_user(),
-                                                         userId = users.get_current_user().user_id()).all()
-        objectModel.filter("name = ", name )
-        objectModel.filter("userId = ", users.get_current_user().user_id())
-        entity = objectModel.fetch(1)
-        return entity 
         
         

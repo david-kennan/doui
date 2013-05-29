@@ -47,23 +47,6 @@ class DouiSyncEntity(db.Model):
                     else:
                         value = b
                 setattr(self, a, value)
-        
-class DouiTodoItem(DouiSyncEntity):
-    """Datastorage entity for Doui todo item"""
-    title = db.StringProperty()
-    body = db.TextProperty()
-    fk_category = db.StringProperty()
-    fk_status = db.StringProperty()
-    lastUpdateTimestamp = db.DateTimeProperty()
+
     
-class DouiTodoCategories(DouiSyncEntity):
-    """Datastorage entity for Doui todo categories"""
-    name = db.StringProperty()
-    is_deleted = db.StringProperty()
-    lastUpdateTimestamp = db.DateTimeProperty()
-    
-class DouiTodoStatuses(DouiSyncEntity):
-    """Datastorage entity for Doui todo categories"""
-    name = db.StringProperty()
-    lastUpdateTimestamp = db.DateTimeProperty()
 

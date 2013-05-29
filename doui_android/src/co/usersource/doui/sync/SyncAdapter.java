@@ -1,11 +1,7 @@
 package co.usersource.doui.sync;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.Locale;
-import java.util.TimeZone;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -174,10 +170,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     	
     	try{
     		if(mLastUpdateDate == null){
-    			SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:S", Locale.ENGLISH);
-        		formater.setTimeZone(TimeZone.getTimeZone("UTC"));
-        		String date = formater.format(new Date());
-        		request.put(SyncAdapter.JSON_LAST_UPDATE_TIMESTAMP, date);
+        		request.put(SyncAdapter.JSON_LAST_UPDATE_TIMESTAMP, "2000-01-01 00:00:00:00");
     		}
     		else{
     			request.put(SyncAdapter.JSON_LAST_UPDATE_TIMESTAMP, mLastUpdateDate);
@@ -501,10 +494,17 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 											uriForUpdate, m_valuesForUpdate,
 											null, null);
 								} else {
+									Uri itemUri = Uri.parse(DouiContentProvider.TODO_CATEGORIES_URI
+											               .toString() + "/" + getCategoryIDByObjectKey(currentValues
+																	.getJSONObject(j)
+																	.getString(	TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY)) 
+																	+ "/" + DouiContentProvider.TODO_PATH);
+									Log.v("SGAD", "MyURI = " + itemUri.toString());
 									if (getContext()
 											.getContentResolver()
-											.insert(DouiContentProvider.TODO_ITEMS_URI,
+											.insert(itemUri,
 													m_valuesForUpdate) == null) {
+										
 										Log.v(TAG,
 												"Cannot insert new item for "
 														+ DouiContentProvider.TODO_ITEMS_URI
