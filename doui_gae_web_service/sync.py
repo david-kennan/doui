@@ -112,15 +112,9 @@ class Sync(webapp2.RequestHandler):
         valuesForUpdate = self.getObjectsByType(requestObject, "DouiTodoStatus")
         for value in valuesForUpdate:
             if(None == value[Sync.JSON_UPDATED_OBJECT_KEY]):
-                if(self.isDefaultObject("DouiTodoStatus", value["name"])):
-                    entity = self.getObjectByName("DouiTodoStatus", value["name"])
-                    if(len(entity) > 0):
-                        value[Sync.JSON_UPDATED_OBJECT_KEY] = str(entity[0].key())
-                    else:
-                        dbObject = Sync.SYNC_OBJECTS_DICT["DouiTodoStatus"](user = users.get_current_user(),
-                                                                            userId = users.get_current_user().user_id())
-                        dbObject.loadAttrFromDict(value)
-                        value[Sync.JSON_UPDATED_OBJECT_KEY] = str(db.put(dbObject))
+                entity = self.getObjectByName("DouiTodoStatus", value["name"])
+                if(len(entity) > 0):
+                    value[Sync.JSON_UPDATED_OBJECT_KEY] = str(entity[0].key())
                 else:
                     dbObject = Sync.SYNC_OBJECTS_DICT["DouiTodoStatus"](user = users.get_current_user(),
                                                                         userId = users.get_current_user().user_id())
@@ -146,16 +140,10 @@ class Sync(webapp2.RequestHandler):
         valuesForUpdate = self.getObjectsByType(requestObject, "DouiTodoCategories")
         for value in valuesForUpdate:
             if(None == value[Sync.JSON_UPDATED_OBJECT_KEY]):
-                if(self.isDefaultObject("DouiTodoCategories", value["name"])):
-                    entity = self.getObjectByName("DouiTodoCategories", value["name"])
-                    if(len(entity) > 0):
-                        value[Sync.JSON_UPDATED_OBJECT_KEY] = str(entity[0].key()) 
-                        value["is_deleted"] = entity[0].is_deleted
-                    else:
-                        dbObject = Sync.SYNC_OBJECTS_DICT["DouiTodoCategories"](user = users.get_current_user(),
-                                                                                userId = users.get_current_user().user_id())
-                        dbObject.loadAttrFromDict(value)
-                        value[Sync.JSON_UPDATED_OBJECT_KEY] = str(db.put(dbObject))
+                entity = self.getObjectByName("DouiTodoCategories", value["name"])
+                if(len(entity) > 0):
+                    value[Sync.JSON_UPDATED_OBJECT_KEY] = str(entity[0].key()) 
+                    value["is_deleted"] = entity[0].is_deleted
                 else:
                     dbObject = Sync.SYNC_OBJECTS_DICT["DouiTodoCategories"](user = users.get_current_user(),
                                                                             userId = users.get_current_user().user_id())
@@ -204,13 +192,6 @@ class Sync(webapp2.RequestHandler):
                 break
         return result
     
-    def isDefaultObject(self, objectType, name):
-        if(objectType == "DouiTodoCategories"):
-            defObjects = ["uncategorized", "Finance and admin", "Health"]
-        else:
-            defObjects = ["Next", "Calendar", "Waiting", "Done", "Someday"]
-        return (name in defObjects)
-
     def getObjectByName(self, objectType, name):
         objectModel = Sync.SYNC_OBJECTS_DICT[objectType](user = users.get_current_user(),
                                                          userId = users.get_current_user().user_id()).all()
