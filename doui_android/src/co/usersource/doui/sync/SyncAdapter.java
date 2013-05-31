@@ -345,216 +345,41 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 	 *            - json object with data from server
 	 */
 	private void updateLocalDatabase(JSONObject data) {
-		Cursor localData;
-		String selection;
+		
 		if (data != null) {
-			// Update synch object with server key
-			Uri uriForUpdate;
-			JSONArray currentValues;
 
 			try {
 				mLastUpdateDate = data.getString(SyncAdapter.JSON_LAST_UPDATE_TIMESTAMP);
-				JSONArray dataFromServer = data
-						.getJSONArray(JSON_UPDATED_OBJECTS);
-
+				JSONArray dataFromServer = data.getJSONArray(JSON_UPDATED_OBJECTS);
+				
+				JSONArray statuses = new JSONArray();
+				JSONArray categories = new JSONArray();
+				JSONArray items = new JSONArray();
 				for (int i = 0; i < dataFromServer.length(); ++i) {
-					m_valuesForUpdate.clear();
-					currentValues = dataFromServer.getJSONObject(i)
-							.getJSONArray(JSON_UPDATED_OBJECT_VALUES);
-					for (int j = 0; j < currentValues.length(); ++j) {
-						if (dataFromServer
-								.getJSONObject(i)
-								.get(JSON_UPDATED_OBJECT_TYPE)
-								.equals(SyncAdapter.JSON_UPDATED_TYPE_CATEGORIES)) {
-							addFieldToUpdate(TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_IS_DELETED, 
-									         currentValues.getJSONObject(j), null);
-							addFieldToUpdate(
-									TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_OBJECT_KEY,
-									currentValues.getJSONObject(j),
-									JSON_UPDATED_OBJECT_KEY);
-							addFieldToUpdate(
-									TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME,
-									currentValues.getJSONObject(j), null);
-							if (currentValues.getJSONObject(j)
-									.getString("client_id").equals("null")) {
-								selection = TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_OBJECT_KEY
-										+ " = '"
-										+ currentValues
-												.getJSONObject(j)
-												.getString(
-														JSON_UPDATED_OBJECT_KEY)
-										+ "'";
-								localData = getContext()
-										.getContentResolver()
-										.query(DouiContentProvider.TODO_CATEGORIES_URI,
-												null, selection, null, null);
-								if (localData != null
-										&& localData.moveToFirst()) {
-									uriForUpdate = Uri
-											.parse(DouiContentProvider.TODO_CATEGORIES_URI
-													.toString()
-													+ "/"
-													+ localData.getInt(localData
-															.getColumnIndex(TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_ID)));
-									getContext().getContentResolver().update(
-											uriForUpdate, m_valuesForUpdate,
-											null, null);
-								} else {
-									if (getContext()
-											.getContentResolver()
-											.insert(DouiContentProvider.TODO_CATEGORIES_URI,
-													m_valuesForUpdate) == null) {
-										Log.v(TAG,
-												"Cannot insert new item for "
-														+ DouiContentProvider.TODO_CATEGORIES_URI
-																.toString());
-									}
-								}
-							} else {
-								uriForUpdate = Uri
-										.parse(DouiContentProvider.TODO_CATEGORIES_URI
-												.toString()
-												+ "/"
-												+ currentValues
-														.getJSONObject(j)
-														.getString("client_id"));
-								getContext().getContentResolver().update(
-										uriForUpdate, m_valuesForUpdate, null,
-										null);
-							}
-						}
-
-						if (dataFromServer.getJSONObject(i)
-								.get(JSON_UPDATED_OBJECT_TYPE)
-								.equals(SyncAdapter.JSON_UPDATED_TYPE_ITEMS)) {
-
-							addFieldToUpdate(
-									TableTodoItemsAdapter.TABLE_TODO_ITEMS_BODY,
-									currentValues.getJSONObject(j), null);
-							addFieldToUpdate(
-									TableTodoItemsAdapter.TABLE_TODO_ITEMS_TITLE,
-									currentValues.getJSONObject(j), null);
-
-							if (!currentValues
-									.getJSONObject(j)
-									.getString(
-											TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY)
-									.equals("null")) {
-								int nCategoryId = getCategoryIDByObjectKey(currentValues
-										.getJSONObject(j)
-										.getString(
-												TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY));
-								if (nCategoryId != -1) {
-									m_valuesForUpdate
-											.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY,
-													nCategoryId);
-								}
-							}
-							if (!currentValues
-									.getJSONObject(j)
-									.getString(
-											TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_STATUS)
-									.equals("null")) {
-								int nStatusId = getStatusIDByObjectKey(currentValues
-										.getJSONObject(j)
-										.getString(
-												TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_STATUS));
-								if (nStatusId != -1) {
-									m_valuesForUpdate
-											.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_STATUS,
-													nStatusId);
-								}
-							}
-							addFieldToUpdate(
-									TableTodoItemsAdapter.TABLE_TODO_ITEMS_OBJECT_KEY,
-									currentValues.getJSONObject(j),
-									JSON_UPDATED_OBJECT_KEY);
-							if (currentValues.getJSONObject(j)
-									.getString("client_id").equals("null")) {
-								selection = TableTodoItemsAdapter.TABLE_TODO_ITEMS_OBJECT_KEY
-										+ " = '"
-										+ currentValues
-												.getJSONObject(j)
-												.getString(
-														JSON_UPDATED_OBJECT_KEY)
-										+ "'";
-								localData = getContext()
-										.getContentResolver()
-										.query(DouiContentProvider.TODO_ITEMS_URI,
-												null, selection, null, null);
-								if (localData != null
-										&& localData.moveToFirst()) {
-									uriForUpdate = Uri
-											.parse(DouiContentProvider.TODO_ITEMS_URI
-													.toString()
-													+ "/"
-													+ localData.getInt(localData
-															.getColumnIndex(TableTodoItemsAdapter.TABLE_TODO_ITEMS_ID)));
-									getContext().getContentResolver().update(
-											uriForUpdate, m_valuesForUpdate,
-											null, null);
-								} else {
-									Uri itemUri = Uri.parse(DouiContentProvider.TODO_CATEGORIES_URI
-											               .toString() + "/" + getCategoryIDByObjectKey(currentValues
-																	.getJSONObject(j)
-																	.getString(	TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY)) 
-																	+ "/" + DouiContentProvider.TODO_PATH);
-									Log.v("SGAD", "MyURI = " + itemUri.toString());
-									if (getContext()
-											.getContentResolver()
-											.insert(itemUri,
-													m_valuesForUpdate) == null) {
-										
-										Log.v(TAG,
-												"Cannot insert new item for "
-														+ DouiContentProvider.TODO_ITEMS_URI
-																.toString());
-									}
-								}
-							} else {
-								uriForUpdate = Uri
-										.parse(DouiContentProvider.TODO_ITEMS_URI
-												.toString()
-												+ "/"
-												+ currentValues
-														.getJSONObject(j)
-														.getString("client_id"));
-								getContext().getContentResolver().update(
-										uriForUpdate, m_valuesForUpdate, null,
-										null);
-							}
-
-						}
-
-						if (dataFromServer.getJSONObject(i)
-								.get(JSON_UPDATED_OBJECT_TYPE)
-								.equals(SyncAdapter.JSON_UPDATED_TYPE_STATUS)) {
-							addFieldToUpdate(
-									TableTodoStatusAdapter.TABLE_TODO_STATUSES_OBJECT_KEY,
-									currentValues.getJSONObject(j),
-									JSON_UPDATED_OBJECT_KEY);
-							addFieldToUpdate(
-									TableTodoStatusAdapter.TABLE_TODO_STATUSES_NAME,
-									currentValues.getJSONObject(j), null);
-							if (!currentValues.getJSONObject(j)
-									.getString("client_id").equals("null")) {
-								uriForUpdate = Uri
-										.parse(DouiContentProvider.TODO_STATUSES_URI
-												.toString()
-												+ "/"
-												+ currentValues
-														.getJSONObject(j)
-														.getString("client_id"));
-								getContext().getContentResolver().update(
-										uriForUpdate, m_valuesForUpdate, null,
-										null);
-							} else {
-								Log.v(TAG, "id for status is empty");
-							}
-						}
+					if(dataFromServer.getJSONObject(i).get(JSON_UPDATED_OBJECT_TYPE).equals(SyncAdapter.JSON_UPDATED_TYPE_STATUS))
+					{
+						statuses = dataFromServer.getJSONObject(i).getJSONArray(JSON_UPDATED_OBJECT_VALUES);
+						continue;
+					}
+					
+					if(dataFromServer.getJSONObject(i).get(JSON_UPDATED_OBJECT_TYPE).equals(SyncAdapter.JSON_UPDATED_TYPE_CATEGORIES))
+					{
+						categories = dataFromServer.getJSONObject(i).getJSONArray(JSON_UPDATED_OBJECT_VALUES);
+						continue;
+					}
+					
+					if(dataFromServer.getJSONObject(i).get(JSON_UPDATED_OBJECT_TYPE).equals(SyncAdapter.JSON_UPDATED_TYPE_ITEMS))
+					{
+						items = dataFromServer.getJSONObject(i).getJSONArray(JSON_UPDATED_OBJECT_VALUES);
+						continue;
 					}
 				}
+				
+				this.updateLocalStatuses(statuses);
+				this.updateLocalCategories(categories);
+				this.updateLocalItems(items);
 				cleanDeletedCategories();
+				
 			} catch (JSONException e) {
 				Log.v(TAG, "Data from server is not valid!!");
 				e.printStackTrace();
@@ -680,5 +505,155 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 	{
 		String where = TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_IS_DELETED + " = 1";
 		getContext().getContentResolver().delete(DouiContentProvider.TODO_CATEGORIES_URI, where, null);
+	}
+	
+	
+	private void updateLocalStatuses(JSONArray data)
+	{
+		Uri uriForUpdate;
+		m_valuesForUpdate.clear();
+		for(int i = 0; i < data.length(); ++i)
+		{
+			try {
+				addFieldToUpdate(TableTodoStatusAdapter.TABLE_TODO_STATUSES_OBJECT_KEY, data.getJSONObject(i), JSON_UPDATED_OBJECT_KEY);
+				addFieldToUpdate( TableTodoStatusAdapter.TABLE_TODO_STATUSES_NAME, data.getJSONObject(i), null);
+				
+				if (!data.getJSONObject(i).getString("client_id").equals("null")) {
+
+					uriForUpdate = Uri.parse(DouiContentProvider.TODO_STATUSES_URI.toString() + "/"
+									+ data.getJSONObject(i).getString("client_id"));
+					
+					getContext().getContentResolver().update(uriForUpdate, m_valuesForUpdate, null,	null);
+				}
+				
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+	}
+	
+	private void updateLocalCategories(JSONArray data)
+	{
+		String selection;
+		Cursor localData;
+		Uri uriForUpdate;
+		
+		m_valuesForUpdate.clear();
+		for(int i = 0; i < data.length(); ++i)
+		{
+			try {
+				addFieldToUpdate(TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_IS_DELETED,  data.getJSONObject(i), null);
+				addFieldToUpdate(TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_OBJECT_KEY, data.getJSONObject(i), JSON_UPDATED_OBJECT_KEY);
+				addFieldToUpdate(TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME, data.getJSONObject(i), null);
+				
+				if (data.getJSONObject(i).getString("client_id").equals("null")) {
+					
+					selection = TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_OBJECT_KEY	+ " = '" +  
+								data.getJSONObject(i).getString(JSON_UPDATED_OBJECT_KEY) + "'";
+					
+					localData = getContext().getContentResolver().query(DouiContentProvider.TODO_CATEGORIES_URI, null, selection, null, null);
+					
+					if (localData != null && localData.moveToFirst()) {
+						
+						uriForUpdate = Uri.parse(DouiContentProvider.TODO_CATEGORIES_URI.toString()	+ "/"
+										+ localData.getInt(localData.getColumnIndex(TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_ID)));
+						
+						getContext().getContentResolver().update(uriForUpdate, m_valuesForUpdate, null, null);
+						
+					}
+					else{
+						if (getContext().getContentResolver().insert(DouiContentProvider.TODO_CATEGORIES_URI, m_valuesForUpdate) == null) {
+						
+							Log.v(TAG, "Cannot insert new item for " + DouiContentProvider.TODO_CATEGORIES_URI.toString());
+						}
+					}
+					
+				}
+				else{
+					uriForUpdate = Uri.parse(DouiContentProvider.TODO_CATEGORIES_URI.toString() + "/" + data.getJSONObject(i).getString("client_id"));
+					getContext().getContentResolver().update(uriForUpdate, m_valuesForUpdate, null,	null);
+				}
+				
+				
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+	}
+	
+	private void updateLocalItems(JSONArray data)
+	{
+		String selection;
+		Cursor localData;
+		Uri uriForUpdate;
+		m_valuesForUpdate.clear();
+		for(int i = 0; i < data.length(); ++i)
+		{
+			try {
+				addFieldToUpdate(TableTodoItemsAdapter.TABLE_TODO_ITEMS_BODY, data.getJSONObject(i), null);
+				addFieldToUpdate(TableTodoItemsAdapter.TABLE_TODO_ITEMS_TITLE, data.getJSONObject(i), null);
+				addFieldToUpdate(TableTodoItemsAdapter.TABLE_TODO_ITEMS_OBJECT_KEY, data.getJSONObject(i), JSON_UPDATED_OBJECT_KEY);
+				
+				if (!data.getJSONObject(i).getString(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY).equals("null")) {
+					
+					int nCategoryId = getCategoryIDByObjectKey(data.getJSONObject(i).getString(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY));
+					
+					if (nCategoryId != -1) {
+						m_valuesForUpdate.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY, nCategoryId);
+					}
+				}
+				
+				if (!data.getJSONObject(i).getString(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_STATUS).equals("null")) {
+					
+					int nStatusId = getStatusIDByObjectKey(data.getJSONObject(i).getString(	TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_STATUS));
+					if (nStatusId != -1) {
+						m_valuesForUpdate.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_STATUS,	nStatusId);
+					}
+				}
+				
+				if (data.getJSONObject(i).getString("client_id").equals("null")) {
+					
+					selection = TableTodoItemsAdapter.TABLE_TODO_ITEMS_OBJECT_KEY + " = '"	
+					           + data.getJSONObject(i).getString(JSON_UPDATED_OBJECT_KEY) + "'";
+					
+					localData = getContext().getContentResolver().query(DouiContentProvider.TODO_ITEMS_URI,	null, selection, null, null);
+					
+					if (localData != null && localData.moveToFirst()) {
+						
+						uriForUpdate = Uri.parse(DouiContentProvider.TODO_ITEMS_URI.toString()	+ "/"
+										+ localData.getInt(localData.getColumnIndex(TableTodoItemsAdapter.TABLE_TODO_ITEMS_ID)));
+						
+						getContext().getContentResolver().update(uriForUpdate, m_valuesForUpdate, null, null);
+						
+					} else {
+						Uri itemUri = Uri.parse(DouiContentProvider.TODO_CATEGORIES_URI.toString() + "/" + getCategoryIDByObjectKey(data.getJSONObject(i)
+					                          .getString(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY)) + "/" + DouiContentProvider.TODO_PATH);
+						
+						if (getContext().getContentResolver().insert(itemUri,	m_valuesForUpdate) == null) {
+							
+							Log.v(TAG, "Cannot insert new item for " + DouiContentProvider.TODO_ITEMS_URI.toString());
+						}
+					}
+					
+				}
+				else {
+					uriForUpdate = Uri.parse(DouiContentProvider.TODO_ITEMS_URI.toString()	+ "/"
+											+ data.getJSONObject(i).getString("client_id"));
+					
+					getContext().getContentResolver().update(uriForUpdate, m_valuesForUpdate, null,	null);
+				}
+				
+			
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+		}
+		
 	}
 }

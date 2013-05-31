@@ -16,9 +16,9 @@ from DouiTodoItem import DouiTodoItem
 
 class Sync(webapp2.RequestHandler):
 
-    SYNC_OBJECTS_DICT = {"DouiTodoItem": DouiTodoItem,
+    SYNC_OBJECTS_DICT = {"DouiTodoStatus": DouiTodoStatus,
                          "DouiTodoCategories": DouiTodoCategory,
-                         "DouiTodoStatus": DouiTodoStatus}
+                         "DouiTodoItem": DouiTodoItem}
 
     JSON_REQUEST_PARAM_NAME = "jsonData"
     
@@ -61,29 +61,21 @@ class Sync(webapp2.RequestHandler):
 
     def proceedRequestObject(self, requestObject):
         logging.debug("proceedRequestObject( requestObject )")
+        clientObjects = {}
+        clientObjects["DouiTodoStatus"] = self.updateStatuses(requestObject)
+        clientObjects["DouiTodoCategories"] = self.updateCategories(requestObject)
+        clientObjects["DouiTodoItem"] =  self.updateItems(requestObject)
+        
         serverObjects = self.getServerObjectsAfterLastUpdate(requestObject[Sync.JSON_LAST_UPDATE_TIMESTAMP])
-        
-        items = self.updateStatuses(requestObject)
-        for item in items:
-            serverObjects["DouiTodoStatus"].append(item.copy())
-        
-        items = self.updateCategories(requestObject)
-        for item in items:
-            serverObjects["DouiTodoCategories"].append(item.copy())
-        
-        items = self.updateItems(requestObject)
-        for item in items:
-            serverObjects["DouiTodoItem"].append(item.copy())
-        
-        
+        resultObjects = self.mergeObjects(clientObjects, serverObjects)
         requestObject[Sync.JSON_UPDATED_OBJECTS] = []
              
         values = {}
         values[Sync.JSON_UPDATED_OBJECT_VALUES] = []
-        for objectType in serverObjects.keys():
+        for objectType in resultObjects.keys():
             values[Sync.JSON_UPDATED_OBJECT_VALUES] = []
             values[Sync.JSON_UPDATED_OBJECT_TYPE] = objectType
-            for objectValue in serverObjects[objectType]:
+            for objectValue in resultObjects[objectType]:
                 values[Sync.JSON_UPDATED_OBJECT_VALUES].append(objectValue)
             requestObject[Sync.JSON_UPDATED_OBJECTS].append(values.copy())
         logging.info(json.dumps(requestObject, cls = doui_model.jsonEncoder))
@@ -166,5 +158,44 @@ class Sync(webapp2.RequestHandler):
                 result = updateObject[Sync.JSON_UPDATED_OBJECT_VALUES]
                 break
         return result
+    
+    def mergeObjects(self, clientObjects, serverObjects):
+        result = {}
+        result["DouiTodoStatus"] = clientObjects["DouiTodoStatus"]
+        
+        count = 0
+        for item in serverObjects["DouiTodoStatus"]:
+            if(count < len(clientObjects["DouiTodoStatus"])):
+                if(self.isItemExist(item, clientObjects["DouiTodoStatus"]) == 0):
+                    result["DouiTodoStatus"].append(item.copy())
+                else:
+                    ++count
+            else:
+                result["DouiTodoStatus"].append(item.copy())
+        
+        result["DouiTodoCategories"] = clientObjects["DouiTodoCategories"]
+        count = 0
+        for item in serverObjects["DouiTodoCategories"]:
+            if(count < len(clientObjects["DouiTodoCategories"])):
+                if(self.isItemExist(item, clientObjects["DouiTodoCategories"]) == 0):
+                    result["DouiTodoCategories"].append(item.copy())
+                else:
+                    ++count
+            else:
+                result["DouiTodoCategories"].append(item.copy())
+                
+        result["DouiTodoItem"] = clientObjects["DouiTodoItem"]
+        for item in serverObjects["DouiTodoItem"]:
+            result["DouiTodoItem"].append(item.copy())
+        return result
+            
+    def isItemExist(self, item, listObjects):
+        result = 0
+        for listItem in listObjects:
+            if(listItem[Sync.JSON_UPDATED_OBJECT_KEY] == item[Sync.JSON_UPDATED_OBJECT_KEY]):
+                result = 1
+                break
+        return result
+    
         
         
