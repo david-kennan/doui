@@ -17,6 +17,7 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
+import co.usersource.annoplugin.AnnoPlugin;
 import co.usersource.doui.DouiContentProvider;
 import co.usersource.doui.R;
 import co.usersource.doui.database.adapters.TableTodoItemsAdapter;
@@ -79,6 +80,8 @@ public class DouiTodoListActivity extends ListActivity {
 			tvCaption.setText(todoUri.getLastPathSegment());
 
 		}
+		
+		AnnoPlugin.setEnableGesture(this, R.id.gestures, true);
 	}
 
 	private void fillList() {

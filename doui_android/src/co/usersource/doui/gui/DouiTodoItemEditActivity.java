@@ -16,6 +16,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
+import co.usersource.annoplugin.AnnoPlugin;
 import co.usersource.doui.DouiContentProvider;
 import co.usersource.doui.R;
 import co.usersource.doui.database.adapters.TableTodoItemsAdapter;
@@ -139,5 +140,7 @@ public class DouiTodoItemEditActivity extends Activity {
 				finish();
 			}
 		});
+		
+		AnnoPlugin.setEnableGesture(this, R.id.gestures, true);
 	}
 }

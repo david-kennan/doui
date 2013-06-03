@@ -4,7 +4,9 @@
     android:versionCode="1"
     android:versionName="1.0" >
 
-    <uses-sdk android:minSdkVersion="10" />
+    <uses-sdk android:minSdkVersion="14" />
+    
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
     <application
         android:icon="@drawable/ic_launcher"
@@ -22,5 +24,12 @@
         <activity android:name=".gui.DouiTodoListActivity"></activity>
         <activity android:name=".gui.DouiTodoItemEditActivity"></activity>
         <activity android:name=".gui.DouiTodoItemViewActivity"></activity>
+        
+        <activity android:name="co.usersource.annoplugin.view.FeedbackEditActivity"></activity>
+        <provider android:name="co.usersource.annoplugin.model.AnnoContentProvider"
+            android:authorities="co.usersource.doui.annoplugin.provider"
+            android:enabled="true"
+            android:exported="false"
+            android:multiprocess="true" />
 </application>
 </manifest>

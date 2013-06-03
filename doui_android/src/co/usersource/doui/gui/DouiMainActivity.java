@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
+import co.usersource.annoplugin.AnnoPlugin;
 import co.usersource.doui.DouiContentProvider;
 import co.usersource.doui.R;
 import co.usersource.doui.database.adapters.TableTodoContextsAdapter;
@@ -27,6 +28,7 @@ public class DouiMainActivity extends ListActivity {
 		setContentView(R.layout.main);
 		fillList();
 
+		AnnoPlugin.setEnableGesture(this, R.id.gestures, true);
 	}
 
 	@Override
