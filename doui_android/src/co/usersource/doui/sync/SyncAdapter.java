@@ -12,6 +12,7 @@ import org.json.JSONObject;
 import android.accounts.Account;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
+import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.SyncResult;
@@ -47,6 +48,14 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 	public static final String JSON_UPDATED_TYPE_STATUS = "DouiTodoStatus";
 	public static final String JSON_UPDATED_TYPE_CATEGORIES = "DouiTodoCategories";
 	public static final String JSON_UPDATED_TYPE_ITEMS = "DouiTodoItem";
+	
+	public static final String SYNC_ACCOUNT_TYPE = "com.google"; 
+	
+	
+	/**
+	 * The frequency of sync in seconds
+	 */
+	public static final int SYNC_PERIOD = 300;
 
 	private static final String TAG = "DouiSyncAdapter";
 	private String mLastUpdateDate;
@@ -61,6 +70,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     {
         super(context, autoInitialize);
         m_valuesForUpdate = new ContentValues();
+        
     }
 
 	/**
@@ -81,6 +91,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 	public void onPerformSync(Account account, Bundle extras, String authority,
 			ContentProviderClient provider, SyncResult syncResult) {
 		Log.d(TAG, "onPerformSync");
+		ContentResolver.addPeriodicSync(account, authority, extras, SyncAdapter.SYNC_PERIOD);
 		if (getHttpConnector().isAuthenticated()) {
 			Log.d(TAG, "httpConnector.isAuthenticated()==true. Perform sync.");
 			performSyncRoutines();
@@ -656,4 +667,5 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 		}
 		
 	}
+	
 }

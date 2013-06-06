@@ -3,6 +3,8 @@
  */
 package co.usersource.doui.gui;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -21,6 +23,7 @@ import android.widget.Toast;
 import co.usersource.doui.DouiContentProvider;
 import co.usersource.doui.R;
 import co.usersource.doui.database.adapters.TableTodoCategoriesAdapter;
+import co.usersource.doui.sync.SyncAdapter;
 
 /**
  * @author rsh
@@ -140,6 +143,8 @@ public class DouiTodoCategoriesManagerActivity extends Activity {
 							valueForUpdate.put(TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_IS_DELETED, 1);
 							getContentResolver().update(updateUri, valueForUpdate, null, null);
 							fillList();
+							Account[] acount = AccountManager.get(getApplicationContext()).getAccountsByType(SyncAdapter.SYNC_ACCOUNT_TYPE);
+							ContentResolver.requestSync(acount[0], DouiContentProvider.AUTHORITY, new Bundle());
 						} else {
 							Toast toast = Toast
 									.makeText(
@@ -188,7 +193,10 @@ public class DouiTodoCategoriesManagerActivity extends Activity {
 				getContentResolver().update(updateUri, values, null, null);
 				douiTodoCategoryEditHelper.switchEditableRowToView();
 				fillList();
+				
 			}
+			Account[] acount = AccountManager.get(getApplicationContext()).getAccountsByType(SyncAdapter.SYNC_ACCOUNT_TYPE);
+			ContentResolver.requestSync(acount[0], DouiContentProvider.AUTHORITY, new Bundle());
 		} else {
 			Toast toast = Toast.makeText(getApplicationContext(), "Item "
 					+ newName + " already exists.\nEnter another name.",

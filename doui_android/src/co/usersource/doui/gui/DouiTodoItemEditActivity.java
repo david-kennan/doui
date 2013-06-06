@@ -7,8 +7,11 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.app.ActionBar;
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -42,6 +45,7 @@ import co.usersource.doui.database.adapters.TableTodoCategoriesAdapter;
 import co.usersource.doui.database.adapters.TableTodoContextsAdapter;
 import co.usersource.doui.database.adapters.TableTodoItemsAdapter;
 import co.usersource.doui.database.adapters.TableTodoStatusAdapter;
+import co.usersource.doui.sync.SyncAdapter;
 
 /**
  * @author rsh
@@ -509,6 +513,8 @@ public class DouiTodoItemEditActivity extends Activity {
 					"Item saved", Toast.LENGTH_SHORT);
 			toast.show();
 			goToParentList();
+			Account[] acount = AccountManager.get(getApplicationContext()).getAccountsByType(SyncAdapter.SYNC_ACCOUNT_TYPE);
+			ContentResolver.requestSync(acount[0], DouiContentProvider.AUTHORITY, new Bundle());
 		} else {
 			Toast toast = Toast.makeText(getApplicationContext(),
 					"Can't save item without title!",
@@ -577,6 +583,8 @@ public class DouiTodoItemEditActivity extends Activity {
 		Toast toast = Toast.makeText(getApplicationContext(), "Status set",
 				Toast.LENGTH_SHORT);
 		toast.show();
+		Account[] acount = AccountManager.get(getApplicationContext()).getAccountsByType(SyncAdapter.SYNC_ACCOUNT_TYPE);
+		ContentResolver.requestSync(acount[0], DouiContentProvider.AUTHORITY, new Bundle());
 	}
 
 	/*
