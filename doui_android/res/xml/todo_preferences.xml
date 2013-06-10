@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <EditTextPreference
+        android:defaultValue="@string/prefSyncServerUrl_Default"
+        android:key="@string/prefSyncServerUrl_Key"
+        android:summary="@string/prefSyncServerUrl_Default"
+        android:title="@string/prefSyncServerUrl_Title" />
+    <EditTextPreference
+        android:defaultValue="@string/prefSyncRepeatTime_Default"
+        android:key="@string/prefSyncRepeatTime_Key"
+        android:summary="@string/prefSyncRepeatTime_Default"
+        android:title="@string/prefSyncRepeatTime_Title" />
+
+</PreferenceScreen>

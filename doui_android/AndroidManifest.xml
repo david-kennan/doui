@@ -60,6 +60,7 @@
                 android:name="android.content.SyncAdapter"
                 android:resource="@xml/syncadapter" />
         </service>
+        <activity android:name=".gui.DouiSettingsActivity"></activity>
         
     </application>
 
