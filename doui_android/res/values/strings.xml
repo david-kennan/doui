@@ -24,4 +24,10 @@
     <string name="prefSyncRepeatTime_Key">prefSyncRepeatTime_Key</string>
 	<string name="prefSyncRepeatTime_Title">Sync every (ms):</string>
 	<string name="prefSyncRepeatTime_Default">300</string>
+	<string name="prefIsSyncable_Key">prefIsSyncable_Key</string>
+	<string name="prefIsSyncable_Title">Sync with GAE?</string>
+	<!-- string name="prefIsSyncable_Default">No default string value for checkbox.</string-->
+	<string name="prefSyncAccount_Key">prefSyncAccount_Key</string>
+	<string name="prefSyncAccount_Title">Select sync account:</string>
+	<!-- string name="prefSyncAccount_Default">No default string value for listbox.</string-->
 </resources>
