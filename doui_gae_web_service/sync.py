@@ -34,6 +34,10 @@ class Sync(webapp2.RequestHandler):
     
     JSON_UPDATED_OBJECTS = "updatedObjects"
     
+    JSON_REQUEST_TYPE = "requestType"
+    JSON_REQUEST_TYPE_GEN_KEYS = "generateKeys"
+    JSON_REQUEST_TYPE_UPDATE_DATA = "updateData"
+    
     JSON_UPDATE_OBJECT_CLIENT_ID = "client_id"
     
     JSON_UPDATE_ITEM_FK_STATUS = "fk_status"
@@ -50,6 +54,7 @@ class Sync(webapp2.RequestHandler):
         Received objects will be sync with server database.
         This method will send back a JSON with objects to be updated on the client side. """
         strJsonData = request.get(Sync.JSON_REQUEST_PARAM_NAME)
+        result = ""
         logging.info("Received JSON string: " + strJsonData)
         if((None != strJsonData) and (strJsonData != '')):
             requestObject = json.loads(strJsonData)
@@ -57,7 +62,13 @@ class Sync(webapp2.RequestHandler):
             requestObject = {}
             requestObject[Sync.JSON_LAST_UPDATE_TIMESTAMP] = "2000-01-01 00:00:00:00"
             requestObject[Sync.JSON_UPDATED_OBJECTS] = []
-        return self.proceedRequestObject(requestObject)
+            
+        if requestObject[Sync.JSON_REQUEST_TYPE] == Sync.JSON_REQUEST_TYPE_GEN_KEYS:
+            result = self.generateKeys(requestObject)
+        else:
+            result = self.proceedRequestObject(requestObject)
+        logging.info("Server answer" + result)
+        return result 
 
     def proceedRequestObject(self, requestObject):
         logging.debug("proceedRequestObject( requestObject )")
@@ -78,7 +89,6 @@ class Sync(webapp2.RequestHandler):
             for objectValue in resultObjects[objectType]:
                 values[Sync.JSON_UPDATED_OBJECT_VALUES].append(objectValue)
             requestObject[Sync.JSON_UPDATED_OBJECTS].append(values.copy())
-        logging.info(json.dumps(requestObject, cls = doui_model.jsonEncoder))
         requestObject[Sync.JSON_LAST_UPDATE_TIMESTAMP] = datetime.now().strftime("%Y-%m-%d %H:%M:%S:%f")
         return json.dumps(requestObject, cls = doui_model.jsonEncoder)
     
@@ -109,16 +119,12 @@ class Sync(webapp2.RequestHandler):
         valuesForUpdate = self.getObjectsByType(requestObject, "DouiTodoStatus")
         for value in valuesForUpdate:
             status = DouiTodoStatus(user = users.get_current_user(), userId = users.get_current_user().user_id())
-            if(None == value[Sync.JSON_UPDATED_OBJECT_KEY]):
-                status.createStatus(value)
-                requestItems = self.getObjectsByType(requestObject, "DouiTodoItem")
-                for item in requestItems:
-                    if(item[Sync.JSON_UPDATE_ITEM_FK_STATUS] == value[Sync.JSON_UPDATE_OBJECT_CLIENT_ID]):
-                        item[Sync.JSON_UPDATE_ITEM_FK_STATUS] = value[Sync.JSON_UPDATED_OBJECT_KEY]
-            else:
-                status.updateStatus(value)
+            status.createStatus(value)
+            requestItems = self.getObjectsByType(requestObject, "DouiTodoItem")
+            for item in requestItems:
+                if(item[Sync.JSON_UPDATE_ITEM_FK_STATUS] == value[Sync.JSON_UPDATE_OBJECT_CLIENT_ID]):
+                    item[Sync.JSON_UPDATE_ITEM_FK_STATUS] = value[Sync.JSON_UPDATED_OBJECT_KEY]
             result.append(value)
-
         return result
                 
     def updateCategories(self, requestObject):
@@ -127,16 +133,12 @@ class Sync(webapp2.RequestHandler):
         for value in valuesForUpdate:
             category = DouiTodoCategory(user = users.get_current_user(), 
                                         userId = users.get_current_user().user_id())
-            if(None == value[Sync.JSON_UPDATED_OBJECT_KEY]):
-                category.createCategory(value)
-                requestItems = self.getObjectsByType(requestObject, "DouiTodoItem")
-                for item in requestItems:
-                    if(item[Sync.JSON_UPDATE_ITEM_FK_CATEGORY] == value[Sync.JSON_UPDATE_OBJECT_CLIENT_ID]):
-                        item[Sync.JSON_UPDATE_ITEM_FK_CATEGORY] = value[Sync.JSON_UPDATED_OBJECT_KEY]
-            else:
-                category.updateCategory(value)
+            category.createCategory(value)
+            requestItems = self.getObjectsByType(requestObject, "DouiTodoItem")
+            for item in requestItems:
+                if(item[Sync.JSON_UPDATE_ITEM_FK_CATEGORY] == value[Sync.JSON_UPDATE_OBJECT_CLIENT_ID]):
+                    item[Sync.JSON_UPDATE_ITEM_FK_CATEGORY] = value[Sync.JSON_UPDATED_OBJECT_KEY]
             result.append(value)
-
         return result
         
     def updateItems(self, requestObject):
@@ -144,11 +146,8 @@ class Sync(webapp2.RequestHandler):
         valuesForUpdate = self.getObjectsByType(requestObject, "DouiTodoItem")
         for value in valuesForUpdate:
             item = DouiTodoItem(user = users.get_current_user(), userId = users.get_current_user().user_id())
-            if (None == value[Sync.JSON_UPDATED_OBJECT_KEY]):
-                item.createItem(value)
-                result.append(value)
-            else:
-                item.updateItem(value)
+            item.createItem(value)
+            result.append(value)
         return result
         
     def getObjectsByType(self, requestObject, objectType):
@@ -196,6 +195,37 @@ class Sync(webapp2.RequestHandler):
                 result = 1
                 break
         return result
+    
+    def getItems(self, data):
+        result = 0
+        for updateObject in data[Sync.JSON_UPDATED_OBJECTS]:
+            if(updateObject[Sync.JSON_UPDATED_OBJECT_TYPE] == "DouiTodoItem"):
+                result = updateObject
+                break
+        return result
+        
+    
+    def generateKeys(self, requestObject):
+        statusValues = self.getObjectsByType(requestObject, "DouiTodoStatus")
+        status = DouiTodoStatus(user = users.get_current_user(), userId = users.get_current_user().user_id())
+        for item in statusValues:
+            status.generateKeys(item)
+        
+        categoriesValues = self.getObjectsByType(requestObject, "DouiTodoCategories")
+        category = DouiTodoCategory(user = users.get_current_user(), userId = users.get_current_user().user_id())
+        for item in categoriesValues:
+            category.generateKeys(item)
+        
+        item = DouiTodoItem(user = users.get_current_user(), userId = users.get_current_user().user_id())
+        items = self.getItems(requestObject)
+        
+        if(items["itemsCount"] > 0):
+            item.generateKeys(items)
+        else:
+            items["itemsKeys"] = [] 
+                
+        return  json.dumps(requestObject, cls = doui_model.jsonEncoder)
+        
     
         
         

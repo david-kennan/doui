@@ -44,10 +44,14 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 	public static final String JSON_UPDATED_OBJECT_TYPE = "updateObjectType";
 	public static final String JSON_LAST_UPDATE_TIMESTAMP = "lastUpdateTimestamp";
 	public static final String JSON_UPDATED_OBJECTS = "updatedObjects";
+	public static final String JSON_REQUEST_TYPE = "requestType";
 
 	public static final String JSON_UPDATED_TYPE_STATUS = "DouiTodoStatus";
 	public static final String JSON_UPDATED_TYPE_CATEGORIES = "DouiTodoCategories";
 	public static final String JSON_UPDATED_TYPE_ITEMS = "DouiTodoItem";
+	
+	public static final String JSON_REQUEST_TYPE_GEN_KEYS = "generateKeys";
+	public static final String JSON_REQUEST_TYPE_UPDATE_DATA = "updateData";
 	
 	public static final String SYNC_ACCOUNT_TYPE = "com.google"; 
 	
@@ -61,6 +65,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 	private String mLastUpdateDate;
 	private ContentValues m_valuesForUpdate;
 	private HttpConnector httpConnector;
+	private JSONObject m_localData;
+	private JSONObject m_newRecords;
 
        
     /**
@@ -118,17 +124,15 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
 	private void performSyncRoutines() {
 		Log.v(TAG, "Start synchronization (performSyncRoutines)");
-		JSONObject request = new JSONObject();
 		try {
-			
-			request = getLocalData();
+			getLocalData();
 			final ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 			params.add(new BasicNameValuePair(
-					SyncAdapter.JSON_REQUEST_PARAM_NAME, request.toString()));
+					SyncAdapter.JSON_REQUEST_PARAM_NAME, this.m_newRecords.toString()));
 			getHttpConnector().SendRequest("/sync", params, new IHttpRequestHandler() {
 				
 				public void onRequest(JSONObject response) {
-					updateLocalDatabase(response);
+					UpdateKeys(response);
 				}
 			});
 			
@@ -137,16 +141,124 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 			e.printStackTrace();
 		}
 	}
+	
+	private void UpdateKeys(JSONObject data)
+	{
+		try {
+			JSONArray updatedObjects = data.getJSONArray(JSON_UPDATED_OBJECTS);
+			
+			for(int i = 0; i < updatedObjects.length(); ++i)
+			{
+				if(updatedObjects.getJSONObject(i).get(JSON_UPDATED_OBJECT_TYPE).equals(SyncAdapter.JSON_UPDATED_TYPE_STATUS))
+				{
+					updateKeysByType(updatedObjects.getJSONObject(i).getJSONArray(JSON_UPDATED_OBJECT_VALUES), SyncAdapter.JSON_UPDATED_TYPE_STATUS);
+					this.updateLocalStatuses(updatedObjects.getJSONObject(i).getJSONArray(JSON_UPDATED_OBJECT_VALUES));
+				}
+				
+				if(updatedObjects.getJSONObject(i).get(JSON_UPDATED_OBJECT_TYPE).equals(SyncAdapter.JSON_UPDATED_TYPE_CATEGORIES))
+				{
+					updateKeysByType(updatedObjects.getJSONObject(i).getJSONArray(JSON_UPDATED_OBJECT_VALUES), SyncAdapter.JSON_UPDATED_TYPE_CATEGORIES);
+					this.updateLocalCategories(updatedObjects.getJSONObject(i).getJSONArray(JSON_UPDATED_OBJECT_VALUES));
+				}
+				
+				if(updatedObjects.getJSONObject(i).get(JSON_UPDATED_OBJECT_TYPE).equals(SyncAdapter.JSON_UPDATED_TYPE_ITEMS))
+				{
+					JSONArray keys = updatedObjects.getJSONObject(i).getJSONArray("itemsKeys");
+					JSONArray localUpdatedObjects = m_localData.getJSONArray(JSON_UPDATED_OBJECTS);
+					
+					int localItem = 0;
+					for(; localItem < localUpdatedObjects.length(); ++localItem)
+					{
+						if(localUpdatedObjects.getJSONObject(localItem).get(JSON_UPDATED_OBJECT_TYPE).equals(SyncAdapter.JSON_UPDATED_TYPE_ITEMS))
+						{
+							break; 
+						}
+					}
+					
+					JSONArray localValues = localUpdatedObjects.getJSONObject(localItem).getJSONArray(JSON_UPDATED_OBJECT_VALUES);
+					for(int item = 0, keyIndex = 0; item < localValues.length(); ++item)
+					{
+						if(localValues.getJSONObject(item).getString(JSON_UPDATED_OBJECT_KEY).equals("null"))
+						{
+							localValues.getJSONObject(item).put(JSON_UPDATED_OBJECT_KEY, keys.getString(keyIndex));
+							++keyIndex;
+						}
+					}
+					
+					this.updateLocalItems(localValues);
+				}
+			}
+			
+			
+			final ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+			params.add(new BasicNameValuePair(
+					SyncAdapter.JSON_REQUEST_PARAM_NAME, this.m_localData.toString()));
+			getHttpConnector().SendRequest("/sync", params, new IHttpRequestHandler() {
+				
+				public void onRequest(JSONObject response) {
+					updateLocalDatabase(response);
+				}
+			});
+			
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		catch (IOException e) {
+			Log.v(TAG, "I/O excecption!!!");
+			e.printStackTrace();
+		}
+	}
+	
+	private void updateKeysByType(JSONArray values, String type)
+	{
+		try {
+			JSONArray localUpdatedObjects = m_localData.getJSONArray(JSON_UPDATED_OBJECTS);
+		
+			int localItem = 0;
+			for(; localItem < localUpdatedObjects.length(); ++localItem)
+			{
+				if(localUpdatedObjects.getJSONObject(localItem).get(JSON_UPDATED_OBJECT_TYPE).equals(type))
+				{
+					break; 
+				}
+			}
+		
+			for(int item = 0; item < values.length(); ++item)
+			{
+				localUpdatedObjects.getJSONObject(localItem).getJSONArray(JSON_UPDATED_OBJECT_VALUES).put(values.getJSONObject(item));
+			}
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
     
     /**
      * This function reads information from local database.
      */
-    private JSONObject getLocalData()
+    private void getLocalData()
     {
     	Cursor answer;
     	String selection;
-    	JSONObject request = new JSONObject();
-    	JSONArray updatedObjects = new JSONArray();
+    	this.m_localData = new JSONObject();
+    	this.m_newRecords = new JSONObject();
+    	try {
+    		this.m_localData.put(SyncAdapter.JSON_REQUEST_TYPE, SyncAdapter.JSON_REQUEST_TYPE_UPDATE_DATA);
+    		this.m_localData.put(SyncAdapter.JSON_UPDATED_OBJECTS, new JSONArray());
+    		if(mLastUpdateDate == null){
+        		this.m_localData.put(SyncAdapter.JSON_LAST_UPDATE_TIMESTAMP, "2000-01-01 00:00:00:00");
+    		}
+    		else{
+    			this.m_localData.put(SyncAdapter.JSON_LAST_UPDATE_TIMESTAMP, mLastUpdateDate);
+    		}
+    		
+			this.m_newRecords.put(SyncAdapter.JSON_REQUEST_TYPE, SyncAdapter.JSON_REQUEST_TYPE_GEN_KEYS);
+    		this.m_newRecords.put(SyncAdapter.JSON_UPDATED_OBJECTS, new JSONArray());
+		
+    	} catch (JSONException e1) {
+			e1.printStackTrace();
+		}
     	
     	//Generate update data for statuses
     	if(mLastUpdateDate != null)	{
@@ -156,7 +268,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     		selection = null;
     	}
     	answer = getContext().getContentResolver().query(DouiContentProvider.TODO_STATUSES_URI, null, selection, null, null);
-    	updatedObjects = createJSONData(answer, SyncAdapter.JSON_UPDATED_TYPE_STATUS,  updatedObjects);
+    	createJSONData(answer, SyncAdapter.JSON_UPDATED_TYPE_STATUS);
     	/////////////////////////////////////////////////////////////////////////////////////////////
     	//Generate update data for categories
     	if(mLastUpdateDate != null)	{
@@ -166,7 +278,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     		selection = null;
     	}
     	answer = getContext().getContentResolver().query(DouiContentProvider.TODO_CATEGORIES_URI, null, selection, null, null);
-    	updatedObjects = createJSONData(answer, SyncAdapter.JSON_UPDATED_TYPE_CATEGORIES,  updatedObjects);
+    	createJSONData(answer, SyncAdapter.JSON_UPDATED_TYPE_CATEGORIES);
     	/////////////////////////////////////////////////////////////////////////////////////////////
     	//Generate update data for items
     	if(mLastUpdateDate != null)	{
@@ -176,25 +288,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     		selection = null;
     	}
     	answer = getContext().getContentResolver().query(DouiContentProvider.TODO_ITEMS_URI, null, selection, null, null);
-    	updatedObjects = createJSONData(answer, SyncAdapter.JSON_UPDATED_TYPE_ITEMS,  updatedObjects);
+    	createJSONData(answer, SyncAdapter.JSON_UPDATED_TYPE_ITEMS);
     	/////////////////////////////////////////////////////////////////////////////////////////////
-    	
-    	try{
-    		if(mLastUpdateDate == null){
-        		request.put(SyncAdapter.JSON_LAST_UPDATE_TIMESTAMP, "2000-01-01 00:00:00:00");
-    		}
-    		else{
-    			request.put(SyncAdapter.JSON_LAST_UPDATE_TIMESTAMP, mLastUpdateDate);
-    		}
-    		
-    		request.put(SyncAdapter.JSON_UPDATED_OBJECTS, updatedObjects);
-    		
-    	}catch (JSONException e) {
-    		Log.v(TAG, "JSON for request to the server is not valid!!!");
-    		e.printStackTrace();
-    	}
-    	
-    	return request;
     }
     
     
@@ -205,21 +300,21 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 	 *            - cursor with data
 	 * @param type
 	 *            - type of object witch should be generated
-	 * @param updatedObjects
-	 *            -
-	 * @return - json data for object
 	 */
-	public JSONArray createJSONData(Cursor data, String type,
-			JSONArray updatedObjects) {
-		JSONArray result = updatedObjects;
+	public void createJSONData(Cursor data, String type)
+	{
+		JSONObject keys = new JSONObject();
+		JSONArray keysItems = new JSONArray();
 		JSONObject updateObjectValues = new JSONObject();
 		JSONArray updateObjectItems = new JSONArray();
 		JSONObject currentObject = new JSONObject();
+		int nItemsCount = 0;
 
 		if (data != null) {
 			try {
-				updateObjectValues.put(SyncAdapter.JSON_UPDATED_OBJECT_TYPE,
-						type);
+				keys.put(SyncAdapter.JSON_UPDATED_OBJECT_TYPE,	type);
+				updateObjectValues.put(SyncAdapter.JSON_UPDATED_OBJECT_TYPE,type);
+				
 				for (boolean flag = data.moveToFirst(); flag; flag = data
 						.moveToNext()) {
 					currentObject = new JSONObject();
@@ -336,17 +431,37 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 							
 						}
 					}
-					updateObjectItems.put(currentObject);
+					
+					if(currentObject.getString(SyncAdapter.JSON_UPDATED_OBJECT_KEY).equals("null"))
+					{
+						if(type == SyncAdapter.JSON_UPDATED_TYPE_ITEMS)
+						{
+							++nItemsCount;
+							updateObjectItems.put(currentObject);
+						}else{
+							keysItems.put(currentObject);
+						}
+					}
+					else{
+						updateObjectItems.put(currentObject);
+					}
 				}
-				updateObjectValues.put(SyncAdapter.JSON_UPDATED_OBJECT_VALUES,
-						updateObjectItems);
-				result.put(updateObjectValues);
+				
+				updateObjectValues.put(SyncAdapter.JSON_UPDATED_OBJECT_VALUES,	updateObjectItems);
+				this.m_localData.getJSONArray(SyncAdapter.JSON_UPDATED_OBJECTS).put(updateObjectValues);
+				
+				if(type == SyncAdapter.JSON_UPDATED_TYPE_ITEMS){
+					keys.put("itemsCount", nItemsCount);
+				}else{
+					keys.put(SyncAdapter.JSON_UPDATED_OBJECT_VALUES, keysItems);
+				}
+				this.m_newRecords.getJSONArray(SyncAdapter.JSON_UPDATED_OBJECTS).put(keys);
+				
 			} catch (JSONException e) {
 				Log.v(TAG, "createJSONDataForServer failed");
 				e.printStackTrace();
 			}
 		}
-		return result;
 	}
 
 	/**
