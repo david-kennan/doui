@@ -7,6 +7,7 @@ import android.database.Cursor;
 import android.database.MergeCursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -55,6 +56,7 @@ public class DouiMainActivity extends ListActivity {
 				startActivity(helpIntent);
 			}
 		});
+        PreferenceManager.setDefaultValues(this, R.xml.todo_preferences, false);
 	}
 
 	@Override
@@ -159,5 +161,25 @@ public class DouiMainActivity extends ListActivity {
 			adapter.getCursor().close();
 		}
 		super.onDestroy();
+	}
+	
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+	    MenuInflater inflater = getMenuInflater();
+	    inflater.inflate(R.menu.todo_main_menu, menu);
+	    return true;
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+	    // Handle item selection
+	    switch (item.getItemId()) {
+	        case R.id.mi_settings:
+	        	Intent i = new Intent(this, DouiSettingsActivity.class);
+	        	startActivity(i);
+	            return true;
+	        default:
+	            return super.onOptionsItemSelected(item);
+	    }
 	}
 }

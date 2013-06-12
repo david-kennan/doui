@@ -82,7 +82,6 @@ public class DouiTodoItemEditActivity extends Activity {
 	private String itemPrimaryContextId;
 	private String itemPrimaryContextName;
 
-
 	/**
 	 * @return the itemTitle
 	 */
@@ -310,13 +309,13 @@ public class DouiTodoItemEditActivity extends Activity {
 	}
 
 	public boolean onCreateOptionsMenu(Menu menu) {
-	    MenuInflater inflater = getMenuInflater();
-	    inflater.inflate(R.menu.todo_item_edit_menu, menu);
-	    menu.findItem(R.id.menu_cancel).setVisible(showSaveCancelMenu);
-	    menu.findItem(R.id.menu_save).setVisible(showSaveCancelMenu);
-	    return true;
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.todo_item_edit_menu, menu);
+		menu.findItem(R.id.menu_cancel).setVisible(showSaveCancelMenu);
+		menu.findItem(R.id.menu_save).setVisible(showSaveCancelMenu);
+		return true;
 	}
-	
+
 	/**
 	 * Utility function to set control values with values retrieved from current
 	 * URI.
@@ -407,7 +406,7 @@ public class DouiTodoItemEditActivity extends Activity {
 		while (contextMatcher.find()) {
 			strContexts += contextMatcher.group(0) + " ";
 		}
-		
+
 		if (!strContexts.equals("")) {
 			tvTodoContexts.setText(strContexts);
 			tvTodoContexts.setVisibility(View.VISIBLE);
@@ -452,9 +451,11 @@ public class DouiTodoItemEditActivity extends Activity {
 		String[] projection = {
 				TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME,
 				TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_ID };
-		String selectionCondition = TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_IS_DELETED + " = 0 ";
-		Cursor cursor = getContentResolver().query(uriList, projection, selectionCondition,
-				null, TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME);
+		String selectionCondition = TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_IS_DELETED
+				+ " = 0 ";
+		Cursor cursor = getContentResolver().query(uriList, projection,
+				selectionCondition, null,
+				TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME);
 		while (!cursor.isLast()) {
 			cursor.moveToNext();
 			int itemId = cursor.getInt(1);
@@ -485,23 +486,20 @@ public class DouiTodoItemEditActivity extends Activity {
 	}
 
 	/** This function save current item values to the database. */
-	private void saveToDoItem(){
+	private void saveToDoItem() {
 		if (!itemTitle.equals("")) {
 			ContentValues values = new ContentValues();
-			values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_TITLE,
-					itemTitle);
-			values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_BODY,
-					itemBody);
+			values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_TITLE, itemTitle);
+			values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_BODY, itemBody);
 
-			values.put(
-					TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY,
+			values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_CATEGORY,
 					itemCategoryId);
-			values.put(
-					TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_STATUS,
+			values.put(TableTodoItemsAdapter.TABLE_TODO_ITEMS_FK_STATUS,
 					itemStatusId);
 
 			if (null == itemId) {
 				itemUri = getContentResolver().insert(itemUri, values);
+				itemId = itemUri.getLastPathSegment();
 			} else {
 				String selection = TableTodoItemsAdapter.TABLE_TODO_ITEMS_ID
 						+ "=?";
@@ -509,20 +507,22 @@ public class DouiTodoItemEditActivity extends Activity {
 				getContentResolver().update(itemUri, values, selection,
 						selectionArgs);
 			}
-			Toast toast = Toast.makeText(getApplicationContext(),
-					"Item saved", Toast.LENGTH_SHORT);
+			Toast toast = Toast.makeText(getApplicationContext(), "Item saved",
+					Toast.LENGTH_SHORT);
 			toast.show();
+			Account[] acount = AccountManager.get(getApplicationContext())
+					.getAccountsByType(SyncAdapter.SYNC_ACCOUNT_TYPE);
+			ContentResolver.requestSync(acount[0],
+					DouiContentProvider.AUTHORITY, new Bundle());
 			goToParentList();
-			Account[] acount = AccountManager.get(getApplicationContext()).getAccountsByType(SyncAdapter.SYNC_ACCOUNT_TYPE);
-			ContentResolver.requestSync(acount[0], DouiContentProvider.AUTHORITY, new Bundle());
 		} else {
 			Toast toast = Toast.makeText(getApplicationContext(),
-					"Can't save item without title!",
-					Toast.LENGTH_SHORT);
+					"Can't save item without title!", Toast.LENGTH_SHORT);
 			toast.show();
 
 		}
 	}
+
 	/**
 	 * Utility function to create Action bar with "Done" and
 	 * "Set status buttons".
@@ -542,7 +542,8 @@ public class DouiTodoItemEditActivity extends Activity {
 			cursor.moveToNext();
 			final String statusId = cursor.getString(0);
 			ImageButton imbtStatus = new ImageButton(getApplicationContext());
-			imbtStatus.setBackgroundDrawable(getResources().getDrawable(android.R.drawable.menuitem_background));
+			imbtStatus.setBackgroundDrawable(getResources().getDrawable(
+					android.R.drawable.menuitem_background));
 			if (itemCounter < IDS_STATUS_IMAGES.length) {
 				imbtStatus.setImageDrawable(getResources().getDrawable(
 						IDS_STATUS_IMAGES[itemCounter]));
@@ -583,8 +584,10 @@ public class DouiTodoItemEditActivity extends Activity {
 		Toast toast = Toast.makeText(getApplicationContext(), "Status set",
 				Toast.LENGTH_SHORT);
 		toast.show();
-		Account[] acount = AccountManager.get(getApplicationContext()).getAccountsByType(SyncAdapter.SYNC_ACCOUNT_TYPE);
-		ContentResolver.requestSync(acount[0], DouiContentProvider.AUTHORITY, new Bundle());
+		Account[] acount = AccountManager.get(getApplicationContext())
+				.getAccountsByType(SyncAdapter.SYNC_ACCOUNT_TYPE);
+		ContentResolver.requestSync(acount[0], DouiContentProvider.AUTHORITY,
+				new Bundle());
 	}
 
 	/*
@@ -622,7 +625,11 @@ public class DouiTodoItemEditActivity extends Activity {
 		intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 		List<String> uriComponents = itemUri.getPathSegments();
 		Uri parentUri = DouiContentProvider.AUTHORITY_URI;
-		for (int i = 0; i < uriComponents.size() - 1; i++) {
+		int lastSegmentOffset = 0;
+		if (null != itemId) {
+			lastSegmentOffset = 1;
+		}
+		for (int i = 0; i < uriComponents.size() - lastSegmentOffset; i++) {
 			parentUri = Uri.withAppendedPath(parentUri, uriComponents.get(i));
 		}
 		intent.putExtra(DouiTodoListActivity.STR_TODO_LIST_URI_EXT, parentUri);
