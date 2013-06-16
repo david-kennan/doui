@@ -109,11 +109,13 @@ public class DouiSettingsActivity extends PreferenceActivity implements
 		Account[] accounts = AccountManager.get(getApplicationContext())
 				.getAccounts();
 		List<String> listAccountTitles = new ArrayList<String>();
+		List<String> listAccountNames = new ArrayList<String>();
 		for (Account account : accounts) {
 			String accountTitle = account.name + "(" + account.type + ")";
 			listAccountTitles.add(accountTitle);
+			listAccountNames.add(account.name);
 		}
 		mSyncAccountPref.setEntries(listAccountTitles.toArray(new String[0]));
-		mSyncAccountPref.setEntryValues(listAccountTitles.toArray(new String[0]));
+		mSyncAccountPref.setEntryValues(listAccountNames.toArray(new String[0]));
 	}
 }

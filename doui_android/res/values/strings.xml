@@ -19,7 +19,7 @@
     <string name="helpActivityTitle">Help</string>
     <string name="prefSyncServerUrl_Key">prefSyncServerUrl_Key</string>
     <string name="prefSyncServerUrl_Title">Sync server URL</string>
-    <string name="prefSyncServerUrl_Default">http://127.0.0.1:8080/sync</string>
+    <string name="prefSyncServerUrl_Default">http://douiserver-test.appspot.com/sync</string>
     <string name="todo_main_menu_i_settings">Settings</string>
     <string name="prefSyncRepeatTime_Key">prefSyncRepeatTime_Key</string>
 	<string name="prefSyncRepeatTime_Title">Sync every (ms):</string>
