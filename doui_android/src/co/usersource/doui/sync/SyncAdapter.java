@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import org.apache.http.NameValuePair;
+import org.apache.http.ParseException;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -11,11 +12,14 @@ import org.json.JSONObject;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.SyncResult;
@@ -23,6 +27,8 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
 import android.widget.Toast;
 import co.usersource.doui.DouiContentProvider;
@@ -30,9 +36,9 @@ import co.usersource.doui.R;
 import co.usersource.doui.database.adapters.TableTodoCategoriesAdapter;
 import co.usersource.doui.database.adapters.TableTodoItemsAdapter;
 import co.usersource.doui.database.adapters.TableTodoStatusAdapter;
+import co.usersource.doui.gui.DouiMainActivity;
 import co.usersource.doui.network.HttpConnector;
 import co.usersource.doui.network.IHttpConnectorAuthHandler;
-import co.usersource.doui.network.IHttpRequestHandler;
 
 /**
  * This class implements synchronization with server.
@@ -40,10 +46,11 @@ import co.usersource.doui.network.IHttpRequestHandler;
  * @author Sergey Gadzhilov
  * 
  */
-public class SyncAdapter extends AbstractThreadedSyncAdapter implements OnSharedPreferenceChangeListener {
+public class SyncAdapter extends AbstractThreadedSyncAdapter implements
+		OnSharedPreferenceChangeListener {
 	public static final String JSON_REQUEST_PARAM_NAME = "jsonData";
 	public static final String JSON_UPDATED_OBJECT_VALUES = "updateObjectValues";
-	public static final String JSON_UPDATED_OBJECT_KEY = "updateObjectKey";
+	public static final String JSON_UPDATED_OBJECT_KEY = "dev_updateObjectKey";
 	public static final String JSON_UPDATED_OBJECT_TIME = "updateObjectTime";
 	public static final String JSON_UPDATED_OBJECT_TYPE = "updateObjectType";
 	public static final String JSON_LAST_UPDATE_TIMESTAMP = "lastUpdateTimestamp";
@@ -60,11 +67,17 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements OnShared
 	public static final String SYNC_ACCOUNT_TYPE = "com.google";
 
 	/**
+	 * Constant for notification area that identifies notifications of the sync
+	 * adapter.
+	 */
+	private static final int SYNC_NOTIFICATION_ID = 0;
+	/**
 	 * The frequency of sync in seconds
 	 */
 	public static final int SYNC_PERIOD = 300;
 
 	private static final String TAG = "DouiSyncAdapter";
+
 	private String mLastUpdateDate;
 	private ContentValues m_valuesForUpdate;
 	private HttpConnector httpConnector;
@@ -75,6 +88,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements OnShared
 	private String prefSyncUrl; // Url where Sync service running
 	private int prefSyncTimeframe; // Period how often perform sync
 	private Account prefSyncAccount; // Account to be used for sync
+
+	private Object authLock = new Object();
+	private Object syncLock = new Object();
 
 	/**
 	 * {@inheritDoc}
@@ -102,18 +118,18 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements OnShared
 								R.string.prefSyncServerUrl_Key),
 						this.getContext().getString(
 								R.string.prefSyncServerUrl_Default));
-		String strPrefSyncTimeframe = sharedPref.getString(
-				this.getContext().getString(R.string.prefSyncRepeatTime_Key),
-				""+SYNC_PERIOD);
+		String strPrefSyncTimeframe = sharedPref.getString(this.getContext()
+				.getString(R.string.prefSyncRepeatTime_Key), "" + SYNC_PERIOD);
 		prefSyncTimeframe = Integer.parseInt(strPrefSyncTimeframe);
 		String strPrefSyncAccount = sharedPref.getString(this.getContext()
 				.getString(R.string.prefSyncAccount_Key), "");
-		prefSyncAccount = this.getAccountByString(strPrefSyncAccount);
+		prefSyncAccount = SyncAdapter.getAccountByString(strPrefSyncAccount, getContext());
 		if (null == prefSyncAccount) {
 			prefIsSyncable = false;
 			Log.e(this.getClass().getName(),
 					"Wrong account provided in preferences: "
 							+ strPrefSyncAccount);
+			SyncAdapter.placeNotification(getContext(),"No account available for sync. PLease create google account to be able perform sync.");
 		}
 	}
 
@@ -124,13 +140,19 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements OnShared
 	 *            string that identifies account.
 	 * @return account object if exists null otherwise
 	 */
-	private Account getAccountByString(String accountName) {
+	private static Account getAccountByString(String accountName, Context context) {
 		Account result = null;
-		Account[] accounts = AccountManager.get(getContext()).getAccounts();
-		for (Account account : accounts) {
-			if (account.name.equals(accountName)) {
-				result = account;
-				break;
+		Account[] accounts = AccountManager.get(context).getAccounts();
+		if (!accountName.equals("")) {
+			for (Account account : accounts) {
+				if (account.name.equals(accountName)) {
+					result = account;
+					break;
+				}
+			}
+		} else {
+			if (accounts.length > 0) {
+				result = accounts[0];
 			}
 		}
 		return result;
@@ -150,138 +172,164 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements OnShared
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void onPerformSync(Account account, Bundle extras, String authority,
-			ContentProviderClient provider, SyncResult syncResult) {
+	public void onPerformSync(final Account account, final Bundle extras,
+			final String authority, ContentProviderClient provider,
+			final SyncResult syncResult) {
+
 		Log.d(TAG, "onPerformSync");
 		ContentResolver.addPeriodicSync(account, authority, extras,
 				SyncAdapter.SYNC_PERIOD);
 		if (getHttpConnector().isAuthenticated()) {
 			Log.d(TAG, "httpConnector.isAuthenticated()==true. Perform sync.");
-			performSyncRoutines();
+			performSyncRoutines(syncResult);
 		} else {
 			Log.d(TAG, "httpConnector.isAuthenticated()==false. Perform auth.");
 			getHttpConnector().setHttpConnectorAuthHandler(
 					new IHttpConnectorAuthHandler() {
 
 						public void onAuthSuccess() {
-							performSyncRoutines();
+							ContentResolver.requestSync(account, authority,
+									extras);
+							synchronized (SyncAdapter.this.authLock) {
+								SyncAdapter.this.authLock.notifyAll();
+							}
 						}
 
 						public void onAuthFail() {
 							Toast.makeText(getContext(),
 									"Auth to sync service failed",
 									Toast.LENGTH_LONG).show();
+							syncResult.stats.numAuthExceptions++;
+							synchronized (SyncAdapter.this.authLock) {
+								SyncAdapter.this.authLock.notifyAll();
+							}
 						}
 					});
 			getHttpConnector().authenticate(getContext(), account);
-		}
-	}
-
-	private void performSyncRoutines() {
-		Log.v(TAG, "Start synchronization (performSyncRoutines)");
-		try {
-			getLocalData();
-			final ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
-			params.add(new BasicNameValuePair(
-					SyncAdapter.JSON_REQUEST_PARAM_NAME, this.m_newRecords
-							.toString()));
-			getHttpConnector().SendRequest("/sync", params,
-					new IHttpRequestHandler() {
-
-						public void onRequest(JSONObject response) {
-							UpdateKeys(response);
-						}
-					});
-
-		} catch (IOException e) {
-			Log.v(TAG, "I/O excecption!!!");
-			e.printStackTrace();
-		}
-	}
-
-	private void UpdateKeys(JSONObject data) {
-		try {
-			// TODO make here check for empty array received.
-			JSONArray updatedObjects = data.getJSONArray(JSON_UPDATED_OBJECTS);
-
-			for (int i = 0; i < updatedObjects.length(); ++i) {
-				if (updatedObjects.getJSONObject(i)
-						.get(JSON_UPDATED_OBJECT_TYPE)
-						.equals(SyncAdapter.JSON_UPDATED_TYPE_STATUS)) {
-					updateKeysByType(updatedObjects.getJSONObject(i)
-							.getJSONArray(JSON_UPDATED_OBJECT_VALUES),
-							SyncAdapter.JSON_UPDATED_TYPE_STATUS);
-					this.updateLocalStatuses(updatedObjects.getJSONObject(i)
-							.getJSONArray(JSON_UPDATED_OBJECT_VALUES));
+			try {
+				synchronized (SyncAdapter.this.authLock) {
+					SyncAdapter.this.authLock.wait();
 				}
-
-				if (updatedObjects.getJSONObject(i)
-						.get(JSON_UPDATED_OBJECT_TYPE)
-						.equals(SyncAdapter.JSON_UPDATED_TYPE_CATEGORIES)) {
-					updateKeysByType(updatedObjects.getJSONObject(i)
-							.getJSONArray(JSON_UPDATED_OBJECT_VALUES),
-							SyncAdapter.JSON_UPDATED_TYPE_CATEGORIES);
-					this.updateLocalCategories(updatedObjects.getJSONObject(i)
-							.getJSONArray(JSON_UPDATED_OBJECT_VALUES));
-				}
-
-				if (updatedObjects.getJSONObject(i)
-						.get(JSON_UPDATED_OBJECT_TYPE)
-						.equals(SyncAdapter.JSON_UPDATED_TYPE_ITEMS)) {
-					JSONArray keys = updatedObjects.getJSONObject(i)
-							.getJSONArray("itemsKeys");
-					JSONArray localUpdatedObjects = m_localData
-							.getJSONArray(JSON_UPDATED_OBJECTS);
-
-					int localItem = 0;
-					for (; localItem < localUpdatedObjects.length(); ++localItem) {
-						if (localUpdatedObjects.getJSONObject(localItem)
-								.get(JSON_UPDATED_OBJECT_TYPE)
-								.equals(SyncAdapter.JSON_UPDATED_TYPE_ITEMS)) {
-							break;
-						}
-					}
-
-					JSONArray localValues = localUpdatedObjects.getJSONObject(
-							localItem).getJSONArray(JSON_UPDATED_OBJECT_VALUES);
-					for (int item = 0, keyIndex = 0; item < localValues
-							.length(); ++item) {
-						if (localValues.getJSONObject(item)
-								.getString(JSON_UPDATED_OBJECT_KEY)
-								.equals("null")) {
-							localValues.getJSONObject(item).put(
-									JSON_UPDATED_OBJECT_KEY,
-									keys.getString(keyIndex));
-							++keyIndex;
-						}
-					}
-
-					this.updateLocalItems(localValues);
-				}
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
-
-			final ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
-			params.add(new BasicNameValuePair(
-					SyncAdapter.JSON_REQUEST_PARAM_NAME, this.m_localData
-							.toString()));
-			getHttpConnector().SendRequest("/sync", params,
-					new IHttpRequestHandler() {
-
-						public void onRequest(JSONObject response) {
-							updateLocalDatabase(response);
-						}
-					});
-
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			Log.v(TAG, "I/O excecption!!!");
-			e.printStackTrace();
 		}
 	}
 
-	private void updateKeysByType(JSONArray values, String type) {
+	private void performSyncRoutines(final SyncResult syncResult) {
+		Log.v(TAG, "Start synchronization (performSyncRoutines)");
+		getLocalData();
+		final ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+		params.add(new BasicNameValuePair(SyncAdapter.JSON_REQUEST_PARAM_NAME,
+				this.m_newRecords.toString()));
+		JSONObject response;
+		try {
+			response = getHttpConnector().sendRequestMainThread(prefSyncUrl,
+					params);
+			UpdateKeys(response, syncResult);
+		} catch (ParseException e1) {
+			SyncAdapter.placeNotification(getContext(),"Unable to parce responce from server");
+			e1.printStackTrace();
+		} catch (IOException e1) {
+			SyncAdapter.placeNotification(getContext(),"I\\O exception on perform sync.");
+			e1.printStackTrace();
+		}
+	}
+
+	synchronized private void UpdateKeys(JSONObject data, SyncResult syncResult) {
+		if (null != data) {
+			try {
+				// TODO make here check for empty array received.
+				JSONArray updatedObjects = data
+						.getJSONArray(JSON_UPDATED_OBJECTS);
+
+				for (int i = 0; i < updatedObjects.length(); ++i) {
+					if (updatedObjects.getJSONObject(i)
+							.get(JSON_UPDATED_OBJECT_TYPE)
+							.equals(SyncAdapter.JSON_UPDATED_TYPE_STATUS)) {
+						updateKeysByType(updatedObjects.getJSONObject(i)
+								.getJSONArray(JSON_UPDATED_OBJECT_VALUES),
+								SyncAdapter.JSON_UPDATED_TYPE_STATUS);
+						this.updateLocalStatuses(updatedObjects
+								.getJSONObject(i).getJSONArray(
+										JSON_UPDATED_OBJECT_VALUES));
+					}
+
+					if (updatedObjects.getJSONObject(i)
+							.get(JSON_UPDATED_OBJECT_TYPE)
+							.equals(SyncAdapter.JSON_UPDATED_TYPE_CATEGORIES)) {
+						updateKeysByType(updatedObjects.getJSONObject(i)
+								.getJSONArray(JSON_UPDATED_OBJECT_VALUES),
+								SyncAdapter.JSON_UPDATED_TYPE_CATEGORIES);
+						this.updateLocalCategories(updatedObjects
+								.getJSONObject(i).getJSONArray(
+										JSON_UPDATED_OBJECT_VALUES));
+					}
+
+					if (updatedObjects.getJSONObject(i)
+							.get(JSON_UPDATED_OBJECT_TYPE)
+							.equals(SyncAdapter.JSON_UPDATED_TYPE_ITEMS)) {
+						JSONArray keys = updatedObjects.getJSONObject(i)
+								.getJSONArray("itemsKeys");
+						JSONArray localUpdatedObjects = m_localData
+								.getJSONArray(JSON_UPDATED_OBJECTS);
+
+						int localItem = 0;
+						for (; localItem < localUpdatedObjects.length(); ++localItem) {
+							if (localUpdatedObjects
+									.getJSONObject(localItem)
+									.get(JSON_UPDATED_OBJECT_TYPE)
+									.equals(SyncAdapter.JSON_UPDATED_TYPE_ITEMS)) {
+								break;
+							}
+						}
+
+						JSONArray localValues = localUpdatedObjects
+								.getJSONObject(localItem).getJSONArray(
+										JSON_UPDATED_OBJECT_VALUES);
+						for (int item = 0, keyIndex = 0; item < localValues
+								.length(); ++item) {
+							if (localValues.getJSONObject(item)
+									.getString(JSON_UPDATED_OBJECT_KEY)
+									.equals("null")) {
+								localValues.getJSONObject(item).put(
+										JSON_UPDATED_OBJECT_KEY,
+										keys.getString(keyIndex));
+								++keyIndex;
+							}
+						}
+
+						this.updateLocalItems(localValues);
+					}
+				}
+
+				final ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+				params.add(new BasicNameValuePair(
+						SyncAdapter.JSON_REQUEST_PARAM_NAME, this.m_localData
+								.toString()));
+				JSONObject response = getHttpConnector().sendRequestMainThread(
+						prefSyncUrl, params);
+				updateLocalDatabase(response);
+
+			} catch (JSONException e) {
+				SyncAdapter.placeNotification(getContext(),"Unable to deal with receved JSON.");
+				syncResult.stats.numParseExceptions++;
+				e.printStackTrace();
+			} catch (IOException e) {
+				Log.v(TAG, "I/O excecption!!!");
+				SyncAdapter.placeNotification(getContext(), "I\\O exception on data exchange.");
+				e.printStackTrace();
+				syncResult.stats.numIoExceptions++;
+			}
+		} else {
+			Log.d(this.getClass().getName(),
+					"Received data from server is empty");
+			SyncAdapter.placeNotification(getContext(), "Received data from server is empty");
+			syncResult.stats.numParseExceptions++;
+		}
+	}
+
+	synchronized private void updateKeysByType(JSONArray values, String type) {
 		try {
 			JSONArray localUpdatedObjects = m_localData
 					.getJSONArray(JSON_UPDATED_OBJECTS);
@@ -300,7 +348,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements OnShared
 						.put(values.getJSONObject(item));
 			}
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
+			SyncAdapter.placeNotification(getContext(),"Update keys by type: unable to deal with received JSON.");
 			e.printStackTrace();
 		}
 	}
@@ -308,7 +356,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements OnShared
 	/**
 	 * This function reads information from local database.
 	 */
-	private void getLocalData() {
+	synchronized private void getLocalData() {
 		Cursor answer;
 		String selection;
 		this.m_localData = new JSONObject();
@@ -963,7 +1011,44 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements OnShared
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
 			String key) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
+	private static void placeNotification(Context context, String message) {
+		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(
+				context).setSmallIcon(R.drawable.app_icon_48)
+				.setContentTitle("Doui: Sync notification")
+				.setContentText(message);
+		Intent resultIntent = new Intent(context,
+				DouiMainActivity.class);
+		TaskStackBuilder stackBuilder = TaskStackBuilder
+				.from(context);
+		stackBuilder.addParentStack(DouiMainActivity.class);
+		stackBuilder.addNextIntent(resultIntent);
+		PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0,
+				PendingIntent.FLAG_UPDATE_CURRENT);
+		mBuilder.setContentIntent(resultPendingIntent);
+		NotificationManager mNotificationManager = (NotificationManager) context
+				.getSystemService(Context.NOTIFICATION_SERVICE);
+		mNotificationManager.notify(SYNC_NOTIFICATION_ID,
+				mBuilder.getNotification());
+	}
+	
+	public static void requestSync(Context context)
+	{
+		SharedPreferences sharedPref = PreferenceManager
+				.getDefaultSharedPreferences(context);
+		String strPrefSyncAccount = sharedPref.getString(context
+				.getString(R.string.prefSyncAccount_Key), "");
+		Account prefSyncAccount = SyncAdapter.getAccountByString(strPrefSyncAccount, context);
+		if (null == prefSyncAccount) {
+			Log.e(TAG,
+					"Wrong account provided in preferences: "
+							+ strPrefSyncAccount);
+			SyncAdapter.placeNotification(context, "No account available for sync. PLease create google account to be able perform sync.");
+		}else
+		{
+			ContentResolver.requestSync(prefSyncAccount, DouiContentProvider.AUTHORITY, new Bundle());
+		}
+	}
 }

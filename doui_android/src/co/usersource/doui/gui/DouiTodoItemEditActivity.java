@@ -510,10 +510,7 @@ public class DouiTodoItemEditActivity extends Activity {
 			Toast toast = Toast.makeText(getApplicationContext(), "Item saved",
 					Toast.LENGTH_SHORT);
 			toast.show();
-			Account[] acount = AccountManager.get(getApplicationContext())
-					.getAccountsByType(SyncAdapter.SYNC_ACCOUNT_TYPE);
-			ContentResolver.requestSync(acount[0],
-					DouiContentProvider.AUTHORITY, new Bundle());
+			SyncAdapter.requestSync(getApplicationContext());
 			goToParentList();
 		} else {
 			Toast toast = Toast.makeText(getApplicationContext(),
@@ -584,10 +581,7 @@ public class DouiTodoItemEditActivity extends Activity {
 		Toast toast = Toast.makeText(getApplicationContext(), "Status set",
 				Toast.LENGTH_SHORT);
 		toast.show();
-		Account[] acount = AccountManager.get(getApplicationContext())
-				.getAccountsByType(SyncAdapter.SYNC_ACCOUNT_TYPE);
-		ContentResolver.requestSync(acount[0], DouiContentProvider.AUTHORITY,
-				new Bundle());
+		SyncAdapter.requestSync(getApplicationContext());
 	}
 
 	/*

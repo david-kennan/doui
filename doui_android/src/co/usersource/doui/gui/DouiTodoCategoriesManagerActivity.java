@@ -3,8 +3,6 @@
  */
 package co.usersource.doui.gui;
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -57,7 +55,9 @@ public class DouiTodoCategoriesManagerActivity extends Activity {
 				TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_ID };
 
 		String selectCondition = TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_NAME
-				+ "<>? and " + TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_IS_DELETED + " = 0";
+				+ "<>? and "
+				+ TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_IS_DELETED
+				+ " = 0";
 		String[] selectConditionArgs = { TableTodoCategoriesAdapter.STR_NONE_CATEGORY_NAME };
 		ContentResolver cr = getContentResolver();
 		cursorToDoCategories = cr.query(
@@ -140,11 +140,13 @@ public class DouiTodoCategoriesManagerActivity extends Activity {
 									.parse(DouiContentProvider.TODO_CATEGORIES_URI
 											.toString() + "/" + itemId);
 							ContentValues valueForUpdate = new ContentValues();
-							valueForUpdate.put(TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_IS_DELETED, 1);
-							getContentResolver().update(updateUri, valueForUpdate, null, null);
+							valueForUpdate
+									.put(TableTodoCategoriesAdapter.TABLE_TODO_CATEGORIES_IS_DELETED,
+											1);
+							getContentResolver().update(updateUri,
+									valueForUpdate, null, null);
 							fillList();
-							Account[] acount = AccountManager.get(getApplicationContext()).getAccountsByType(SyncAdapter.SYNC_ACCOUNT_TYPE);
-							ContentResolver.requestSync(acount[0], DouiContentProvider.AUTHORITY, new Bundle());
+							SyncAdapter.requestSync(getApplicationContext());
 						} else {
 							Toast toast = Toast
 									.makeText(
@@ -193,10 +195,9 @@ public class DouiTodoCategoriesManagerActivity extends Activity {
 				getContentResolver().update(updateUri, values, null, null);
 				douiTodoCategoryEditHelper.switchEditableRowToView();
 				fillList();
-				
+
 			}
-			Account[] acount = AccountManager.get(getApplicationContext()).getAccountsByType(SyncAdapter.SYNC_ACCOUNT_TYPE);
-			ContentResolver.requestSync(acount[0], DouiContentProvider.AUTHORITY, new Bundle());
+			SyncAdapter.requestSync(getApplicationContext());
 		} else {
 			Toast toast = Toast.makeText(getApplicationContext(), "Item "
 					+ newName + " already exists.\nEnter another name.",
@@ -236,11 +237,12 @@ public class DouiTodoCategoriesManagerActivity extends Activity {
 		});
 		TextView tvItemName = (TextView) addCategoriesView
 				.findViewById(R.id.tvItemName);
-		tvItemName
-				.setTextColor(getResources().getColor(android.R.color.darker_gray));
+		tvItemName.setTextColor(getResources().getColor(
+				android.R.color.darker_gray));
 
 		llItems.addView(addCategoriesView);
 	}
+
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
