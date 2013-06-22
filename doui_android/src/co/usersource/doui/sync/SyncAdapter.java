@@ -50,7 +50,16 @@ import co.usersource.doui.network.IHttpConnectorAuthHandler;
 public class SyncAdapter extends AbstractThreadedSyncAdapter implements
 		OnSharedPreferenceChangeListener {
 
+	/**
+	 * The name of the POST request parameter where stored JSON string with data
+	 * to be proceed by client or server.
+	 * */
 	public static final String JSON_REQUEST_PARAM_NAME = "jsonData";
+
+	/**
+	 * This is a string to filter only Google accounts to be used on sync
+	 * process.
+	 * */
 	public static final String SYNC_ACCOUNT_TYPE = "com.google";
 
 	/**
@@ -60,6 +69,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements
 
 	private static final String TAG = "DouiSyncAdapter";
 
+	/** Member for HTTP transport */
 	private HttpConnector httpConnector;
 
 	private boolean prefIsSyncable; // Determinate whether this sync adapter
@@ -67,6 +77,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements
 	private int prefSyncTimeframe; // Period how often perform sync
 	private Account prefSyncAccount; // Account to be used for sync
 
+	/**
+	 * Auth routines require to be executed in separate thread. This object used
+	 * as semaphore.
+	 */
 	private Object authLock = new Object();
 
 	/**
@@ -75,6 +89,186 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements
 	public SyncAdapter(Context context, boolean autoInitialize) {
 		super(context, autoInitialize);
 		this.loadPreferences();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void onPerformSync(final Account account, final Bundle extras,
+			final String authority, ContentProviderClient provider,
+			final SyncResult syncResult) {
+
+		Log.d(TAG, "onPerformSync");
+		ContentResolver.addPeriodicSync(account, authority, extras,
+				SyncAdapter.SYNC_PERIOD);
+		if (getHttpConnector().isAuthenticated()) {
+			Log.d(TAG, "httpConnector.isAuthenticated()==true. Perform sync.");
+			performSyncRoutines(syncResult);
+		} else {
+			Log.d(TAG, "httpConnector.isAuthenticated()==false. Perform auth.");
+			getHttpConnector().setHttpConnectorAuthHandler(
+					new IHttpConnectorAuthHandler() {
+
+						public void onAuthSuccess() {
+							ContentResolver.requestSync(account, authority,
+									extras);
+							synchronized (SyncAdapter.this.authLock) {
+								SyncAdapter.this.authLock.notifyAll();
+							}
+						}
+
+						public void onAuthFail() {
+							Toast.makeText(getContext(),
+									"Auth to sync service failed",
+									Toast.LENGTH_LONG).show();
+							syncResult.stats.numAuthExceptions++;
+							synchronized (SyncAdapter.this.authLock) {
+								SyncAdapter.this.authLock.notifyAll();
+							}
+						}
+					});
+			getHttpConnector().authenticate(getContext(), account);
+			try {
+				synchronized (SyncAdapter.this.authLock) {
+					SyncAdapter.this.authLock.wait();
+				}
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
+			String key) {
+		// TODO Auto-generated method stub
+
+	}
+
+	/**
+	 * Main flow of the sync procedure. Loads data from local database. If any
+	 * items exists, request new GAE keys for this items. After this send
+	 * objects changed after last update and receive objects from GAE.
+	 * 
+	 * @param syncResult
+	 *            SyncAdapter object which contain information about errors.
+	 */
+	private void performSyncRoutines(final SyncResult syncResult) {
+		Log.v(TAG, "Start synchronization (performSyncRoutines)");
+		JsonDataExchangeAdapter jsonDataExchangeAdapter = new JsonDataExchangeAdapter(
+				getContext());
+		jsonDataExchangeAdapter.readDataFromLocalDatabase();
+		this.updateKeysForNewRecords(jsonDataExchangeAdapter, syncResult);
+		this.requestSyncLocalRemote(jsonDataExchangeAdapter, syncResult);
+	}
+
+	/**
+	 * Ask GAE for keys for new objects and apply them to new records in the
+	 * local database.
+	 * 
+	 * @param jsonDataExchangeAdapter
+	 *            adapter used to store and receive data in local database in
+	 *            JSON format.
+	 * @param syncResult
+	 *            SyncAdapter object which contain information about errors.
+	 */
+	private void updateKeysForNewRecords(
+			JsonDataExchangeAdapter jsonDataExchangeAdapter,
+			SyncResult syncResult) {
+		if (jsonDataExchangeAdapter.getNewRecords().length() > 0) {
+			JSONObject keysForNewRecords = this.requestKeysForNewRecords(
+					jsonDataExchangeAdapter, syncResult);
+			if (null != keysForNewRecords) {
+				try {
+					jsonDataExchangeAdapter.updateKeys(keysForNewRecords,
+							syncResult);
+				} catch (JSONException e) {
+					DouiApplication.placeNotification(getContext(),
+							DouiApplication.SYNC_NOTIFICATION_ID,
+							"Unable to parce received key values");
+					syncResult.stats.numParseExceptions++;
+					e.printStackTrace();
+				}
+			} else {
+				DouiApplication.placeNotification(getContext(),
+						DouiApplication.SYNC_NOTIFICATION_ID,
+						"No keys for received for "
+								+ jsonDataExchangeAdapter.getNewRecords()
+										.length() + " objects.");
+				syncResult.stats.numParseExceptions++;
+			}
+		}
+
+	}
+
+	/**
+	 * Perform HTTP request to GAE for keys for new objects in local database. * @param
+	 * jsonDataExchangeAdapter adapter used to store and receive data in local
+	 * database in JSON format.
+	 * 
+	 * @param syncResult
+	 *            SyncAdapter object which contain information about errors.
+	 * @return JSON object with new key values, which could be used for local
+	 *         storage or null on error.
+	 */
+	private JSONObject requestKeysForNewRecords(
+			JsonDataExchangeAdapter jsonDataExchangeAdapter,
+			SyncResult syncResult) {
+		JSONObject response = null;
+		final ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+		params.add(new BasicNameValuePair(SyncAdapter.JSON_REQUEST_PARAM_NAME,
+				jsonDataExchangeAdapter.getNewRecords().toString()));
+		try {
+			response = getHttpConnector().sendRequestMainThread(prefSyncUrl,
+					params);
+		} catch (ParseException e1) {
+			Log.d(TAG, "Parce error for new keys response");
+			syncResult.stats.numParseExceptions++;
+			e1.printStackTrace();
+		} catch (IOException e1) {
+			Log.d(TAG, "I\\O error for new keys response");
+			syncResult.stats.numIoExceptions++;
+			e1.printStackTrace();
+		}
+		return response;
+	}
+
+	/**
+	 * Perform synchronization between local items and remote. All data sent in
+	 * this method must have GAE keys. GAE updates records with existent keys
+	 * and inserts new.
+	 * 
+	 * @param jsonDataExchangeAdapter
+	 *            adapter used to store and receive data in local database in
+	 *            JSON format.
+	 * 
+	 * @param syncResult
+	 *            SyncAdapter object which contain information about errors.
+	 */
+	private void requestSyncLocalRemote(
+			JsonDataExchangeAdapter jsonDataExchangeAdapter,
+			SyncResult syncResult) {
+		final ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+		params.add(new BasicNameValuePair(SyncAdapter.JSON_REQUEST_PARAM_NAME,
+				jsonDataExchangeAdapter.getLocalData().toString()));
+		JSONObject response = null;
+		try {
+			response = getHttpConnector().sendRequestMainThread(prefSyncUrl,
+					params);
+		} catch (ParseException e1) {
+			Log.d(TAG, "Parce error for data receved from server");
+			syncResult.stats.numParseExceptions++;
+			e1.printStackTrace();
+		} catch (IOException e1) {
+			Log.d(TAG, "I\\O error for data receved from server");
+			syncResult.stats.numIoExceptions++;
+			e1.printStackTrace();
+		}
+		jsonDataExchangeAdapter.updateLocalDatabase(response);
+
 	}
 
 	/**
@@ -140,9 +334,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements
 	}
 
 	/**
+	 * Getter for HTTP connector, creates new if required.
+	 * 
 	 * @return the httpConnector
 	 */
-	public HttpConnector getHttpConnector() {
+	private HttpConnector getHttpConnector() {
 		if (httpConnector == null) {
 			httpConnector = new HttpConnector();
 		}
@@ -150,143 +346,12 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * Class method to request sync for Doui GAE service. This method allow to
+	 * select appropriate account or raise notification if no available.
+	 * 
+	 * @param context
+	 *            context used to perform routines.
 	 */
-	@Override
-	public void onPerformSync(final Account account, final Bundle extras,
-			final String authority, ContentProviderClient provider,
-			final SyncResult syncResult) {
-
-		Log.d(TAG, "onPerformSync");
-		ContentResolver.addPeriodicSync(account, authority, extras,
-				SyncAdapter.SYNC_PERIOD);
-		if (getHttpConnector().isAuthenticated()) {
-			Log.d(TAG, "httpConnector.isAuthenticated()==true. Perform sync.");
-			performSyncRoutines(syncResult);
-		} else {
-			Log.d(TAG, "httpConnector.isAuthenticated()==false. Perform auth.");
-			getHttpConnector().setHttpConnectorAuthHandler(
-					new IHttpConnectorAuthHandler() {
-
-						public void onAuthSuccess() {
-							ContentResolver.requestSync(account, authority,
-									extras);
-							synchronized (SyncAdapter.this.authLock) {
-								SyncAdapter.this.authLock.notifyAll();
-							}
-						}
-
-						public void onAuthFail() {
-							Toast.makeText(getContext(),
-									"Auth to sync service failed",
-									Toast.LENGTH_LONG).show();
-							syncResult.stats.numAuthExceptions++;
-							synchronized (SyncAdapter.this.authLock) {
-								SyncAdapter.this.authLock.notifyAll();
-							}
-						}
-					});
-			getHttpConnector().authenticate(getContext(), account);
-			try {
-				synchronized (SyncAdapter.this.authLock) {
-					SyncAdapter.this.authLock.wait();
-				}
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-
-	private void performSyncRoutines(final SyncResult syncResult) {
-		Log.v(TAG, "Start synchronization (performSyncRoutines)");
-		JsonDataExchangeAdapter jsonDataExchangeAdapter = new JsonDataExchangeAdapter(
-				getContext());
-		jsonDataExchangeAdapter.readDataFromLocalDatabase();
-		this.updateKeysForNewRecords(jsonDataExchangeAdapter, syncResult);
-		this.requestSyncLocalRemote(jsonDataExchangeAdapter, syncResult);
-	}
-
-	private void updateKeysForNewRecords(
-			JsonDataExchangeAdapter jsonDataExchangeAdapter,
-			SyncResult syncResult) {
-		if (jsonDataExchangeAdapter.getNewRecords().length() > 0) {
-			JSONObject keysForNewRecords = this.requestKeysForNewRecords(
-					jsonDataExchangeAdapter, syncResult);
-			if (null != keysForNewRecords) {
-				try {
-					jsonDataExchangeAdapter.updateKeys(keysForNewRecords,
-							syncResult);
-				} catch (JSONException e) {
-					DouiApplication.placeNotification(getContext(),
-							DouiApplication.SYNC_NOTIFICATION_ID,
-							"Unable to parce received key values");
-					syncResult.stats.numParseExceptions++;
-					e.printStackTrace();
-				}
-			} else {
-				DouiApplication.placeNotification(getContext(),
-						DouiApplication.SYNC_NOTIFICATION_ID,
-						"No keys for received for "
-								+ jsonDataExchangeAdapter.getNewRecords()
-										.length() + " objects.");
-				syncResult.stats.numParseExceptions++;
-			}
-		}
-
-	}
-
-	private JSONObject requestKeysForNewRecords(
-			JsonDataExchangeAdapter jsonDataExchangeAdapter,
-			SyncResult syncResult) {
-		JSONObject response = null;
-		final ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
-		params.add(new BasicNameValuePair(SyncAdapter.JSON_REQUEST_PARAM_NAME,
-				jsonDataExchangeAdapter.getNewRecords().toString()));
-		try {
-			response = getHttpConnector().sendRequestMainThread(prefSyncUrl,
-					params);
-		} catch (ParseException e1) {
-			Log.d(TAG, "Parce error for new keys response");
-			syncResult.stats.numParseExceptions++;
-			e1.printStackTrace();
-		} catch (IOException e1) {
-			Log.d(TAG, "I\\O error for new keys response");
-			syncResult.stats.numIoExceptions++;
-			e1.printStackTrace();
-		}
-		return response;
-	}
-
-	private void requestSyncLocalRemote(
-			JsonDataExchangeAdapter jsonDataExchangeAdapter,
-			SyncResult syncResult) {
-		final ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
-		params.add(new BasicNameValuePair(
-				SyncAdapter.JSON_REQUEST_PARAM_NAME,
-				jsonDataExchangeAdapter.getLocalData().toString()));
-		JSONObject response = null;
-		try {
-			response = getHttpConnector().sendRequestMainThread(
-					prefSyncUrl, params);
-		} catch (ParseException e1) {
-			Log.d(TAG, "Parce error for data receved from server");
-			syncResult.stats.numParseExceptions++;
-			e1.printStackTrace();
-		} catch (IOException e1) {
-			Log.d(TAG, "I\\O error for data receved from server");
-			syncResult.stats.numIoExceptions++;
-			e1.printStackTrace();
-		}
-		jsonDataExchangeAdapter.updateLocalDatabase(response);
-
-	}
-
-	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
-			String key) {
-		// TODO Auto-generated method stub
-
-	}
-
 	public static void requestSync(Context context) {
 		SharedPreferences sharedPref = PreferenceManager
 				.getDefaultSharedPreferences(context);
@@ -299,7 +364,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements
 					+ strPrefSyncAccount);
 			DouiApplication
 					.placeNotification(
-							context,DouiApplication.SYNC_NOTIFICATION_ID,
+							context,
+							DouiApplication.SYNC_NOTIFICATION_ID,
 							"No account available for sync. PLease create google account to be able perform sync.");
 		} else {
 			ContentResolver.requestSync(prefSyncAccount,
