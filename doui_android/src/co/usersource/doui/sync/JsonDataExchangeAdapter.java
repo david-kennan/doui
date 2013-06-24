@@ -28,7 +28,7 @@ import co.usersource.doui.database.adapters.TableTodoStatusAdapter;
 public class JsonDataExchangeAdapter {
 
 	public static final String JSON_UPDATED_OBJECT_VALUES = "updateObjectValues";
-	public static final String JSON_UPDATED_OBJECT_KEY = "updateObjectKey";
+	public static final String JSON_UPDATED_OBJECT_KEY = "dev_updateObjectKey";
 	public static final String JSON_UPDATED_OBJECT_TIME = "updateObjectTime";
 	public static final String JSON_UPDATED_OBJECT_TYPE = "updateObjectType";
 	public static final String JSON_LAST_UPDATE_TIMESTAMP = "lastUpdateTimestamp";
@@ -45,6 +45,7 @@ public class JsonDataExchangeAdapter {
 	private static final String TAG = "JsonDataExchangeAdapter";
 
 	private JSONObject localData;
+
 	/**
 	 * @return the localData
 	 */
@@ -83,88 +84,99 @@ public class JsonDataExchangeAdapter {
 		this.m_valuesForUpdate = new ContentValues();
 	}
 
-	public void updateKeys(JSONObject data, SyncResult syncResult) throws JSONException {
-			JSONArray updatedObjects = data.getJSONArray(JSON_UPDATED_OBJECTS);
+	public void updateKeys(JSONObject data, SyncResult syncResult)
+			throws JSONException {
+		JSONArray updatedObjects = data.getJSONArray(JSON_UPDATED_OBJECTS);
 
-			for (int i = 0; i < updatedObjects.length(); ++i) {
-				if (updatedObjects
-						.getJSONObject(i)
-						.get(JSON_UPDATED_OBJECT_TYPE)
-						.equals(JsonDataExchangeAdapter.JSON_UPDATED_TYPE_STATUS)) {
-					updateKeysByType(updatedObjects.getJSONObject(i)
-							.getJSONArray(JSON_UPDATED_OBJECT_VALUES),
-							JsonDataExchangeAdapter.JSON_UPDATED_TYPE_STATUS);
-					this.updateLocalStatuses(updatedObjects.getJSONObject(i)
-							.getJSONArray(JSON_UPDATED_OBJECT_VALUES));
-				}
+		for (int i = 0; i < updatedObjects.length(); ++i) {
 
-				if (updatedObjects
-						.getJSONObject(i)
-						.get(JSON_UPDATED_OBJECT_TYPE)
-						.equals(JsonDataExchangeAdapter.JSON_UPDATED_TYPE_CATEGORIES)) {
-					updateKeysByType(
-							updatedObjects.getJSONObject(i).getJSONArray(
-									JSON_UPDATED_OBJECT_VALUES),
-							JsonDataExchangeAdapter.JSON_UPDATED_TYPE_CATEGORIES);
-					this.updateLocalCategories(updatedObjects.getJSONObject(i)
-							.getJSONArray(JSON_UPDATED_OBJECT_VALUES));
-				}
+			// Update statuses keys
+			if (updatedObjects.getJSONObject(i).get(JSON_UPDATED_OBJECT_TYPE)
+					.equals(JsonDataExchangeAdapter.JSON_UPDATED_TYPE_STATUS)) {
 
-				if (updatedObjects
-						.getJSONObject(i)
-						.get(JSON_UPDATED_OBJECT_TYPE)
-						.equals(JsonDataExchangeAdapter.JSON_UPDATED_TYPE_ITEMS)) {
-					JSONArray keys = updatedObjects.getJSONObject(i)
-							.getJSONArray("itemsKeys");
-					JSONArray localUpdatedObjects = localData
-							.getJSONArray(JSON_UPDATED_OBJECTS);
+				this.updateKeysByType(updatedObjects.getJSONObject(i)
+						.getJSONArray(JSON_UPDATED_OBJECT_VALUES),
+						JsonDataExchangeAdapter.JSON_UPDATED_TYPE_STATUS);
+				this.updateLocalStatuses(updatedObjects.getJSONObject(i)
+						.getJSONArray(JSON_UPDATED_OBJECT_VALUES));
+			}
 
-					int localItem = 0;
-					for (; localItem < localUpdatedObjects.length(); ++localItem) {
-						if (localUpdatedObjects
-								.getJSONObject(localItem)
-								.get(JSON_UPDATED_OBJECT_TYPE)
-								.equals(JsonDataExchangeAdapter.JSON_UPDATED_TYPE_ITEMS)) {
-							break;
-						}
+			// Update categories keys
+			if (updatedObjects
+					.getJSONObject(i)
+					.get(JSON_UPDATED_OBJECT_TYPE)
+					.equals(JsonDataExchangeAdapter.JSON_UPDATED_TYPE_CATEGORIES)) {
+				this.updateKeysByType(updatedObjects.getJSONObject(i)
+						.getJSONArray(JSON_UPDATED_OBJECT_VALUES),
+						JsonDataExchangeAdapter.JSON_UPDATED_TYPE_CATEGORIES);
+				this.updateLocalCategories(updatedObjects.getJSONObject(i)
+						.getJSONArray(JSON_UPDATED_OBJECT_VALUES));
+			}
+
+			// Update items keys
+			if (updatedObjects.getJSONObject(i).get(JSON_UPDATED_OBJECT_TYPE)
+					.equals(JsonDataExchangeAdapter.JSON_UPDATED_TYPE_ITEMS)) {
+				JSONArray keys = updatedObjects.getJSONObject(i).getJSONArray(
+						"itemsKeys"); // TODO "itemsKeys" must be constant
+
+				// local data update
+				JSONArray localUpdatedObjects = localData
+						.getJSONArray(JSON_UPDATED_OBJECTS);
+
+				int localItem = 0;
+				for (; localItem < localUpdatedObjects.length(); ++localItem) {
+					if (localUpdatedObjects
+							.getJSONObject(localItem)
+							.get(JSON_UPDATED_OBJECT_TYPE)
+							.equals(JsonDataExchangeAdapter.JSON_UPDATED_TYPE_ITEMS)) {
+						break;
 					}
-
-					JSONArray localValues = localUpdatedObjects.getJSONObject(
-							localItem).getJSONArray(JSON_UPDATED_OBJECT_VALUES);
-					for (int item = 0, keyIndex = 0; item < localValues
-							.length(); ++item) {
-						if (localValues.getJSONObject(item)
-								.getString(JSON_UPDATED_OBJECT_KEY)
-								.equals("null")) {
-							localValues.getJSONObject(item).put(
-									JSON_UPDATED_OBJECT_KEY,
-									keys.getString(keyIndex));
-							++keyIndex;
-						}
-					}
-
-					this.updateLocalItems(localValues);
 				}
-		} 
+
+				JSONArray localValues = localUpdatedObjects.getJSONObject(
+						localItem).getJSONArray(JSON_UPDATED_OBJECT_VALUES);
+				for (int item = 0, keyIndex = 0; item < localValues.length(); ++item) {
+					if (localValues.getJSONObject(item)
+							.getString(JSON_UPDATED_OBJECT_KEY).equals("null")) {
+						localValues.getJSONObject(item).put(
+								JSON_UPDATED_OBJECT_KEY,
+								keys.getString(keyIndex));
+						++keyIndex;
+					}
+				}
+
+				this.updateLocalItems(localValues);
+			}
+		}
 	}
 
-	private void updateKeysByType(JSONArray values, String type) throws JSONException {
-			JSONArray localUpdatedObjects = localData
-					.getJSONArray(JSON_UPDATED_OBJECTS);
+	/**
+	 * This method updates key values for localData objects of the given type
+	 * inside JSON packet.
+	 * 
+	 * @param values
+	 *            key values for the objects.
+	 * @param type
+	 *            the identifier of the objects type to be updated.
+	 * */
+	private void updateKeysByType(JSONArray values, String type)
+			throws JSONException {
+		JSONArray localUpdatedObjects = localData
+				.getJSONArray(JSON_UPDATED_OBJECTS);
 
-			int localItem = 0;
-			for (; localItem < localUpdatedObjects.length(); ++localItem) {
-				if (localUpdatedObjects.getJSONObject(localItem)
-						.get(JSON_UPDATED_OBJECT_TYPE).equals(type)) {
-					break;
-				}
+		int localItem = 0;
+		for (; localItem < localUpdatedObjects.length(); ++localItem) {
+			if (localUpdatedObjects.getJSONObject(localItem)
+					.get(JSON_UPDATED_OBJECT_TYPE).equals(type)) {
+				break;
 			}
+		}
 
-			for (int item = 0; item < values.length(); ++item) {
-				localUpdatedObjects.getJSONObject(localItem)
-						.getJSONArray(JSON_UPDATED_OBJECT_VALUES)
-						.put(values.getJSONObject(item));
-			}
+		for (int item = 0; item < values.length(); ++item) {
+			localUpdatedObjects.getJSONObject(localItem)
+					.getJSONArray(JSON_UPDATED_OBJECT_VALUES)
+					.put(values.getJSONObject(item));
+		}
 	}
 
 	/**
@@ -282,7 +294,7 @@ public class JsonDataExchangeAdapter {
 										data.getString(data
 												.getColumnIndex(TableTodoStatusAdapter.TABLE_TODO_STATUSES_NAME)));
 						currentObject
-								.put("client"
+								.put("client" // TODO make this constant
 										+ TableTodoStatusAdapter.TABLE_TODO_STATUSES_ID,
 										data.getString(data
 												.getColumnIndex(TableTodoStatusAdapter.TABLE_TODO_STATUSES_ID)));
@@ -477,7 +489,7 @@ public class JsonDataExchangeAdapter {
 				this.updateLocalStatuses(statuses);
 				this.updateLocalCategories(categories);
 				this.updateLocalItems(items);
-				cleanDeletedCategories();
+				this.cleanDeletedCategories();
 
 			} catch (JSONException e) {
 				Log.v(TAG, "Data from server is not valid!!");
@@ -721,6 +733,13 @@ public class JsonDataExchangeAdapter {
 
 	}
 
+	/**
+	 * Store data from JSON array to the local database.
+	 * 
+	 * @param data
+	 *            JSON data to be stored to the database
+	 * 
+	 */
 	private void updateLocalItems(JSONArray data) {
 		String selection;
 		Cursor localData;
@@ -728,14 +747,15 @@ public class JsonDataExchangeAdapter {
 		m_valuesForUpdate.clear();
 		for (int i = 0; i < data.length(); ++i) {
 			try {
-				addFieldToUpdate(TableTodoItemsAdapter.TABLE_TODO_ITEMS_BODY,
+				this.addFieldToUpdate(TableTodoItemsAdapter.TABLE_TODO_ITEMS_BODY,
 						data.getJSONObject(i), null);
-				addFieldToUpdate(TableTodoItemsAdapter.TABLE_TODO_ITEMS_TITLE,
+				this.addFieldToUpdate(TableTodoItemsAdapter.TABLE_TODO_ITEMS_TITLE,
 						data.getJSONObject(i), null);
-				addFieldToUpdate(
+				this.addFieldToUpdate(
 						TableTodoItemsAdapter.TABLE_TODO_ITEMS_OBJECT_KEY,
 						data.getJSONObject(i), JSON_UPDATED_OBJECT_KEY);
 
+				// In case if item has category, load it by objectKey.
 				if (!data
 						.getJSONObject(i)
 						.getString(
@@ -754,6 +774,7 @@ public class JsonDataExchangeAdapter {
 					}
 				}
 
+				// In case if item has status, load it by objectKey.
 				if (!data
 						.getJSONObject(i)
 						.getString(
@@ -771,8 +792,9 @@ public class JsonDataExchangeAdapter {
 					}
 				}
 
+				// Insert or update item
 				if (data.getJSONObject(i).getString("client_id").equals("null")) {
-
+					// This means that no client ID exists in data, so this item was stored not from this device but already exists in GAE.
 					selection = TableTodoItemsAdapter.TABLE_TODO_ITEMS_OBJECT_KEY
 							+ " = '"
 							+ data.getJSONObject(i).getString(
