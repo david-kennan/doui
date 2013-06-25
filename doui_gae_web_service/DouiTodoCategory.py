@@ -18,7 +18,7 @@ class DouiTodoCategory(DouiSyncEntity):
     is_deleted = db.StringProperty()
     lastUpdateTimestamp = db.DateTimeProperty()
 
-    JSON_CATEGORY_KEY = "updateObjectKey"
+    JSON_CATEGORY_KEY = "dev_updateObjectKey"
     JSON_CATEGORY_UPDATE_TIMESTAMP = "lastUpdateTimestamp"
     JSON_CATEGORY_NAME = "name"
     JSON_CATEGORY_IS_DELETED = "is_deleted"

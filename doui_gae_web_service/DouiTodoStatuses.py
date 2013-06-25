@@ -17,7 +17,7 @@ class DouiTodoStatus(DouiSyncEntity):
     name = db.StringProperty()
     lastUpdateTimestamp = db.DateTimeProperty()
     
-    JSON_STATUS_KEY = "updateObjectKey"
+    JSON_STATUS_KEY = "dev_updateObjectKey"
     JSON_STATUS_UPDATE_TIMESTAMP = "lastUpdateTimestamp"
     JSON_STATUS_NAME = "name"
     

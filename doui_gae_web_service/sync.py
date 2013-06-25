@@ -24,7 +24,7 @@ class Sync(webapp2.RequestHandler):
     
     JSON_UPDATED_OBJECT_VALUES = "updateObjectValues"
 
-    JSON_UPDATED_OBJECT_KEY = "updateObjectKey"
+    JSON_UPDATED_OBJECT_KEY = "dev_updateObjectKey"
 
     JSON_UPDATED_OBJECT_TIME = "updateObjectTime"
 
@@ -108,7 +108,8 @@ class Sync(webapp2.RequestHandler):
         objectModelQuery.filter("updateTimestamp > ", datetime.strptime(lastUpdateTimestamp, "%Y-%m-%d %H:%M:%S:%f"))
         objectModelQuery.filter("userId = ", users.get_current_user().user_id())
         for datastoreObject in objectModelQuery.run():
-            item = db.to_dict(datastoreObject);
+            item = db.to_dict(datastoreObject)
+            logging.info("Application name for key: "+datastoreObject.key().app())
             item[Sync.JSON_UPDATED_OBJECT_KEY] = str(datastoreObject.key())
             item[Sync.JSON_UPDATE_OBJECT_CLIENT_ID] = "null"
             result.append(item.copy())
@@ -145,9 +146,9 @@ class Sync(webapp2.RequestHandler):
         result = []
         valuesForUpdate = self.getObjectsByType(requestObject, "DouiTodoItem")
         for value in valuesForUpdate:
-            item = DouiTodoItem(user = users.get_current_user(), userId = users.get_current_user().user_id())
-            item.createItem(value)
-            result.append(value)
+            #item = DouiTodoItem(user = users.get_current_user(), userId = users.get_current_user().user_id())
+            item = DouiTodoItem.createItem(value)
+            result.append(item)
         return result
         
     def getObjectsByType(self, requestObject, objectType):
@@ -206,6 +207,7 @@ class Sync(webapp2.RequestHandler):
         
     
     def generateKeys(self, requestObject):
+        ''' This method generate new key values for entities received from client. '''
         statusValues = self.getObjectsByType(requestObject, "DouiTodoStatus")
         status = DouiTodoStatus(user = users.get_current_user(), userId = users.get_current_user().user_id())
         for item in statusValues:
@@ -216,11 +218,10 @@ class Sync(webapp2.RequestHandler):
         for item in categoriesValues:
             category.generateKeys(item)
         
-        item = DouiTodoItem(user = users.get_current_user(), userId = users.get_current_user().user_id())
         items = self.getItems(requestObject)
         
         if(items["itemsCount"] > 0):
-            item.generateKeys(items)
+            DouiTodoItem.generateKeys(items)
         else:
             items["itemsKeys"] = [] 
                 
