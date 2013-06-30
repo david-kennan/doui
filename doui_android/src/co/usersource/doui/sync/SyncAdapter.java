@@ -100,8 +100,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements
 			final SyncResult syncResult) {
 
 		Log.d(TAG, "onPerformSync");
-		ContentResolver.addPeriodicSync(account, authority, extras,
-				SyncAdapter.SYNC_PERIOD);
+		ContentResolver.addPeriodicSync(account, authority, new Bundle(), SyncAdapter.SYNC_PERIOD);
 		if (getHttpConnector().isAuthenticated()) {
 			Log.d(TAG, "httpConnector.isAuthenticated()==true. Perform sync.");
 			performSyncRoutines(syncResult);
@@ -111,8 +110,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements
 					new IHttpConnectorAuthHandler() {
 
 						public void onAuthSuccess() {
-							ContentResolver.requestSync(account, authority,
-									extras);
+							ContentResolver.requestSync(account, authority, new Bundle());
 							synchronized (SyncAdapter.this.authLock) {
 								SyncAdapter.this.authLock.notifyAll();
 							}
