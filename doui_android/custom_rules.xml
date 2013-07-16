@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Sets android:versionCode in AndroidManifest.xml 
-     based on Jenkins BUILD_NUMBER env variable -->
 <project name="custom_rules" default="release">
   <property environment="env"/>
     <target name="set-version-name">
       <propertyfile file="version.properties">
-        <entry key="app.version.name" type="string" operation="=" value="${env.BUILD_NUMBER}" />
+        <entry key="app.version.name" type="string" operation="=" value="${env.TASKS_APP_BUILD_NUMBER}" />
       </propertyfile>
       <property file="version.properties" />
       <echo>Version code: ${app.version.name}</echo>

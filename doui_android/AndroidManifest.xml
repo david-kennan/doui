@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="co.usersource.doui"
     android:versionCode="3"
-    android:versionName="dev_build_v3" >
+    android:versionName="doui_test_3" >
 
     <uses-sdk android:minSdkVersion="15" />
 
