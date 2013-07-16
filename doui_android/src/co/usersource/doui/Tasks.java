@@ -47,7 +47,7 @@ public class Tasks extends Application {
 	public static void placeNotification(Context context, int id, String message) {
 		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(
 				context).setSmallIcon(R.drawable.app_icon_48)
-				.setContentTitle("Doui notification")
+				.setContentTitle("Tasks notification")
 				.setContentText(message);
 		Intent resultIntent = new Intent(context, DouiMainActivity.class);
 		TaskStackBuilder stackBuilder = TaskStackBuilder.from(context);
