@@ -76,6 +76,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements
 	private String prefSyncUrl; // Url where Sync service running
 	private int prefSyncTimeframe; // Period how often perform sync
 	private Account prefSyncAccount; // Account to be used for sync
+	private JsonDataExchangeAdapter jsonDataExchangeAdapter;
+	
 
 	/**
 	 * Auth routines require to be executed in separate thread. This object used
@@ -89,6 +91,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements
 	public SyncAdapter(Context context, boolean autoInitialize) {
 		super(context, autoInitialize);
 		this.loadPreferences();
+		jsonDataExchangeAdapter = null;
 	}
 
 	/**
@@ -156,8 +159,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements
 	 */
 	private void performSyncRoutines(final SyncResult syncResult) {
 		Log.v(TAG, "Start synchronization (performSyncRoutines)");
-		JsonDataExchangeAdapter jsonDataExchangeAdapter = new JsonDataExchangeAdapter(
-				getContext());
+		if(jsonDataExchangeAdapter == null){
+			jsonDataExchangeAdapter = new JsonDataExchangeAdapter(getContext());
+		}
 		jsonDataExchangeAdapter.readDataFromLocalDatabase();
 		this.updateKeysForNewRecords(jsonDataExchangeAdapter, syncResult);
 		this.requestSyncLocalRemote(jsonDataExchangeAdapter, syncResult);

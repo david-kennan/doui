@@ -34,6 +34,7 @@ public class JsonDataExchangeAdapter {
 	public static final String JSON_LAST_UPDATE_TIMESTAMP = "lastUpdateTimestamp";
 	public static final String JSON_UPDATED_OBJECTS = "updatedObjects";
 	public static final String JSON_REQUEST_TYPE = "requestType";
+	public static final String JSON_ITEMS_KEYS = "itemsKeys";
 
 	public static final String JSON_UPDATED_TYPE_STATUS = "DouiTodoStatus";
 	public static final String JSON_UPDATED_TYPE_CATEGORIES = "DouiTodoCategories";
@@ -117,7 +118,7 @@ public class JsonDataExchangeAdapter {
 			if (updatedObjects.getJSONObject(i).get(JSON_UPDATED_OBJECT_TYPE)
 					.equals(JsonDataExchangeAdapter.JSON_UPDATED_TYPE_ITEMS)) {
 				JSONArray keys = updatedObjects.getJSONObject(i).getJSONArray(
-						"itemsKeys"); // TODO "itemsKeys" must be constant
+						JsonDataExchangeAdapter.JSON_ITEMS_KEYS); 
 
 				// local data update
 				JSONArray localUpdatedObjects = localData
@@ -203,7 +204,7 @@ public class JsonDataExchangeAdapter {
 						JsonDataExchangeAdapter.JSON_LAST_UPDATE_TIMESTAMP,
 						mLastUpdateDate);
 			}
-
+			
 			this.newRecords.put(JsonDataExchangeAdapter.JSON_REQUEST_TYPE,
 					JsonDataExchangeAdapter.JSON_REQUEST_TYPE_GEN_KEYS);
 			this.newRecords.put(JsonDataExchangeAdapter.JSON_UPDATED_OBJECTS,
