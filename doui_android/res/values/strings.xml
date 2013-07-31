@@ -2,7 +2,7 @@
 <resources>
 
     <string name="hello">Hello World, DouiActivity!</string>
-    <string name="app_name">Doui</string>
+    <string name="app_name">Tasks</string>
     <string name="todoItemEditBtSave">Save</string>
     <string name="todoItemEditBtCancel">Cancel</string>
     <string name="todoItemViewBtEdit">Edit</string>

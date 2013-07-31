@@ -31,7 +31,7 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
 import android.widget.Toast;
-import co.usersource.doui.DouiApplication;
+import co.usersource.doui.Tasks;
 import co.usersource.doui.DouiContentProvider;
 import co.usersource.doui.R;
 import co.usersource.doui.database.adapters.TableTodoCategoriesAdapter;
@@ -188,15 +188,15 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements
 					jsonDataExchangeAdapter.updateKeys(keysForNewRecords,
 							syncResult);
 				} catch (JSONException e) {
-					DouiApplication.placeNotification(getContext(),
-							DouiApplication.SYNC_NOTIFICATION_ID,
+					Tasks.placeNotification(getContext(),
+							Tasks.SYNC_NOTIFICATION_ID,
 							"Unable to parce received key values");
 					syncResult.stats.numParseExceptions++;
 					e.printStackTrace();
 				}
 			} else {
-				DouiApplication.placeNotification(getContext(),
-						DouiApplication.SYNC_NOTIFICATION_ID,
+				Tasks.placeNotification(getContext(),
+						Tasks.SYNC_NOTIFICATION_ID,
 						"No keys for received for "
 								+ jsonDataExchangeAdapter.getNewRecords()
 										.length() + " objects.");
@@ -301,10 +301,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements
 			Log.e(this.getClass().getName(),
 					"Wrong account provided in preferences: "
 							+ strPrefSyncAccount);
-			DouiApplication
+			Tasks
 					.placeNotification(
 							getContext(),
-							DouiApplication.SYNC_NOTIFICATION_ID,
+							Tasks.SYNC_NOTIFICATION_ID,
 							"No account available for sync.\nPlease create google account to be able perform sync.");
 		}
 	}
@@ -364,10 +364,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements
 		if (null == prefSyncAccount) {
 			Log.e(TAG, "Wrong account provided in preferences: "
 					+ strPrefSyncAccount);
-			DouiApplication
+			Tasks
 					.placeNotification(
 							context,
-							DouiApplication.SYNC_NOTIFICATION_ID,
+							Tasks.SYNC_NOTIFICATION_ID,
 							"No account available for sync. PLease create google account to be able perform sync.");
 		} else {
 			ContentResolver.requestSync(prefSyncAccount,
