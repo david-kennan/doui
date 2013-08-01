@@ -21,6 +21,8 @@ import co.usersource.doui.R;
 import co.usersource.doui.database.adapters.TableTodoCategoriesAdapter;
 import co.usersource.doui.database.adapters.TableTodoContextsAdapter;
 import co.usersource.doui.database.adapters.TableTodoStatusAdapter;
+import co.usersource.doui.sync.SyncAdapter;
+import co.usersource.doui.sync.SyncFinishHandler;
 
 public class DouiMainActivity extends ListActivity {
 	private SimpleCursorAdapter adapter;
@@ -30,6 +32,7 @@ public class DouiMainActivity extends ListActivity {
 	private ImageButton imbtCategories;
 	private MergeCursor mergeCursor;
 	private ImageButton imbtHelp;
+	
 
 	/** Called when the activity is first created. */
 	@Override
@@ -147,9 +150,11 @@ public class DouiMainActivity extends ListActivity {
 
 		}
 		i.putExtra(DouiTodoListActivity.STR_TODO_LIST_URI_EXT, todoUri);
-		startActivity(i);
+		SyncFinishHandler syncHandler = new SyncFinishHandler(this);
+		syncHandler.setFinishActivity(i);
+		SyncAdapter.requestSync(getApplicationContext());
 	}
-
+	
 	/*
 	 * (non-Javadoc)
 	 * 

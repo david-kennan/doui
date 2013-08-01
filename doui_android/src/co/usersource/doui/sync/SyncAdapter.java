@@ -6,38 +6,26 @@ import java.util.ArrayList;
 import org.apache.http.NameValuePair;
 import org.apache.http.ParseException;
 import org.apache.http.message.BasicNameValuePair;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
 import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.SyncResult;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
 import android.widget.Toast;
 import co.usersource.doui.Tasks;
 import co.usersource.doui.DouiContentProvider;
 import co.usersource.doui.R;
-import co.usersource.doui.database.adapters.TableTodoCategoriesAdapter;
-import co.usersource.doui.database.adapters.TableTodoItemsAdapter;
-import co.usersource.doui.database.adapters.TableTodoStatusAdapter;
-import co.usersource.doui.gui.DouiMainActivity;
 import co.usersource.doui.network.HttpConnector;
 import co.usersource.doui.network.IHttpConnectorAuthHandler;
 
@@ -77,6 +65,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements
 	private int prefSyncTimeframe; // Period how often perform sync
 	private Account prefSyncAccount; // Account to be used for sync
 	private JsonDataExchangeAdapter jsonDataExchangeAdapter;
+	
+	public static final String ACTION_SYNC_FINISHED = "co.usersourse.doui.sync_finished";
 	
 
 	/**
@@ -165,6 +155,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements
 		jsonDataExchangeAdapter.readDataFromLocalDatabase();
 		this.updateKeysForNewRecords(jsonDataExchangeAdapter, syncResult);
 		this.requestSyncLocalRemote(jsonDataExchangeAdapter, syncResult);
+		getContext().sendBroadcast(new Intent(SyncAdapter.ACTION_SYNC_FINISHED));
 	}
 
 	/**
