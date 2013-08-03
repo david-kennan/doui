@@ -19,6 +19,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.SyncResult;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -363,6 +364,22 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements
 		} else {
 			ContentResolver.requestSync(prefSyncAccount,
 					DouiContentProvider.AUTHORITY, new Bundle());
+			if(!isConnectionOn(context)){
+				context.sendBroadcast(new Intent(SyncAdapter.ACTION_SYNC_FINISHED));
+			}
 		}
+	}
+	
+	/**
+	 * Class method to check that Internet connection exists. 
+	 * @param context used to get CONNECTIVITY_SERVICE service info.
+	 * @return true if connection exists else false.
+	 */
+	public static boolean isConnectionOn(Context context) {
+	    ConnectivityManager cm =
+	        (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+	    return cm.getActiveNetworkInfo() != null && 
+	       cm.getActiveNetworkInfo().isConnectedOrConnecting();
 	}
 }
