@@ -38,6 +38,7 @@ public class SyncFinishHandler extends BroadcastReceiver {
 		if(isShow)
 		{
 			progressDlg = ProgressDialog.show(parentActivity, "Please wait", "Loading...");
+			progressDlg.setCancelable(true);
 		}
 		else{
 			progressDlg.dismiss();

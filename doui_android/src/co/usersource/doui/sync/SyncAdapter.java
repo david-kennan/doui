@@ -94,6 +94,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements
 			final SyncResult syncResult) {
 
 		Log.d(TAG, "onPerformSync");
+		
 		ContentResolver.addPeriodicSync(account, authority, new Bundle(), SyncAdapter.SYNC_PERIOD);
 		if (getHttpConnector().isAuthenticated()) {
 			Log.d(TAG, "httpConnector.isAuthenticated()==true. Perform sync.");
@@ -288,6 +289,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements
 				.getString(R.string.prefSyncAccount_Key), "");
 		prefSyncAccount = SyncAdapter.getAccountByString(strPrefSyncAccount,
 				getContext());
+		
 		if (null == prefSyncAccount) {
 			prefIsSyncable = false;
 			Log.e(this.getClass().getName(),
@@ -347,12 +349,20 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements
 	 *            context used to perform routines.
 	 */
 	public static void requestSync(Context context) {
+		
 		SharedPreferences sharedPref = PreferenceManager
 				.getDefaultSharedPreferences(context);
-		String strPrefSyncAccount = sharedPref.getString(
-				context.getString(R.string.prefSyncAccount_Key), "");
-		Account prefSyncAccount = SyncAdapter.getAccountByString(
-				strPrefSyncAccount, context);
+		
+		if(!sharedPref.getBoolean(context.getString(R.string.prefIsSyncable_Key), false)
+				|| !isConnectionOn(context))
+		{
+			context.sendBroadcast(new Intent(SyncAdapter.ACTION_SYNC_FINISHED));
+			return;
+		}
+		
+		String strPrefSyncAccount = sharedPref.getString(context.getString(R.string.prefSyncAccount_Key), "");
+		Account prefSyncAccount = SyncAdapter.getAccountByString(strPrefSyncAccount, context);
+		
 		if (null == prefSyncAccount) {
 			Log.e(TAG, "Wrong account provided in preferences: "
 					+ strPrefSyncAccount);
@@ -364,9 +374,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements
 		} else {
 			ContentResolver.requestSync(prefSyncAccount,
 					DouiContentProvider.AUTHORITY, new Bundle());
-			if(!isConnectionOn(context)){
-				context.sendBroadcast(new Intent(SyncAdapter.ACTION_SYNC_FINISHED));
-			}
+			context.sendBroadcast(new Intent(SyncAdapter.ACTION_SYNC_FINISHED));
 		}
 	}
 	

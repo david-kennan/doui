@@ -1,13 +1,23 @@
 package co.usersource.doui.gui;
 
+import java.io.IOException;
+
+import android.accounts.Account;
+import android.accounts.AccountManager;
+import android.accounts.AccountManagerCallback;
+import android.accounts.AccountManagerFuture;
+import android.accounts.AuthenticatorException;
+import android.accounts.OperationCanceledException;
 import android.app.ListActivity;
 import android.content.ContentResolver;
 import android.content.Intent;
+import android.content.SharedPreferences.Editor;
 import android.database.Cursor;
 import android.database.MergeCursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -24,7 +34,8 @@ import co.usersource.doui.database.adapters.TableTodoStatusAdapter;
 import co.usersource.doui.sync.SyncAdapter;
 import co.usersource.doui.sync.SyncFinishHandler;
 
-public class DouiMainActivity extends ListActivity {
+public class DouiMainActivity extends ListActivity  
+	implements AccountManagerCallback<Bundle>{
 	private SimpleCursorAdapter adapter;
 	private Cursor cursorToDoCategories;
 	private Cursor cursorStatuses;
@@ -59,9 +70,54 @@ public class DouiMainActivity extends ListActivity {
 				startActivity(helpIntent);
 			}
 		});
-        PreferenceManager.setDefaultValues(this, R.xml.todo_preferences, false);
+		loadPrefences();
 	}
-
+	
+	private void loadPrefences()
+	{
+		PreferenceManager.setDefaultValues(this, R.xml.todo_preferences, false);
+		Editor prefEditor = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit();
+		AccountManager accountManager = AccountManager.get(getApplicationContext()); 
+		Account[] accounts = accountManager.getAccountsByType("com.google");
+		if(accounts.length > 0)
+		{
+			prefEditor.putString(getApplicationContext().getString(R.string.prefSyncAccount_Key), accounts[0].name);
+			accountManager.getAuthToken(accounts[0], "ah", null, this, this, null);
+		}
+		else
+		{
+			prefEditor.putBoolean(getApplicationContext().getString(R.string.prefIsSyncable_Key), false);
+		}
+		prefEditor.apply();
+	}
+	
+	public void run(AccountManagerFuture<Bundle> result) {
+		Bundle bundle;
+		try {
+			bundle = result.getResult();
+			Intent intent = (Intent) bundle.get(AccountManager.KEY_INTENT);
+			if (null != intent) {
+				startActivity(intent);
+			} else {
+				Editor prefEditor = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit();
+				prefEditor.putString(getApplicationContext().getString(R.string.prefSyncAccount_Key), bundle.getString("authAccount"));
+				prefEditor.putBoolean(getApplicationContext().getString(R.string.prefIsSyncable_Key), true);
+				prefEditor.apply();
+				ContentResolver.setIsSyncable(new Account(bundle.getString("authAccount"), "com.google"), DouiContentProvider.AUTHORITY, 1); 
+			}
+		} catch (OperationCanceledException e) {
+			Editor prefEditor = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit();
+			prefEditor.putBoolean(getApplicationContext().getString(R.string.prefIsSyncable_Key), false);
+			prefEditor.apply();
+			e.printStackTrace();
+			
+		} catch (AuthenticatorException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	@Override
 	protected void onRestart() {
 		fillList();
@@ -187,4 +243,6 @@ public class DouiMainActivity extends ListActivity {
 	            return super.onOptionsItemSelected(item);
 	    }
 	}
+
+	
 }
