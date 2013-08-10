@@ -8,6 +8,7 @@ import java.util.List;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
@@ -16,6 +17,7 @@ import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.PreferenceActivity;
 import android.view.MenuItem;
+import co.usersource.doui.DouiContentProvider;
 import co.usersource.doui.R;
 
 /**
@@ -96,6 +98,7 @@ public class DouiSettingsActivity extends PreferenceActivity implements
 					getString(R.string.prefSyncRepeatTime_Key), ""));
 		}else if (key.equals(getString(R.string.prefIsSyncable_Key))) {
 			loadDeviceAccounts();
+			ContentResolver.setSyncAutomatically(new Account(mSyncAccountPref.getValue(), "com.google"), DouiContentProvider.AUTHORITY, sharedPreferences.getBoolean(key, false));
 		}else if (key.equals(getString(R.string.prefSyncAccount_Key))) {
 			mSyncAccountPref.setSummary(sharedPreferences.getString(
 					getString(R.string.prefSyncAccount_Key), ""));

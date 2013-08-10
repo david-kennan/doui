@@ -77,7 +77,8 @@ public class DouiMainActivity extends ListActivity
 	{
 		PreferenceManager.setDefaultValues(this, R.xml.todo_preferences, false);
 		Editor prefEditor = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit();
-		AccountManager accountManager = AccountManager.get(getApplicationContext()); 
+		AccountManager accountManager = AccountManager.get(getApplicationContext());
+
 		Account[] accounts = accountManager.getAccountsByType("com.google");
 		if(accounts.length > 0)
 		{
@@ -99,11 +100,17 @@ public class DouiMainActivity extends ListActivity
 			if (null != intent) {
 				startActivity(intent);
 			} else {
+				ContentResolver.setIsSyncable(new Account(bundle.getString("authAccount"), "com.google"), DouiContentProvider.AUTHORITY, 1);
 				Editor prefEditor = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit();
 				prefEditor.putString(getApplicationContext().getString(R.string.prefSyncAccount_Key), bundle.getString("authAccount"));
-				prefEditor.putBoolean(getApplicationContext().getString(R.string.prefIsSyncable_Key), true);
+				if(ContentResolver.getSyncAutomatically(new Account(bundle.getString("authAccount"), "com.google"), DouiContentProvider.AUTHORITY))
+				{
+					prefEditor.putBoolean(getApplicationContext().getString(R.string.prefIsSyncable_Key), true);
+				}
+				else{
+					prefEditor.putBoolean(getApplicationContext().getString(R.string.prefIsSyncable_Key), false);
+				}
 				prefEditor.apply();
-				ContentResolver.setIsSyncable(new Account(bundle.getString("authAccount"), "com.google"), DouiContentProvider.AUTHORITY, 1); 
 			}
 		} catch (OperationCanceledException e) {
 			Editor prefEditor = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit();
