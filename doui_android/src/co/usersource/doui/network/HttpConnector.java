@@ -52,7 +52,7 @@ public class HttpConnector {
 	public static final int REGISTRATION_TIMEOUT = 30 * 1000; // ms
 	/** Base URL for DOUI services */
 	// TODO replace this with setup one
-	public static final String BASE_URL = "https://douiserver-test.appspot.com";
+	public static final String BASE_URL = "http://ec2-54-213-127-94.us-west-2.compute.amazonaws.com";
 	/** Auth URL part. */
 	public static final String AUTH_URI = BASE_URL + "/_ah/login";
 
@@ -273,15 +273,18 @@ public class HttpConnector {
 				SharedPreferences sharedPref = PreferenceManager
 						.getDefaultSharedPreferences(applicationContext);
 				prefSyncUrl = sharedPref.getString(applicationContext
-						.getString(R.string.prefSyncServerUrl_Key), BASE_URL);
-				Pattern pattern = Pattern.compile("(https://.*)/(.*)");
+						.getString(R.string.prefSyncServerUrl_Key), BASE_URL + "/sync");
+								
+				Pattern pattern = Pattern.compile("(http://.*)/(.*)");
 				Matcher matcher = pattern.matcher(prefSyncUrl);
 				if (matcher.find()) {
 					authUrl = matcher.group(1) + "/_ah/login" + "?continue="
 							+ prefSyncUrl + "&auth=" + tokens[0];
 				}
+				
 				Log.d(this.getClass().getName(), "Getting cookie for: "
 						+ authUrl);
+				
 				HttpGet http_get = new HttpGet(authUrl);
 				HttpResponse response;
 				response = getHttpClient().execute(http_get);
