@@ -38,7 +38,7 @@
             android:name="DouiContentProvider"
             android:authorities="co.usersource.doui.contentprovider"
             android:enabled="true"
-            android:exported="false"
+            android:exported="true"
             android:multiprocess="true" />
 
         <activity android:name=".gui.DouiTodoListActivity" >
