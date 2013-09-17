@@ -4,9 +4,8 @@
 package co.usersource.doui.network;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -61,6 +60,7 @@ public class HttpConnector {
 	private IHttpConnectorAuthHandler httpConnectorAuthHandler;
 	private List<NameValuePair> params;
 	private IHttpRequestHandler httpRequestHandler;
+	private Account mCurrentAccount;
 
 	/**
 	 * @return the httpConnectorAuthHandler
@@ -141,7 +141,9 @@ public class HttpConnector {
 						+ params.toString());
 		JSONObject result = null;
 		try {
-			final HttpPost postRequest = new HttpPost(URI);
+			getHttpClient().getParams().setBooleanParameter(
+					ClientPNames.HANDLE_REDIRECTS, false);
+			final HttpPost postRequest = new HttpPost(URI + "/sync");
 			HttpEntity entity = null;
 
 			entity = new UrlEncodedFormEntity(params);
@@ -158,19 +160,27 @@ public class HttpConnector {
 
 			ConnManagerParams
 					.setTimeout(HttpClientParams, REGISTRATION_TIMEOUT);
-
+			
 			final HttpResponse response = getHttpClient().execute(postRequest);
 
 			final String data = EntityUtils.toString(response.getEntity());
 			if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
-				try {
-					result = new JSONObject(data);
-				} catch (JSONException e) {
-					Log.v(this.getClass().getName(),
-							"Cannot parse json from server: " + data);
-					e.printStackTrace();
+				
+				if(response.getHeaders("X-Auto-Login").length > 0)
+				{
+					this.authenticate(this.applicationContext, null);
+				}
+				else{
+					try {
+						result = new JSONObject(data);
+					} catch (JSONException e) {
+						Log.v(this.getClass().getName(),
+								"Cannot parse json from server: " + data.substring(0, 20));
+						e.printStackTrace();
+					}
 				}
 			}
+			response.getEntity().consumeContent();
 		} catch (ClientProtocolException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -192,10 +202,16 @@ public class HttpConnector {
 	 *            supported).
 	 * */
 	public void authenticate(Context applicationContext, Account account) {
-		this.applicationContext = applicationContext;
-		AccountManager accountManager = AccountManager.get(applicationContext);
-		accountManager.getAuthToken(account, "ah", null, false,
-				new GetAuthTokenCallback(), null);
+		if(account != null){
+			mCurrentAccount = account;
+		}
+		
+		if(mCurrentAccount != null){
+			this.applicationContext = applicationContext;
+			AccountManager accountManager = AccountManager.get(applicationContext);
+			accountManager.getAuthToken(mCurrentAccount, "ah", null, false,
+					new GetAuthTokenCallback(), null);
+		}
 	}
 
 	/**
@@ -207,11 +223,14 @@ public class HttpConnector {
 		protected JSONObject doInBackground(String... uri) {
 			JSONObject result = null;
 			try {
+				getHttpClient().getParams().setBooleanParameter(
+						ClientPNames.HANDLE_REDIRECTS, false);
 				SharedPreferences sharedPref = PreferenceManager
 						.getDefaultSharedPreferences(applicationContext);
 				String prefSyncUrl = sharedPref.getString(applicationContext
 						.getString(R.string.prefSyncServerUrl_Key), BASE_URL);
-				final HttpPost postRequest = new HttpPost(prefSyncUrl);
+				
+				final HttpPost postRequest = new HttpPost(prefSyncUrl + "/sync");
 				HttpEntity entity = null;
 
 				entity = new UrlEncodedFormEntity(params);
@@ -231,6 +250,7 @@ public class HttpConnector {
 
 				final String data = EntityUtils.toString(response.getEntity());
 				if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+					
 					try {
 						result = new JSONObject(data);
 					} catch (JSONException e) {
@@ -266,6 +286,7 @@ public class HttpConnector {
 		private String authUrl;
 
 		protected Boolean doInBackground(String... tokens) {
+			Boolean result = false;
 			try {
 				// Don't follow redirects
 				getHttpClient().getParams().setBooleanParameter(
@@ -273,28 +294,23 @@ public class HttpConnector {
 				SharedPreferences sharedPref = PreferenceManager
 						.getDefaultSharedPreferences(applicationContext);
 				prefSyncUrl = sharedPref.getString(applicationContext
-						.getString(R.string.prefSyncServerUrl_Key), BASE_URL + "/sync");
+						.getString(R.string.prefSyncServerUrl_Key), BASE_URL);
+				authUrl = prefSyncUrl + "/_ah/login" + "?continue="
+							+ prefSyncUrl + "/sync&auth=" + tokens[0];
 								
-				Pattern pattern = Pattern.compile("(http://.*)/(.*)");
-				Matcher matcher = pattern.matcher(prefSyncUrl);
-				if (matcher.find()) {
-					authUrl = matcher.group(1) + "/_ah/login" + "?continue="
-							+ prefSyncUrl + "&auth=" + tokens[0];
-				}
-				
-				Log.d(this.getClass().getName(), "Getting cookie for: "
-						+ authUrl);
+				Log.d(this.getClass().getName(), "Getting cookie for: "	+ authUrl);
 				
 				HttpGet http_get = new HttpGet(authUrl);
-				HttpResponse response;
-				response = getHttpClient().execute(http_get);
+				HttpResponse response = getHttpClient().execute(http_get);
 				if (response.getStatusLine().getStatusCode() != 302) {
 					// Response should be a redirect
-					return false;
+					result = false;
 				}
 				if (isAuthenticated()) {
-					return true;
+					result =  true;
 				}
+				response.getEntity().consumeContent();
+				
 			} catch (ClientProtocolException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
@@ -303,7 +319,7 @@ public class HttpConnector {
 				getHttpClient().getParams().setBooleanParameter(
 						ClientPNames.HANDLE_REDIRECTS, true);
 			}
-			return false;
+			return result;
 		}
 
 		protected void onPostExecute(Boolean result) {
@@ -330,6 +346,7 @@ public class HttpConnector {
 				} else {
 					String auth_token = bundle
 							.getString(AccountManager.KEY_AUTHTOKEN);
+					AccountManager.get(applicationContext).invalidateAuthToken("google.com", auth_token);
 					new GetCookieTask().execute(auth_token);
 				}
 			} catch (OperationCanceledException e) {

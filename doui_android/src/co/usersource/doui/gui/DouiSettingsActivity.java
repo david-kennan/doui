@@ -27,7 +27,7 @@ import co.usersource.doui.R;
 public class DouiSettingsActivity extends PreferenceActivity implements
 		OnSharedPreferenceChangeListener {
 
-	private EditTextPreference mSyncServerUrlPref;
+	private ListPreference mSyncServerUrlPref;
 	private EditTextPreference mSyncRepeatTimePref;
 	private ListPreference mSyncAccountPref;
 
@@ -38,12 +38,13 @@ public class DouiSettingsActivity extends PreferenceActivity implements
 		super.onCreate(savedInstanceState);
 		getActionBar().setDisplayHomeAsUpEnabled(true);
 		addPreferencesFromResource(R.xml.todo_preferences);
-		mSyncServerUrlPref = (EditTextPreference) getPreferenceScreen()
+		mSyncServerUrlPref = (ListPreference) getPreferenceScreen()
 				.findPreference(getString(R.string.prefSyncServerUrl_Key));
 		mSyncRepeatTimePref = (EditTextPreference) getPreferenceScreen()
 				.findPreference(getString(R.string.prefSyncRepeatTime_Key));
 		mSyncAccountPref = (ListPreference) getPreferenceScreen()
 				.findPreference(getString(R.string.prefSyncAccount_Key));
+		loadServerUrls();
 		loadDeviceAccounts();
 	}
 
@@ -65,9 +66,11 @@ public class DouiSettingsActivity extends PreferenceActivity implements
 	protected void onResume() {
 		super.onResume();
 		// Setup the initial values
+		loadServerUrls();
 		mSyncServerUrlPref.setSummary(getPreferenceScreen()
 				.getSharedPreferences().getString(
 						getString(R.string.prefSyncServerUrl_Key), ""));
+		mSyncServerUrlPref.setSummary(mSyncServerUrlPref.getEntry());
 		mSyncRepeatTimePref.setSummary(getPreferenceScreen()
 				.getSharedPreferences().getString(
 						getString(R.string.prefSyncRepeatTime_Key), ""));
@@ -91,8 +94,11 @@ public class DouiSettingsActivity extends PreferenceActivity implements
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
 			String key) {
 		if (key.equals(getString(R.string.prefSyncServerUrl_Key))) {
+			
 			mSyncServerUrlPref.setSummary(sharedPreferences.getString(
 					getString(R.string.prefSyncServerUrl_Key), ""));
+			mSyncServerUrlPref.setSummary(mSyncServerUrlPref.getEntry());
+			
 		} else if (key.equals(getString(R.string.prefSyncRepeatTime_Key))) {
 			mSyncRepeatTimePref.setSummary(sharedPreferences.getString(
 					getString(R.string.prefSyncRepeatTime_Key), ""));
@@ -120,5 +126,22 @@ public class DouiSettingsActivity extends PreferenceActivity implements
 		}
 		mSyncAccountPref.setEntries(listAccountTitles.toArray(new String[0]));
 		mSyncAccountPref.setEntryValues(listAccountNames.toArray(new String[0]));
+	}
+	
+	private void loadServerUrls()
+	{
+		List<String> names = new ArrayList<String>();
+		List<String> urls = new ArrayList<String>();
+		names.add("Production");
+		urls.add("http://douiserver.appspot.com");
+		names.add("Test");
+		urls.add("http://douiserver-test.appspot.com");
+		names.add("Production via EC2 proxy");
+		urls.add("http://ec2-54-213-127-94.us-west-2.compute.amazonaws.com");
+		names.add("Test via EC2 proxy");
+		urls.add("http://ec2-54-213-127-94.us-west-2.compute.amazonaws.com/test");
+		
+		mSyncServerUrlPref.setEntries(names.toArray(new String[0]));
+		mSyncServerUrlPref.setEntryValues(urls.toArray(new String[0]));
 	}
 }

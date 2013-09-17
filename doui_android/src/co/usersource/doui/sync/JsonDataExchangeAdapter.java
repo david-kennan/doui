@@ -450,8 +450,7 @@ public class JsonDataExchangeAdapter {
 		if (data != null) {
 
 			try {
-				mLastUpdateDate = data
-						.getString(JsonDataExchangeAdapter.JSON_LAST_UPDATE_TIMESTAMP);
+				
 				JSONArray dataFromServer = data
 						.getJSONArray(JSON_UPDATED_OBJECTS);
 
@@ -491,6 +490,9 @@ public class JsonDataExchangeAdapter {
 				this.updateLocalCategories(categories);
 				this.updateLocalItems(items);
 				this.cleanDeletedCategories();
+				
+				mLastUpdateDate = data
+						.getString(JsonDataExchangeAdapter.JSON_LAST_UPDATE_TIMESTAMP);
 
 			} catch (JSONException e) {
 				Log.v(TAG, "Data from server is not valid!!");

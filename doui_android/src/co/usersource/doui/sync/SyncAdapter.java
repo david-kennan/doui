@@ -81,7 +81,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements
 	 */
 	public SyncAdapter(Context context, boolean autoInitialize) {
 		super(context, autoInitialize);
-		this.loadPreferences();
+		
 		jsonDataExchangeAdapter = null;
 	}
 
@@ -94,33 +94,38 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements
 			final SyncResult syncResult) {
 
 		Log.d(TAG, "onPerformSync");
-		
+		this.loadPreferences();
 		ContentResolver.addPeriodicSync(account, authority, new Bundle(), SyncAdapter.SYNC_PERIOD);
+		
+		
+		
+		
+		getHttpConnector().setHttpConnectorAuthHandler(
+				new IHttpConnectorAuthHandler() {
+
+					public void onAuthSuccess() {
+						ContentResolver.requestSync(account, authority, new Bundle());
+						synchronized (SyncAdapter.this.authLock) {
+							SyncAdapter.this.authLock.notifyAll();
+						}
+					}
+
+					public void onAuthFail() {
+						Toast.makeText(getContext(),
+								"Auth to sync service failed",
+								Toast.LENGTH_LONG).show();
+						syncResult.stats.numAuthExceptions++;
+						synchronized (SyncAdapter.this.authLock) {
+							SyncAdapter.this.authLock.notifyAll();
+						}
+					}
+				});
+		
 		if (getHttpConnector().isAuthenticated()) {
 			Log.d(TAG, "httpConnector.isAuthenticated()==true. Perform sync.");
 			performSyncRoutines(syncResult);
 		} else {
 			Log.d(TAG, "httpConnector.isAuthenticated()==false. Perform auth.");
-			getHttpConnector().setHttpConnectorAuthHandler(
-					new IHttpConnectorAuthHandler() {
-
-						public void onAuthSuccess() {
-							ContentResolver.requestSync(account, authority, new Bundle());
-							synchronized (SyncAdapter.this.authLock) {
-								SyncAdapter.this.authLock.notifyAll();
-							}
-						}
-
-						public void onAuthFail() {
-							Toast.makeText(getContext(),
-									"Auth to sync service failed",
-									Toast.LENGTH_LONG).show();
-							syncResult.stats.numAuthExceptions++;
-							synchronized (SyncAdapter.this.authLock) {
-								SyncAdapter.this.authLock.notifyAll();
-							}
-						}
-					});
 			getHttpConnector().authenticate(getContext(), account);
 			try {
 				synchronized (SyncAdapter.this.authLock) {
